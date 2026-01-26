@@ -7,7 +7,7 @@
 ```yaml
 Authors: Ryan, Louis, Katherine
 Advisor: Professor Alvarado
-Project Sponsor: Lexipedia
+Project Sponsor: Lexipedia and Wikimedia
 Semster: Spring 2026
 ```
 
