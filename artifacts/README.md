@@ -1,13 +1,12 @@
 # Artifacts Directory
 
-This directory contains model outputs, results, and logs.
+Store model outputs, experimental results, and execution logs.
 
 ## Structure
 
-- `logs/` - Execution logs from training runs and experiments
-- Add subdirectories for different experiments or model versions
+- `logs/` - Store execution logs from training runs and experiments
+- Create subdirectories for different experiments or model versions
 
-## Note
+## Guidelines
 
-Large artifact files are automatically prevented from being committed (>5MB).
-Consider using external storage for very large model files.
+Pre-commit hooks prevent committing files larger than 5MB. Use external storage for very large model artifacts.

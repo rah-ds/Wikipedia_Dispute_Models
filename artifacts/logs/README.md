@@ -1,9 +1,11 @@
 # Logs Directory
 
-Store execution logs here from:
+Store execution logs from:
 - Model training runs
 - Data processing pipelines
-- Experiment results
+- Experimental analyses
+
+## Naming Convention
 
 Use descriptive filenames with timestamps:
 - `training_20260126_143000.log`

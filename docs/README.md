@@ -1,10 +1,9 @@
 # Documentation
 
-This directory contains project documentation.
+Store project documentation in this directory.
 
-## Contents
+## Recommended Contents
 
-Add documentation files such as:
 - Research methodology
 - Data dictionaries
 - Model specifications
@@ -13,4 +12,4 @@ Add documentation files such as:
 
 ## Format
 
-Use Markdown (.md) for easy version control and readability.
+Write documentation in Markdown (.md) for version control and readability.

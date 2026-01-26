@@ -1,14 +1,13 @@
 # Data Directory
 
-This directory contains all data for the project.
+Store all project data in this directory.
 
 ## Structure
 
-- `raw/` - Original, immutable data dump. Never edit these files.
-- `processed/` - Cleaned and transformed data ready for analysis.
-- `external/` - Data from third-party sources.
+- `raw/` - Store original, immutable data. Never modify files in this directory.
+- `processed/` - Store cleaned and transformed data ready for analysis.
+- `external/` - Store data from third-party sources.
 
-## Note
+## Guidelines
 
-Large data files should NOT be committed to git. Add them to `.gitignore` if they exceed 50MB.
-Consider using DVC (Data Version Control) or storing data externally (Google Drive, AWS S3, etc.).
+Do not commit large data files (>50MB) to git. Use DVC (Data Version Control) or external storage (Google Drive, AWS S3) for large datasets.
