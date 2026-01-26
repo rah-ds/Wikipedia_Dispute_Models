@@ -213,8 +213,9 @@ data/external/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 !data/external/.gitkeep
-results/*
-!results/.gitkeep
+artifacts/*
+!artifacts/README.md
+!artifacts/logs/README.md
 *.pkl
 *.h5
 *.hdf5

@@ -21,13 +21,10 @@ This project aims to analyze and model dispute patterns in Wikipedia articles us
 │   ├── raw/           # Original, immutable data
 │   ├── processed/     # Cleaned, transformed data
 │   └── external/      # External data sources
-├── notebooks/         # Jupyter notebooks for exploration
-├── src/               # Source code for the project
-├── tests/             # Unit tests
+├── notebooks/         # Jupyter notebooks for exploration and analysis
 ├── docs/              # Documentation
-├── results/           # Model outputs, figures, etc.
-├── requirements.txt   # Python dependencies
-└── environment.yml    # Conda environment file
+└── artifacts/         # Model outputs, results, and logs
+    └── logs/          # Execution logs
 ```
 
 ## Getting Started
@@ -35,61 +32,26 @@ This project aims to analyze and model dispute patterns in Wikipedia articles us
 ### Prerequisites
 
 - Python 3.11+
-- pip or conda
+- pre-commit (for code quality checks)
 
 ### Installation
 
-#### Using pip
-
 ```bash
 # Clone the repository
 git clone https://github.com/rah-ds/Wikipedia_Dispute_Models.git
 cd Wikipedia_Dispute_Models
 
-# Create a virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
+# Install pre-commit hooks
+pip install pre-commit
+pre-commit install
 ```
 
-#### Using conda
+## Pre-commit Hooks
 
-```bash
-# Clone the repository
-git clone https://github.com/rah-ds/Wikipedia_Dispute_Models.git
-cd Wikipedia_Dispute_Models
+This project uses pre-commit hooks to enforce code quality and prevent large files from being committed:
 
-# Create conda environment
-conda env create -f environment.yml
-conda activate wikipedia-disputes
-```
-
-### Configuration
-
-1. Copy `.env.example` to `.env`
-2. Fill in any necessary API keys or configuration values
-
-## Usage
-
-[Add usage instructions here as the project develops]
-
-## Development
-
-### Running Tests
-
-```bash
-pytest tests/
-```
-
-### Code Style
-
-[Add linting/formatting guidelines if applicable]
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for collaboration guidelines.
+- **Code style enforcement** - Automatically formats code to maintain consistency
+- **File size check** - Prevents committing files larger than 5MB
 
 ## License
 
