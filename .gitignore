@@ -1,2 +1,14 @@
 notebooks
 .env
+src/__pycache__
+src/wikipedia_arbitration.egg-info
+
+# Artifacts - ignore all except results and imgs/publish
+artifacts/models/
+artifacts/imgs/dev/
+artifacts/logs/
+artifacts/exports/
+
+# Keep these tracked
+!artifacts/results/
+!artifacts/imgs/publish/
