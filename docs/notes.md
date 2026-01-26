@@ -1,6 +1,12 @@
-* over 300 languages
+# Objective
 
-## how wikipeida deals with disputes
+Understanding Wikimedia a bit
+
+* over 300 languages
+* English, Spanish, and German are some of the top
+* 
+
+## how Wikipedia deals with disputes
 
 [article](https://wikimediafoundation.org/news/2025/11/10/how-wikipedia-navigates-disputes/)
 
