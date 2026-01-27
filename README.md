@@ -51,14 +51,16 @@ See [`docs/sample_article_selection.md`](docs/sample_article_selection.md) for a
 
 ## Data Sources
 
-| Source | Description | Script |
-| ------ | ----------- | ------ |
-| Arbitration Cases | Binding decisions from ArbCom | `fetch_arbitration_cases.py` |
-| Revision History | Edit history with timestamps, users, comments | `fetch_revisions.py` |
-| Edit Wars | Pages with high revert activity | `detect_edit_wars.py` |
-| DRN Cases | Dispute Resolution Noticeboard threads | `fetch_drn_cases.py` |
+| Source | Description |
+| ------ | ----------- |
+| Arbitration Cases | Binding decisions from ArbCom |
+| Revision History | Edit history with timestamps, users, comments |
+| Edit Wars | Pages with high revert activity |
+| DRN Cases | Dispute Resolution Noticeboard threads |
 
-See [`docs/wikimedia_api.md`](docs/wikimedia_api.md) for full API documentation.
+All data collection runs through `scripts/fetch_all.py` or `scripts/fetch_from_config.py`.
+
+See [`docs/wikimedia_api.md`](docs/wikimedia_api.md) for API documentation.
 
 ---
 

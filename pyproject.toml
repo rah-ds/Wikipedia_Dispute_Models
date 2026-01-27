@@ -10,6 +10,7 @@ dependencies = [
     "pywikibot>=9.0.0",
     "mwparserfromhell>=0.6.0",
     "pandas>=2.0.0",
+    "pyyaml>=6.0",
 ]
 
 [project.optional-dependencies]

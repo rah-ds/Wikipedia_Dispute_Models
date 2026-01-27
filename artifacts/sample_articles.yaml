@@ -1,0 +1,83 @@
+# Sample Article Configuration
+# ============================
+# Edit this file to customize which articles are fetched by `make fetch-small`
+# See docs/sample_article_selection.md for selection rationale
+
+# Default settings for all fetches
+defaults:
+  revision_limit: 500  # Number of revisions to fetch per article
+  arb_limit: 5         # Number of arbitration cases to fetch
+
+# High-conflict articles
+# ----------------------
+# Selected based on: edit war history, page protection, ArbCom cases,
+# politically/religiously/scientifically contentious topics
+high_conflict:
+  - title: "Climate change"
+    category: "Science"
+    reason: "Persistent disputes over scientific consensus framing"
+
+  - title: "Donald Trump"
+    category: "Politics/BLP"
+    reason: "One of the most edited/reverted articles on Wikipedia"
+
+  - title: "Israeli–Palestinian conflict"
+    category: "Geopolitics"
+    reason: "Long-running, deeply polarized edit wars"
+
+  - title: "Abortion"
+    category: "Social issues"
+    reason: "Moral/political disputes, multiple ArbCom cases"
+
+  - title: "COVID-19 pandemic"
+    category: "Science/Health"
+    reason: "Misinformation battles, rapidly evolving content"
+
+# Low-conflict articles (control group)
+# -------------------------------------
+# Selected based on: minimal edit warring, non-controversial subject,
+# stable content, collaborative editing patterns
+low_conflict:
+  - title: "Speed of light"
+    category: "Physics"
+    reason: "Settled science, fundamental constant"
+
+  - title: "Pythagorean theorem"
+    category: "Mathematics"
+    reason: "Pure math, universally accepted proof"
+
+  - title: "Mount Everest"
+    category: "Geography"
+    reason: "Physical facts, minimal political disputes"
+
+  - title: "Photosynthesis"
+    category: "Biology"
+    reason: "Fundamental biology, well-established science"
+
+  - title: "Mona Lisa"
+    category: "Art history"
+    reason: "Cultural artifact, non-political subject"
+
+# Additional articles (uncomment to include)
+# ------------------------------------------
+# high_conflict_extra:
+#   - title: "Gamergate (harassment campaign)"
+#     category: "Internet culture"
+#     reason: "Harassment/BLP issues"
+#
+#   - title: "Brexit"
+#     category: "Politics"
+#     reason: "UK/EU political dispute"
+#
+#   - title: "Russo-Ukrainian War"
+#     category: "Geopolitics"
+#     reason: "Ongoing geopolitical conflict"
+#
+# low_conflict_extra:
+#   - title: "Transistor"
+#     category: "Electronics"
+#     reason: "Electronics fundamentals"
+#
+#   - title: "Roman Empire"
+#     category: "History"
+#     reason: "Ancient history"
