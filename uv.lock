@@ -1636,6 +1636,7 @@ dependencies = [
     { name = "mwparserfromhell" },
     { name = "pandas" },
     { name = "pywikibot" },
+    { name = "pyyaml" },
     { name = "requests" },
 ]
 
@@ -1663,6 +1664,7 @@ requires-dist = [
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.0.0" },
     { name = "pywikibot", specifier = ">=9.0.0" },
+    { name = "pyyaml", specifier = ">=6.0" },
     { name = "requests", specifier = ">=2.32.5" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8.0" },
     { name = "seaborn", marker = "extra == 'dev'", specifier = ">=0.13.2" },

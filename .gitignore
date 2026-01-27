@@ -14,13 +14,7 @@ throttle.ctrl
 # Log files
 *.log
 
-# Artifacts - ignore all except results and imgs/publish
-artifacts/models/
-artifacts/imgs/dev/
+# Artifacts - only ignore logs and temporary outputs
 artifacts/logs/
-artifacts/exports/
 
-# Keep these tracked
-!artifacts/results/
-!artifacts/imgs/publish/
 .coverage

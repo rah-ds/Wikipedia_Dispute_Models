@@ -72,18 +72,21 @@ These articles were selected based on:
 
 ## Data Collection
 
+Article selection is configured in `artifacts/sample_articles.yaml`. Edit this file to add or remove articles.
+
 ### Quick Start
 
 ```bash
-make fetch-small
+make fetch-small      # Fetch all articles from config
+make fetch-small-dry  # Preview what would be fetched
 ```
 
 This fetches:
 
-- **500 most recent revisions** for each article (10 articles total)
-- **Edit war analysis** (revert detection, user conflicts, 3RR checks)
-- **5 arbitration cases** (for cross-reference)
-- **Current DRN cases** (Dispute Resolution Noticeboard)
+- Revisions for each article (default: 500 per article)
+- Edit war analysis (revert detection, user conflicts, 3RR checks)
+- Arbitration cases (default: 5)
+- Current DRN cases
 
 ### Individual Commands
 
@@ -93,6 +96,10 @@ uv run python scripts/fetch_all.py --revisions "Article Name" --limit 500
 
 # Run edit war analysis
 uv run python scripts/fetch_all.py --editwar "Article Name"
+
+# Fetch from config with options
+uv run python scripts/fetch_from_config.py --skip-arb  # Skip arbitration
+uv run python scripts/fetch_from_config.py --dry-run   # Preview only
 ```
 
 ---
