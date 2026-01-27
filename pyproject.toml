@@ -10,12 +10,6 @@ dependencies = [
     "pywikibot>=9.0.0",
     "mwparserfromhell>=0.6.0",
     "pandas>=2.0.0",
-    "pytest-cov>=7.0.0",
-    "ipykernel>=7.1.0",
-    "seaborn>=0.13.2",
-    "networkx>=3.6.1",
-    "matplotlib>=3.10.8",
-    "ruff>=0.14.14",
 ]
 
 [project.optional-dependencies]
@@ -24,6 +18,10 @@ dev = [
     "ruff>=0.8.0",
     "pytest>=8.0.0",
     "pytest-cov>=4.0.0",
+    "ipykernel>=7.1.0",
+    "matplotlib>=3.10.8",
+    "seaborn>=0.13.2",
+    "networkx>=3.6.1",
 ]
 
 [tool.pytest.ini_options]
