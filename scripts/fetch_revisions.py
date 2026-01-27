@@ -16,7 +16,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.wiki import WikiClient
-from src.io import save_json, get_output_path, sanitize_filename
+from src.io import save_json, get_output_path, sanitize_filename, check_api_credentials
 
 
 def fetch_revisions(
@@ -71,11 +71,22 @@ def main():
     parser.add_argument("article", help="Article title to fetch")
     parser.add_argument("--no-talk", action="store_true", help="Skip talk page")
     parser.add_argument("--limit", type=int, default=None, help="Max revisions")
+    parser.add_argument("--dry-run", action="store_true", help="Preview what would be fetched without making API calls")
 
     args = parser.parse_args()
 
     print("Fetching Wikipedia Revision History")
     print("=" * 40)
+
+    if args.dry_run:
+        print(f"[DRY RUN] Would fetch revisions for: {args.article}")
+        print(f"[DRY RUN] Include talk page: {not args.no_talk}")
+        print(f"[DRY RUN] Limit: {args.limit or 'all'}")
+        print("[DRY RUN] No API calls made, no files written.")
+        return
+
+    # Check for API credentials
+    check_api_credentials()
 
     client = WikiClient()
     data = fetch_revisions(

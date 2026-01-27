@@ -2,7 +2,79 @@
 
 from __future__ import annotations
 
+import logging
+import time
+from functools import wraps
+from typing import Callable, TypeVar
+
 import pywikibot
+from pywikibot.exceptions import APIError, ServerError
+
+logger = logging.getLogger(__name__)
+
+T = TypeVar("T")
+
+
+def retry_on_rate_limit(
+    max_retries: int = 5,
+    base_delay: float = 1.0,
+    max_delay: float = 60.0,
+) -> Callable[[Callable[..., T]], Callable[..., T]]:
+    """
+    Decorator to retry API calls on rate limit or server errors.
+
+    Uses exponential backoff with jitter.
+
+    Args:
+        max_retries: Maximum number of retry attempts
+        base_delay: Initial delay in seconds
+        max_delay: Maximum delay between retries
+
+    Returns:
+        Decorated function with retry logic
+    """
+    def decorator(func: Callable[..., T]) -> Callable[..., T]:
+        @wraps(func)
+        def wrapper(*args, **kwargs) -> T:
+            last_exception = None
+            for attempt in range(max_retries + 1):
+                try:
+                    return func(*args, **kwargs)
+                except (APIError, ServerError) as e:
+                    last_exception = e
+                    error_code = getattr(e, "code", str(e))
+                    
+                    # Check if it's a rate limit error
+                    if "ratelimit" in str(error_code).lower() or "maxlag" in str(error_code).lower():
+                        if attempt < max_retries:
+                            delay = min(base_delay * (2 ** attempt), max_delay)
+                            logger.warning(
+                                f"Rate limit hit: {error_code}. "
+                                f"Retrying in {delay:.1f}s (attempt {attempt + 1}/{max_retries})"
+                            )
+                            time.sleep(delay)
+                            continue
+                    # Server errors (5xx) - retry with backoff
+                    elif isinstance(e, ServerError):
+                        if attempt < max_retries:
+                            delay = min(base_delay * (2 ** attempt), max_delay)
+                            logger.warning(
+                                f"Server error: {e}. "
+                                f"Retrying in {delay:.1f}s (attempt {attempt + 1}/{max_retries})"
+                            )
+                            time.sleep(delay)
+                            continue
+                    # Non-retryable error
+                    raise
+                except Exception as e:
+                    # Unexpected errors - don't retry
+                    raise
+            
+            # All retries exhausted
+            logger.error(f"Max retries ({max_retries}) exceeded for {func.__name__}")
+            raise last_exception
+        return wrapper
+    return decorator
 
 
 class WikiClient:
@@ -28,6 +100,7 @@ class WikiClient:
         """Get a Wikipedia category by name."""
         return pywikibot.Category(self.site, name)
 
+    @retry_on_rate_limit()
     def get_revisions(
         self,
         title: str,
@@ -65,6 +138,7 @@ class WikiClient:
             )
         return revisions
 
+    @retry_on_rate_limit()
     def get_page_info(self, title: str) -> dict:
         """
         Get basic page information.
@@ -86,6 +160,7 @@ class WikiClient:
             "is_redirect": page.isRedirectPage(),
         }
 
+    @retry_on_rate_limit()
     def get_category_pages(
         self,
         category_name: str,

@@ -123,3 +123,115 @@ def extract_user_conflicts(revisions: list[dict]) -> list[tuple[str, str, int]]:
                 conflicts[pair] += 1
 
     return [(u1, u2, count) for (u1, u2), count in conflicts.most_common()]
+
+
+def detect_3rr_violations(
+    revisions: list[dict],
+    window_hours: int = 24,
+    threshold: int = 3,
+) -> list[dict]:
+    """
+    Detect potential 3RR (Three-Revert Rule) violations.
+
+    A violation occurs when a user makes more than `threshold` reverts
+    on the same article within `window_hours`.
+
+    Args:
+        revisions: List of revision dicts with 'user', 'timestamp', 'is_revert' fields
+        window_hours: Sliding window size in hours (default: 24)
+        threshold: Number of reverts that triggers a violation (default: 3)
+
+    Returns:
+        List of violation dicts with 'user', 'reverts_in_window', 'window_start'
+    """
+    from datetime import datetime, timedelta
+
+    violations = []
+
+    # Filter to reverts only and sort by timestamp
+    revert_revisions = [
+        r for r in revisions
+        if r.get("is_revert") or is_revert(r.get("comment", ""))
+    ]
+
+    # Group by user
+    user_reverts: dict[str, list[datetime]] = {}
+    for rev in revert_revisions:
+        user = rev.get("user")
+        ts_str = rev.get("timestamp")
+        if not user or not ts_str:
+            continue
+        try:
+            ts = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
+        except (ValueError, AttributeError):
+            continue
+        user_reverts.setdefault(user, []).append(ts)
+
+    # Check each user for violations
+    for user, timestamps in user_reverts.items():
+        timestamps.sort()
+        for i, ts in enumerate(timestamps):
+            window_end = ts + timedelta(hours=window_hours)
+            reverts_in_window = sum(1 for t in timestamps if ts <= t < window_end)
+
+            if reverts_in_window > threshold:
+                violations.append({
+                    "user": user,
+                    "reverts_in_window": reverts_in_window,
+                    "window_start": ts.isoformat(),
+                })
+                break  # Only count once per user
+
+    return violations
+
+
+def detect_revert_chains(
+    revisions: list[dict],
+    min_chain_length: int = 3,
+) -> list[dict]:
+    """
+    Detect chains of consecutive reverts (rapid-fire edit warring).
+
+    Args:
+        revisions: List of revision dicts in chronological order
+        min_chain_length: Minimum consecutive reverts to report
+
+    Returns:
+        List of chain dicts with 'start_idx', 'length', 'users', 'timestamps'
+    """
+    chains = []
+    chain_start = None
+    chain_users = []
+    chain_timestamps = []
+
+    for i, rev in enumerate(revisions):
+        is_rev = rev.get("is_revert") or is_revert(rev.get("comment", ""))
+
+        if is_rev:
+            if chain_start is None:
+                chain_start = i
+            chain_users.append(rev.get("user"))
+            chain_timestamps.append(rev.get("timestamp"))
+        else:
+            # Chain broken - check if long enough to report
+            if chain_start is not None and len(chain_users) >= min_chain_length:
+                chains.append({
+                    "start_idx": chain_start,
+                    "length": len(chain_users),
+                    "users": chain_users,
+                    "timestamps": chain_timestamps,
+                })
+            chain_start = None
+            chain_users = []
+            chain_timestamps = []
+
+    # Check final chain
+    if chain_start is not None and len(chain_users) >= min_chain_length:
+        chains.append({
+            "start_idx": chain_start,
+            "length": len(chain_users),
+            "users": chain_users,
+            "timestamps": chain_timestamps,
+        })
+
+    return chains

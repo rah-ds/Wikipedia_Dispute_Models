@@ -13,7 +13,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.wiki import WikiClient
-from src.io import save_json, get_output_path
+from src.io import save_json, get_output_path, check_api_credentials
 
 
 def get_arbitration_cases(client: WikiClient, limit: int = 100) -> list[dict]:
@@ -55,10 +55,19 @@ def get_arbitration_cases(client: WikiClient, limit: int = 100) -> list[dict]:
     return cases
 
 
-def main(limit: int = 50):
+def main(limit: int = 50, dry_run: bool = False):
     """Main entry point."""
     print("Fetching Wikipedia Arbitration Cases")
     print("=" * 40)
+
+    if dry_run:
+        print("[DRY RUN] Would fetch arbitration cases")
+        print(f"[DRY RUN] Limit: {limit}")
+        print("[DRY RUN] No API calls made, no files written.")
+        return
+
+    # Check for API credentials
+    check_api_credentials()
 
     client = WikiClient()
     cases = get_arbitration_cases(client, limit=limit)
@@ -75,10 +84,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Fetch Wikipedia arbitration cases")
     parser.add_argument("--limit", type=int, default=50, help="Max cases to fetch")
+    parser.add_argument("--dry-run", action="store_true", help="Preview what would be fetched without making API calls")
     args = parser.parse_args()
 
-    main(limit=args.limit)
-
-
-if __name__ == "__main__":
-    main()
+    main(limit=args.limit, dry_run=args.dry_run)

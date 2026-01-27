@@ -1,4 +1,4 @@
-.PHONY: install install-dev clean data-dirs help lint fetch-all fetch-arb fetch-drn test test-unit test-cov
+.PHONY: install install-dev clean data-dirs help lint fetch-all fetch-arb fetch-drn fetch-small test test-unit test-cov
 
 # Default target
 help:
@@ -19,6 +19,7 @@ help:
 	@echo ""
 	@echo "Data Collection:"
 	@echo "  fetch-all    Run all data collectors"
+	@echo "  fetch-small  Fetch small sample dataset for testing"
 	@echo "  fetch-arb    Fetch arbitration cases"
 	@echo "  fetch-drn    Fetch DRN cases"
 	@echo ""
@@ -41,18 +42,18 @@ pip-install-dev:
 
 # Linting
 lint:
-	ruff check --fix .
-	ruff format .
+	uv run ruff check --fix .
+	uv run ruff format .
 
 # Testing
 test:
-	pytest tests/ -v
+	uv run pytest tests/ -v
 
 test-unit:
-	pytest tests/ -v -m "not integration"
+	uv run pytest tests/ -v -m "not integration"
 
 test-cov:
-	pytest tests/ -v --cov=src --cov-report=term-missing
+	uv run pytest tests/ -v --cov=src --cov-report=term-missing
 
 # Create data directories
 data-dirs:
@@ -67,13 +68,33 @@ data-dirs:
 
 # Data collection targets
 fetch-all: data-dirs
-	python scripts/fetch_all.py --all
+	uv run python scripts/fetch_all.py --all
+
+fetch-small: data-dirs
+	@echo "Fetching small sample dataset..."
+	@echo ""
+	@echo "=== Arbitration Cases (5) ==="
+	uv run python scripts/fetch_all.py --arb --limit 5
+	@echo ""
+	@echo "=== DRN Cases ==="
+	uv run python scripts/fetch_all.py --drn
+	@echo ""
+	@echo "=== Sample Article Revisions ==="
+	uv run python scripts/fetch_all.py --revisions "Climate change" --limit 100
+	uv run python scripts/fetch_all.py --revisions "Abortion" --limit 100
+	uv run python scripts/fetch_all.py --revisions "Donald Trump" --limit 100
+	@echo ""
+	@echo "=== Edit War Analysis ==="
+	uv run python scripts/fetch_all.py --editwar "Climate change"
+	uv run python scripts/fetch_all.py --editwar "Abortion"
+	@echo ""
+	@echo "Sample dataset complete!"
 
 fetch-arb: data-dirs
-	python scripts/fetch_all.py --arb
+	uv run python scripts/fetch_all.py --arb
 
 fetch-drn: data-dirs
-	python scripts/fetch_all.py --drn
+	uv run python scripts/fetch_all.py --drn
 
 # Clean generated files
 clean:
