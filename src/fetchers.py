@@ -3,21 +3,28 @@
 from __future__ import annotations
 
 import re
+import time
 from datetime import datetime
 
 import mwparserfromhell
+from tqdm import tqdm
 
 from src.wiki import WikiClient
 from src.analysis import analyze_edit_war
 
 
-def fetch_arbitration_cases(client: WikiClient, limit: int = 100) -> list[dict]:
+def fetch_arbitration_cases(
+    client: WikiClient,
+    limit: int = 100,
+    delay: float = 1.0,
+) -> list[dict]:
     """
     Fetch arbitration cases from Wikipedia.
 
     Args:
         client: WikiClient instance
         limit: Maximum number of cases to fetch
+        delay: Seconds to wait between fetches (rate limiting)
 
     Returns:
         List of case dictionaries with title, revisions, and content
@@ -25,9 +32,7 @@ def fetch_arbitration_cases(client: WikiClient, limit: int = 100) -> list[dict]:
     pages = client.get_category_pages("Wikipedia arbitration cases", limit=limit)
 
     cases = []
-    for page in pages:
-        print(f"Fetching: {page.title()}")
-
+    for page in tqdm(pages, desc="Arbitration cases", unit="case"):
         case_data = {
             "title": page.title(),
             "url": page.full_url(),
@@ -42,10 +47,11 @@ def fetch_arbitration_cases(client: WikiClient, limit: int = 100) -> list[dict]:
                 case_data["last_edit"] = case_data["revisions"][0]["timestamp"]
             case_data["content"] = page.text
         except Exception as e:
-            print(f"  Error: {e}")
+            tqdm.write(f"  Error fetching {page.title()}: {e}")
             case_data["error"] = str(e)
 
         cases.append(case_data)
+        time.sleep(delay)  # Rate limiting
 
     return cases
 
@@ -57,7 +63,7 @@ def fetch_drn_page(client: WikiClient) -> dict:
     if not page.exists():
         raise ValueError("DRN page not found")
 
-    print(f"Fetching: {page.title()}")
+    tqdm.write(f"Fetching: {page.title()}")
 
     return {
         "title": page.title(),
@@ -161,7 +167,7 @@ def fetch_revisions(
         "fetched_at": datetime.now().isoformat(),
     }
 
-    print(f"Fetched {len(data['article']['revisions'])} revisions for {info['title']}")
+    tqdm.write(f"  {info['title']}: {len(data['article']['revisions'])} revisions")
 
     if include_talk:
         talk = client.get_talk_page(article_title)
@@ -171,7 +177,7 @@ def fetch_revisions(
                 "url": talk.full_url(),
                 "revisions": client.get_revisions(talk.title(), limit=limit),
             }
-            print(f"Fetched {len(data['talk']['revisions'])} talk page revisions")
+            tqdm.write(f"  {talk.title()}: {len(data['talk']['revisions'])} revisions")
 
     return data
 
@@ -194,13 +200,14 @@ def analyze_article_edit_war(
     Returns:
         Dictionary with analysis results
     """
-    print(f"Analyzing: {article_title}")
-
     info = client.get_page_info(article_title)
     revisions = client.get_revisions(article_title, limit=lookback)
     protection = client.get_page_protection(article_title)
 
     metrics = analyze_edit_war(revisions, threshold=threshold)
+
+    status = "⚠️ WAR" if metrics["edit_war_detected"] else "✓"
+    tqdm.write(f"  {info['title']}: {metrics['revert_ratio']:.1%} reverts {status}")
 
     return {
         "title": info["title"],
