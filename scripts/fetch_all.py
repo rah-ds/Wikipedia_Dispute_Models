@@ -12,6 +12,7 @@ Usage:
 
 import argparse
 import logging
+import signal
 import sys
 from pathlib import Path
 
@@ -37,6 +38,27 @@ from src.fetchers import (
 
 # Initialize logger (will be configured in main)
 logger: logging.Logger | None = None
+
+# Globals for graceful shutdown
+_client: WikiClient | None = None
+
+
+def shutdown_handler(signum, frame):
+    """Handle Ctrl+C gracefully - log stats before exit."""
+    print("\n\n⚠️  Interrupted! Logging stats before exit...")
+    if _client:
+        _client.log_stats()
+        stats = _client.get_stats()
+        print(
+            f"📊 API Stats: {stats['total_requests']} requests in {stats['runtime_minutes']:.1f} min"
+        )
+    if logger:
+        logger.info("Fetch interrupted by user")
+    sys.exit(130)
+
+
+# Register signal handler
+signal.signal(signal.SIGINT, shutdown_handler)
 
 
 def run_arbitration(client: WikiClient, limit: int = 50):
@@ -188,6 +210,10 @@ def main():
 
     client = WikiClient()
 
+    # Set global for shutdown handler
+    global _client
+    _client = client
+
     if run_all or args.arb:
         run_arbitration(client, limit=args.limit)
 
@@ -199,6 +225,13 @@ def main():
 
     if args.editwar:
         run_editwar(client, args.editwar, threshold=args.threshold)
+
+    # Log API stats
+    client.log_stats()
+    stats = client.get_stats()
+    print(
+        f"\n📊 API Stats: {stats['total_requests']} requests in {stats['runtime_minutes']:.1f} min"
+    )
 
     logger.info("=" * 50)
     logger.info("COMPLETE")
