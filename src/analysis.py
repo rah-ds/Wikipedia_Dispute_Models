@@ -174,20 +174,27 @@ def detect_3rr_violations(
             continue
         user_reverts.setdefault(user, []).append(ts)
 
-    # Check each user for violations
+    # Check each user for violations - find the worst violation per user
     for user, timestamps in user_reverts.items():
         timestamps.sort()
+        worst_violation = None
+        max_reverts = threshold  # Only report if exceeds threshold
+        
         for i, ts in enumerate(timestamps):
             window_end = ts + timedelta(hours=window_hours)
             reverts_in_window = sum(1 for t in timestamps if ts <= t < window_end)
 
-            if reverts_in_window > threshold:
-                violations.append({
+            if reverts_in_window > max_reverts:
+                max_reverts = reverts_in_window
+                worst_violation = {
                     "user": user,
                     "reverts_in_window": reverts_in_window,
                     "window_start": ts.isoformat(),
-                })
-                break  # Only count once per user
+                }
+        
+        # Add the worst violation for this user, if any
+        if worst_violation:
+            violations.append(worst_violation)
 
     return violations
 
