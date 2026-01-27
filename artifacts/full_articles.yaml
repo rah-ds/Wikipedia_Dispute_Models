@@ -6,7 +6,7 @@
 # Settings for full data collection
 defaults:
   revision_limit: 2000  # More revisions per article for deeper analysis
-  arb_limit: 50         # More arbitration cases
+  arb_limit: 500        # Comprehensive arbitration case coverage
 
 # High-conflict articles (contentious topics with edit war history)
 # -----------------------------------------------------------------
