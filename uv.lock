@@ -1633,43 +1633,39 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "datetime" },
-    { name = "ipykernel" },
-    { name = "matplotlib" },
     { name = "mwparserfromhell" },
-    { name = "networkx" },
     { name = "pandas" },
-    { name = "pytest-cov" },
     { name = "pywikibot" },
     { name = "requests" },
-    { name = "ruff" },
-    { name = "seaborn" },
 ]
 
 [package.optional-dependencies]
 dev = [
+    { name = "ipykernel" },
+    { name = "matplotlib" },
+    { name = "networkx" },
     { name = "pre-commit" },
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "ruff" },
+    { name = "seaborn" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "datetime", specifier = ">=6.0" },
-    { name = "ipykernel", specifier = ">=7.1.0" },
-    { name = "matplotlib", specifier = ">=3.10.8" },
+    { name = "ipykernel", marker = "extra == 'dev'", specifier = ">=7.1.0" },
+    { name = "matplotlib", marker = "extra == 'dev'", specifier = ">=3.10.8" },
     { name = "mwparserfromhell", specifier = ">=0.6.0" },
-    { name = "networkx", specifier = ">=3.6.1" },
+    { name = "networkx", marker = "extra == 'dev'", specifier = ">=3.6.1" },
     { name = "pandas", specifier = ">=2.0.0" },
     { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=3.6.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
-    { name = "pytest-cov", specifier = ">=7.0.0" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.0.0" },
     { name = "pywikibot", specifier = ">=9.0.0" },
     { name = "requests", specifier = ">=2.32.5" },
-    { name = "ruff", specifier = ">=0.14.14" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8.0" },
-    { name = "seaborn", specifier = ">=0.13.2" },
+    { name = "seaborn", marker = "extra == 'dev'", specifier = ">=0.13.2" },
 ]
 provides-extras = ["dev"]
 
