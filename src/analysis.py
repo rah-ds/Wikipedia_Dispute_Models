@@ -134,9 +134,8 @@ def detect_3rr_violations(
     Detect potential 3RR (Three-Revert Rule) violations.
 
     A violation occurs when a user makes more than `threshold` reverts
-    on the same article within `window_hours`. For each user with violations,
-    only the worst violation (window with the most reverts) is reported to
-    avoid duplicate/overlapping violation reports.
+    on the same article within `window_hours`. Reports only the first
+    violation found per user (the earliest window that exceeds threshold).
 
     Args:
         revisions: List of revision dicts with 'user', 'timestamp', 'is_revert' fields
@@ -145,10 +144,12 @@ def detect_3rr_violations(
 
     Returns:
         List of violation dicts with 'user', 'reverts_in_window', 'window_start'.
-        Each user appears at most once, with their worst (highest count) violation.
+        Each user appears at most once in the list.
     """
     from datetime import datetime, timedelta
+    import logging
 
+    logger = logging.getLogger(__name__)
     violations = []
 
     # Filter to reverts only and sort by timestamp
@@ -166,7 +167,10 @@ def detect_3rr_violations(
             continue
         try:
             ts = datetime.fromisoformat(ts_str.replace("Z", "+00:00"))
-        except (ValueError, AttributeError):
+        except (ValueError, AttributeError) as e:
+            logger.warning(
+                f"Could not parse timestamp '{ts_str}' for user '{user}': {e}"
+            )
             continue
         user_reverts.setdefault(user, []).append(ts)
 

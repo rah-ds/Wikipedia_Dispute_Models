@@ -62,9 +62,10 @@ def check_api_credentials(logger: logging.Logger | None = None) -> bool:
         logger.warning("")
         logger.warning("To get better rate limits:")
         logger.warning("  1. Create a Wikimedia account: https://en.wikipedia.org/wiki/Special:CreateAccount")
-        logger.warning("  2. Get API credentials: https://api.wikimedia.org/wiki/Getting_started")
-        logger.warning("  3. Set WIKI_API_KEY in your .env file")
-        logger.warning("  4. Or configure pywikibot: https://www.mediawiki.org/wiki/Manual:Pywikibot/user-config.py")
+        logger.warning("  2. For Pywikibot, configure authentication (bot password or OAuth) via user-config.py:")
+        logger.warning("     https://www.mediawiki.org/wiki/Manual:Pywikibot/user-config.py")
+        logger.warning("  3. If this project uses an API key-based client, store the key (e.g. WIKI_API_KEY) in your .env file and")
+        logger.warning("     ensure your client code reads it when calling the Wikimedia API.")
         logger.warning("=" * 70)
     
     return has_credentials
