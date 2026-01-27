@@ -134,7 +134,9 @@ def detect_3rr_violations(
     Detect potential 3RR (Three-Revert Rule) violations.
 
     A violation occurs when a user makes more than `threshold` reverts
-    on the same article within `window_hours`.
+    on the same article within `window_hours`. For each user with violations,
+    only the worst violation (window with the most reverts) is reported to
+    avoid duplicate/overlapping violation reports.
 
     Args:
         revisions: List of revision dicts with 'user', 'timestamp', 'is_revert' fields
@@ -142,7 +144,8 @@ def detect_3rr_violations(
         threshold: Number of reverts that triggers a violation (default: 3)
 
     Returns:
-        List of violation dicts with 'user', 'reverts_in_window', 'window_start'
+        List of violation dicts with 'user', 'reverts_in_window', 'window_start'.
+        Each user appears at most once, with their worst (highest count) violation.
     """
     from datetime import datetime, timedelta
 
@@ -167,20 +170,27 @@ def detect_3rr_violations(
             continue
         user_reverts.setdefault(user, []).append(ts)
 
-    # Check each user for violations
+    # Check each user for violations - find the worst violation per user
     for user, timestamps in user_reverts.items():
         timestamps.sort()
+        worst_violation = None
+        max_reverts = threshold  # Only report if exceeds threshold
+        
         for i, ts in enumerate(timestamps):
             window_end = ts + timedelta(hours=window_hours)
             reverts_in_window = sum(1 for t in timestamps if ts <= t < window_end)
 
-            if reverts_in_window > threshold:
-                violations.append({
+            if reverts_in_window > max_reverts:
+                max_reverts = reverts_in_window
+                worst_violation = {
                     "user": user,
                     "reverts_in_window": reverts_in_window,
                     "window_start": ts.isoformat(),
-                })
-                break  # Only count once per user
+                }
+        
+        # Add the worst violation for this user, if any
+        if worst_violation:
+            violations.append(worst_violation)
 
     return violations
 
