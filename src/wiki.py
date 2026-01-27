@@ -72,7 +72,9 @@ def retry_on_rate_limit(
             
             # All retries exhausted
             logger.error(f"Max retries ({max_retries}) exceeded for {func.__name__}")
-            raise last_exception
+            if last_exception is not None:
+                raise last_exception
+            raise RuntimeError(f"Max retries ({max_retries}) exceeded for {func.__name__}")
         return wrapper
     return decorator
 
