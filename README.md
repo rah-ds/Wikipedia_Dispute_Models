@@ -47,6 +47,12 @@ See `make help` for all available targets.
 See [`docs/sample_article_selection.md`](docs/sample_article_selection.md) for article selection rationale.
 
 
+when running with a mac use caffeinate to prevent sleep:
+
+```bash
+caffeinate -i make fetch-full
+```
+
 ---
 
 ## Data Sources
