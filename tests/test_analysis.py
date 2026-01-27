@@ -243,6 +243,36 @@ class TestDetect3RRViolations:
     def test_empty_revisions(self):
         assert detect_3rr_violations([]) == []
 
+    def test_reports_worst_violation_per_user(self):
+        """Should report the worst (highest count) violation window per user."""
+        from datetime import datetime, timedelta
+        
+        base_time = datetime(2025, 1, 1, 12, 0, 0)
+        # User has 4 reverts in first window, then 6 reverts in a later window
+        revisions = [
+            # First window: 4 reverts in hours 0-3
+            {"user": "PowerEditor", "timestamp": (base_time + timedelta(hours=0)).isoformat() + "Z", "is_revert": True},
+            {"user": "PowerEditor", "timestamp": (base_time + timedelta(hours=1)).isoformat() + "Z", "is_revert": True},
+            {"user": "PowerEditor", "timestamp": (base_time + timedelta(hours=2)).isoformat() + "Z", "is_revert": True},
+            {"user": "PowerEditor", "timestamp": (base_time + timedelta(hours=3)).isoformat() + "Z", "is_revert": True},
+            # Gap
+            # Second window: 6 reverts in hours 30-35 (worse violation)
+            {"user": "PowerEditor", "timestamp": (base_time + timedelta(hours=30)).isoformat() + "Z", "is_revert": True},
+            {"user": "PowerEditor", "timestamp": (base_time + timedelta(hours=31)).isoformat() + "Z", "is_revert": True},
+            {"user": "PowerEditor", "timestamp": (base_time + timedelta(hours=32)).isoformat() + "Z", "is_revert": True},
+            {"user": "PowerEditor", "timestamp": (base_time + timedelta(hours=33)).isoformat() + "Z", "is_revert": True},
+            {"user": "PowerEditor", "timestamp": (base_time + timedelta(hours=34)).isoformat() + "Z", "is_revert": True},
+            {"user": "PowerEditor", "timestamp": (base_time + timedelta(hours=35)).isoformat() + "Z", "is_revert": True},
+        ]
+        violations = detect_3rr_violations(revisions)
+        
+        # Should report only ONE violation for PowerEditor, with the highest count (6)
+        assert len(violations) == 1
+        assert violations[0]["user"] == "PowerEditor"
+        assert violations[0]["reverts_in_window"] == 6
+        # Should be from the second window (check just the date/time portion)
+        assert violations[0]["window_start"].startswith("2025-01-02T18:00:00")
+
 
 class TestDetectRevertChains:
     """Tests for detect_revert_chains function."""
