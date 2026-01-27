@@ -18,36 +18,15 @@ REVERT_KEYWORDS = [
 
 
 def is_revert(comment: str) -> bool:
-    """
-    Check if an edit comment indicates a revert.
-
-    Args:
-        comment: Edit summary text
-
-    Returns:
-        True if comment suggests a revert
-    """
+    """Check if an edit comment indicates a revert."""
     if not comment:
         return False
-    comment_lower = comment.lower()
-    return any(kw in comment_lower for kw in REVERT_KEYWORDS)
+    return any(kw in comment.lower() for kw in REVERT_KEYWORDS)
 
 
 def detect_reverts(revisions: list[dict]) -> list[dict]:
-    """
-    Identify reverts in a list of revisions.
-
-    Args:
-        revisions: List of revision dictionaries with 'comment' field
-
-    Returns:
-        List of revisions flagged as reverts
-    """
-    reverts = []
-    for rev in revisions:
-        if is_revert(rev.get("comment", "")):
-            reverts.append(rev)
-    return reverts
+    """Return revisions that are reverts (based on comment)."""
+    return [r for r in revisions if is_revert(r.get("comment", ""))]
 
 
 def analyze_edit_war(
@@ -154,8 +133,7 @@ def detect_3rr_violations(
 
     # Filter to reverts only and sort by timestamp
     revert_revisions = [
-        r for r in revisions
-        if r.get("is_revert") or is_revert(r.get("comment", ""))
+        r for r in revisions if r.get("is_revert") or is_revert(r.get("comment", ""))
     ]
 
     # Group by user
@@ -179,7 +157,7 @@ def detect_3rr_violations(
         timestamps.sort()
         worst_violation = None
         max_reverts = threshold  # Only report if exceeds threshold
-        
+
         for i, ts in enumerate(timestamps):
             window_end = ts + timedelta(hours=window_hours)
             reverts_in_window = sum(1 for t in timestamps if ts <= t < window_end)
@@ -191,7 +169,7 @@ def detect_3rr_violations(
                     "reverts_in_window": reverts_in_window,
                     "window_start": ts.isoformat(),
                 }
-        
+
         # Add the worst violation for this user, if any
         if worst_violation:
             violations.append(worst_violation)
@@ -229,23 +207,27 @@ def detect_revert_chains(
         else:
             # Chain broken - check if long enough to report
             if chain_start is not None and len(chain_users) >= min_chain_length:
-                chains.append({
-                    "start_idx": chain_start,
-                    "length": len(chain_users),
-                    "users": chain_users,
-                    "timestamps": chain_timestamps,
-                })
+                chains.append(
+                    {
+                        "start_idx": chain_start,
+                        "length": len(chain_users),
+                        "users": chain_users,
+                        "timestamps": chain_timestamps,
+                    }
+                )
             chain_start = None
             chain_users = []
             chain_timestamps = []
 
     # Check final chain
     if chain_start is not None and len(chain_users) >= min_chain_length:
-        chains.append({
-            "start_idx": chain_start,
-            "length": len(chain_users),
-            "users": chain_users,
-            "timestamps": chain_timestamps,
-        })
+        chains.append(
+            {
+                "start_idx": chain_start,
+                "length": len(chain_users),
+                "users": chain_users,
+                "timestamps": chain_timestamps,
+            }
+        )
 
     return chains

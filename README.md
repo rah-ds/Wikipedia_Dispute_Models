@@ -34,12 +34,17 @@ git clone https://github.com/rah-ds/Wikipedia_Dispute_Models.git
 cd Wikipedia_Dispute_Models
 make install-dev
 
-# Fetch data
-make fetch-arb
-make fetch-drn
+# Fetch sample data (high + low conflict articles)
+make fetch-small
+
+# Or fetch specific data types
+make fetch-arb   # Arbitration cases
+make fetch-drn   # DRN cases
 ```
 
 See `make help` for all available targets.
+
+See [`docs/sample_article_selection.md`](docs/sample_article_selection.md) for article selection rationale.
 
 
 ---

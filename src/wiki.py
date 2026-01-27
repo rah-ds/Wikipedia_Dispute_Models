@@ -33,6 +33,7 @@ def retry_on_rate_limit(
     Returns:
         Decorated function with retry logic
     """
+
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
         @wraps(func)
         def wrapper(*args, **kwargs) -> T:
@@ -43,11 +44,14 @@ def retry_on_rate_limit(
                 except (APIError, ServerError) as e:
                     last_exception = e
                     error_code = getattr(e, "code", str(e))
-                    
+
                     # Check if it's a rate limit error
-                    if "ratelimit" in str(error_code).lower() or "maxlag" in str(error_code).lower():
+                    if (
+                        "ratelimit" in str(error_code).lower()
+                        or "maxlag" in str(error_code).lower()
+                    ):
                         if attempt < max_retries:
-                            delay = min(base_delay * (2 ** attempt), max_delay)
+                            delay = min(base_delay * (2**attempt), max_delay)
                             logger.warning(
                                 f"Rate limit hit: {error_code}. "
                                 f"Retrying in {delay:.1f}s (attempt {attempt + 1}/{max_retries})"
@@ -57,7 +61,7 @@ def retry_on_rate_limit(
                     # Server errors (5xx) - retry with backoff
                     elif isinstance(e, ServerError):
                         if attempt < max_retries:
-                            delay = min(base_delay * (2 ** attempt), max_delay)
+                            delay = min(base_delay * (2**attempt), max_delay)
                             logger.warning(
                                 f"Server error: {e}. "
                                 f"Retrying in {delay:.1f}s (attempt {attempt + 1}/{max_retries})"
@@ -66,16 +70,20 @@ def retry_on_rate_limit(
                             continue
                     # Non-retryable error
                     raise
-                except Exception as e:
+                except Exception:
                     # Unexpected errors - don't retry
                     raise
-            
+
             # All retries exhausted
             logger.error(f"Max retries ({max_retries}) exceeded for {func.__name__}")
             if last_exception is not None:
                 raise last_exception
-            raise RuntimeError(f"Max retries ({max_retries}) exceeded for {func.__name__}")
+            raise RuntimeError(
+                f"Max retries ({max_retries}) exceeded for {func.__name__}"
+            )
+
         return wrapper
+
     return decorator
 
 
