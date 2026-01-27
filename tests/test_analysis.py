@@ -156,7 +156,7 @@ class TestExtractUserConflicts:
             {"user": "Alice", "comment": "Edit", "is_revert": False},
         ]
         conflicts = extract_user_conflicts(revisions)
-        
+
         # Should have two pairs: Charlie-Dave and Alice-Bob
         assert len(conflicts) == 2
         users_in_conflicts = set()
@@ -172,7 +172,7 @@ class TestExtractUserConflicts:
             {"user": "Alice", "comment": "Bad edit"},
         ]
         conflicts = extract_user_conflicts(revisions)
-        
+
         assert len(conflicts) == 1
         assert "Alice" in conflicts[0][:2]
         assert "Bob" in conflicts[0][:2]
@@ -190,7 +190,7 @@ class TestExtractUserConflicts:
             {"user": "Charlie", "comment": "Edit", "is_revert": False},
         ]
         conflicts = extract_user_conflicts(revisions)
-        
+
         # Alice-Bob should be first with 3, Charlie-Dave second with 1
         assert len(conflicts) == 2
         assert conflicts[0][2] >= conflicts[1][2]  # Sorted descending
@@ -202,14 +202,18 @@ class TestDetect3RRViolations:
     def test_detects_violation(self):
         """User with 4 reverts in 24h should be flagged."""
         from datetime import datetime, timedelta
-        
+
         base_time = datetime(2025, 1, 1, 12, 0, 0)
         revisions = [
-            {"user": "WarEditor", "timestamp": (base_time + timedelta(hours=i)).isoformat() + "Z", "is_revert": True}
+            {
+                "user": "WarEditor",
+                "timestamp": (base_time + timedelta(hours=i)).isoformat() + "Z",
+                "is_revert": True,
+            }
             for i in range(4)
         ]
         violations = detect_3rr_violations(revisions)
-        
+
         assert len(violations) == 1
         assert violations[0]["user"] == "WarEditor"
         assert violations[0]["reverts_in_window"] == 4
@@ -217,27 +221,35 @@ class TestDetect3RRViolations:
     def test_no_violation_under_threshold(self):
         """3 reverts in 24h should NOT be flagged (need > 3)."""
         from datetime import datetime, timedelta
-        
+
         base_time = datetime(2025, 1, 1, 12, 0, 0)
         revisions = [
-            {"user": "NormalUser", "timestamp": (base_time + timedelta(hours=i)).isoformat() + "Z", "is_revert": True}
+            {
+                "user": "NormalUser",
+                "timestamp": (base_time + timedelta(hours=i)).isoformat() + "Z",
+                "is_revert": True,
+            }
             for i in range(3)
         ]
         violations = detect_3rr_violations(revisions)
-        
+
         assert len(violations) == 0
 
     def test_no_violation_outside_window(self):
         """4 reverts spread over >24h should NOT be flagged."""
         from datetime import datetime, timedelta
-        
+
         base_time = datetime(2025, 1, 1, 12, 0, 0)
         revisions = [
-            {"user": "SpreadUser", "timestamp": (base_time + timedelta(hours=i*10)).isoformat() + "Z", "is_revert": True}
+            {
+                "user": "SpreadUser",
+                "timestamp": (base_time + timedelta(hours=i * 10)).isoformat() + "Z",
+                "is_revert": True,
+            }
             for i in range(4)
         ]
         violations = detect_3rr_violations(revisions)
-        
+
         assert len(violations) == 0
 
     def test_empty_revisions(self):
@@ -246,26 +258,66 @@ class TestDetect3RRViolations:
     def test_reports_worst_violation_per_user(self):
         """Should report the worst (highest count) violation window per user."""
         from datetime import datetime, timedelta
-        
+
         base_time = datetime(2025, 1, 1, 12, 0, 0)
         # User has 4 reverts in first window, then 6 reverts in a later window
         revisions = [
             # First window: 4 reverts in hours 0-3
-            {"user": "PowerEditor", "timestamp": (base_time + timedelta(hours=0)).isoformat() + "Z", "is_revert": True},
-            {"user": "PowerEditor", "timestamp": (base_time + timedelta(hours=1)).isoformat() + "Z", "is_revert": True},
-            {"user": "PowerEditor", "timestamp": (base_time + timedelta(hours=2)).isoformat() + "Z", "is_revert": True},
-            {"user": "PowerEditor", "timestamp": (base_time + timedelta(hours=3)).isoformat() + "Z", "is_revert": True},
+            {
+                "user": "PowerEditor",
+                "timestamp": (base_time + timedelta(hours=0)).isoformat() + "Z",
+                "is_revert": True,
+            },
+            {
+                "user": "PowerEditor",
+                "timestamp": (base_time + timedelta(hours=1)).isoformat() + "Z",
+                "is_revert": True,
+            },
+            {
+                "user": "PowerEditor",
+                "timestamp": (base_time + timedelta(hours=2)).isoformat() + "Z",
+                "is_revert": True,
+            },
+            {
+                "user": "PowerEditor",
+                "timestamp": (base_time + timedelta(hours=3)).isoformat() + "Z",
+                "is_revert": True,
+            },
             # Gap
             # Second window: 6 reverts in hours 30-35 (worse violation)
-            {"user": "PowerEditor", "timestamp": (base_time + timedelta(hours=30)).isoformat() + "Z", "is_revert": True},
-            {"user": "PowerEditor", "timestamp": (base_time + timedelta(hours=31)).isoformat() + "Z", "is_revert": True},
-            {"user": "PowerEditor", "timestamp": (base_time + timedelta(hours=32)).isoformat() + "Z", "is_revert": True},
-            {"user": "PowerEditor", "timestamp": (base_time + timedelta(hours=33)).isoformat() + "Z", "is_revert": True},
-            {"user": "PowerEditor", "timestamp": (base_time + timedelta(hours=34)).isoformat() + "Z", "is_revert": True},
-            {"user": "PowerEditor", "timestamp": (base_time + timedelta(hours=35)).isoformat() + "Z", "is_revert": True},
+            {
+                "user": "PowerEditor",
+                "timestamp": (base_time + timedelta(hours=30)).isoformat() + "Z",
+                "is_revert": True,
+            },
+            {
+                "user": "PowerEditor",
+                "timestamp": (base_time + timedelta(hours=31)).isoformat() + "Z",
+                "is_revert": True,
+            },
+            {
+                "user": "PowerEditor",
+                "timestamp": (base_time + timedelta(hours=32)).isoformat() + "Z",
+                "is_revert": True,
+            },
+            {
+                "user": "PowerEditor",
+                "timestamp": (base_time + timedelta(hours=33)).isoformat() + "Z",
+                "is_revert": True,
+            },
+            {
+                "user": "PowerEditor",
+                "timestamp": (base_time + timedelta(hours=34)).isoformat() + "Z",
+                "is_revert": True,
+            },
+            {
+                "user": "PowerEditor",
+                "timestamp": (base_time + timedelta(hours=35)).isoformat() + "Z",
+                "is_revert": True,
+            },
         ]
         violations = detect_3rr_violations(revisions)
-        
+
         # Should report only ONE violation for PowerEditor, with the highest count (6)
         assert len(violations) == 1
         assert violations[0]["user"] == "PowerEditor"
@@ -281,13 +333,28 @@ class TestDetectRevertChains:
         """3+ consecutive reverts should be detected."""
         revisions = [
             {"user": "Alice", "comment": "Normal edit", "is_revert": False},
-            {"user": "Bob", "comment": "Reverted", "is_revert": True, "timestamp": "2025-01-01T01:00:00Z"},
-            {"user": "Alice", "comment": "Reverted back", "is_revert": True, "timestamp": "2025-01-01T02:00:00Z"},
-            {"user": "Bob", "comment": "Reverted again", "is_revert": True, "timestamp": "2025-01-01T03:00:00Z"},
+            {
+                "user": "Bob",
+                "comment": "Reverted",
+                "is_revert": True,
+                "timestamp": "2025-01-01T01:00:00Z",
+            },
+            {
+                "user": "Alice",
+                "comment": "Reverted back",
+                "is_revert": True,
+                "timestamp": "2025-01-01T02:00:00Z",
+            },
+            {
+                "user": "Bob",
+                "comment": "Reverted again",
+                "is_revert": True,
+                "timestamp": "2025-01-01T03:00:00Z",
+            },
             {"user": "Charlie", "comment": "Normal edit", "is_revert": False},
         ]
         chains = detect_revert_chains(revisions, min_chain_length=3)
-        
+
         assert len(chains) == 1
         assert chains[0]["length"] == 3
         assert set(chains[0]["users"]) == {"Alice", "Bob"}
@@ -300,7 +367,7 @@ class TestDetectRevertChains:
             {"user": "Charlie", "comment": "Normal edit", "is_revert": False},
         ]
         chains = detect_revert_chains(revisions, min_chain_length=3)
-        
+
         assert len(chains) == 0
 
     def test_empty_revisions(self):
@@ -318,5 +385,5 @@ class TestDetectRevertChains:
             {"user": "D", "comment": "Reverted", "is_revert": True, "timestamp": "T6"},
         ]
         chains = detect_revert_chains(revisions, min_chain_length=3)
-        
+
         assert len(chains) == 2

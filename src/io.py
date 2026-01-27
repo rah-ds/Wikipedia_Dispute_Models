@@ -20,35 +20,35 @@ def check_api_credentials(logger: logging.Logger | None = None) -> bool:
     Check if Wikimedia API credentials are configured and warn if not.
 
     Looks for environment variables or pywikibot user-config.py.
-    
+
     Args:
         logger: Logger instance for warnings. If None, uses module logger.
-    
+
     Returns:
         True if credentials appear to be configured, False otherwise.
     """
     if logger is None:
         logger = logging.getLogger(__name__)
-    
+
     # Check for common API credential indicators
     has_credentials = False
-    
+
     # Check environment variables
     if os.environ.get("WIKI_API_KEY") or os.environ.get("PYWIKIBOT_PASSWORD"):
         has_credentials = True
-    
+
     # Check for pywikibot user-config.py
     user_config = Path.home() / ".pywikibot" / "user-config.py"
     if user_config.exists():
         has_credentials = True
-    
+
     # Check for .env file with credentials
     env_file = PROJECT_ROOT / ".env"
     if env_file.exists():
         content = env_file.read_text()
         if "WIKI_API_KEY" in content or "PYWIKIBOT" in content:
             has_credentials = True
-    
+
     if not has_credentials:
         logger.warning("=" * 70)
         logger.warning("⚠️  NO WIKIMEDIA API CREDENTIALS DETECTED")
@@ -61,13 +61,23 @@ def check_api_credentials(logger: logging.Logger | None = None) -> bool:
         logger.warning("  • May be blocked during high-traffic periods")
         logger.warning("")
         logger.warning("To get better rate limits:")
-        logger.warning("  1. Create a Wikimedia account: https://en.wikipedia.org/wiki/Special:CreateAccount")
-        logger.warning("  2. For Pywikibot, configure authentication (bot password or OAuth) via user-config.py:")
-        logger.warning("     https://www.mediawiki.org/wiki/Manual:Pywikibot/user-config.py")
-        logger.warning("  3. If this project uses an API key-based client, store the key (e.g. WIKI_API_KEY) in your .env file and")
-        logger.warning("     ensure your client code reads it when calling the Wikimedia API.")
+        logger.warning(
+            "  1. Create a Wikimedia account: https://en.wikipedia.org/wiki/Special:CreateAccount"
+        )
+        logger.warning(
+            "  2. For Pywikibot, configure authentication (bot password or OAuth) via user-config.py:"
+        )
+        logger.warning(
+            "     https://www.mediawiki.org/wiki/Manual:Pywikibot/user-config.py"
+        )
+        logger.warning(
+            "  3. If this project uses an API key-based client, store the key (e.g. WIKI_API_KEY) in your .env file and"
+        )
+        logger.warning(
+            "     ensure your client code reads it when calling the Wikimedia API."
+        )
         logger.warning("=" * 70)
-    
+
     return has_credentials
 
 
@@ -91,7 +101,7 @@ def setup_logging(
     """
     if log_dir is None:
         log_dir = DATA_PULL_LOGS_DIR
-    
+
     log_dir.mkdir(parents=True, exist_ok=True)
 
     if log_file is None:

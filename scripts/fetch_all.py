@@ -15,12 +15,25 @@ import logging
 import sys
 from pathlib import Path
 
-# Add src and scripts to path for imports
+# Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
-sys.path.insert(0, str(Path(__file__).parent))
 
 from src.wiki import WikiClient
-from src.io import save_json, get_output_path, sanitize_filename, setup_logging, check_api_credentials
+from src.io import (
+    save_json,
+    get_output_path,
+    sanitize_filename,
+    setup_logging,
+    check_api_credentials,
+)
+from src.fetchers import (
+    fetch_arbitration_cases,
+    fetch_drn_page,
+    parse_drn_sections,
+    extract_case_metadata,
+    fetch_revisions,
+    analyze_article_edit_war,
+)
 
 # Initialize logger (will be configured in main)
 logger: logging.Logger | None = None
@@ -28,13 +41,11 @@ logger: logging.Logger | None = None
 
 def run_arbitration(client: WikiClient, limit: int = 50):
     """Fetch arbitration cases."""
-    from fetch_arbitration_cases import get_arbitration_cases
-
     logger.info("=" * 50)
     logger.info("FETCHING ARBITRATION CASES")
     logger.info("=" * 50)
 
-    cases = get_arbitration_cases(client, limit=limit)
+    cases = fetch_arbitration_cases(client, limit=limit)
     output_path = get_output_path("arbitration", prefix="arbitration_cases")
     save_json(cases, output_path)
 
@@ -44,12 +55,6 @@ def run_arbitration(client: WikiClient, limit: int = 50):
 
 def run_drn(client: WikiClient):
     """Fetch DRN cases."""
-    from fetch_drn_cases import (
-        fetch_drn_page,
-        parse_drn_sections,
-        extract_case_metadata,
-    )
-
     logger.info("=" * 50)
     logger.info("FETCHING DRN CASES")
     logger.info("=" * 50)
@@ -72,8 +77,6 @@ def run_drn(client: WikiClient):
 
 def run_revisions(client: WikiClient, article: str, limit: int | None = None):
     """Fetch revisions for an article."""
-    from fetch_revisions import fetch_revisions
-
     logger.info("=" * 50)
     logger.info(f"FETCHING REVISIONS: {article}")
     logger.info("=" * 50)
@@ -89,25 +92,48 @@ def run_revisions(client: WikiClient, article: str, limit: int | None = None):
 
 def run_editwar(client: WikiClient, article: str, threshold: float = 0.1):
     """Analyze article for edit war."""
-    from detect_edit_wars import run_analysis, print_report
-
     logger.info("=" * 50)
     logger.info(f"ANALYZING EDIT WAR: {article}")
     logger.info("=" * 50)
 
-    analysis = run_analysis(client, article, threshold=threshold)
+    analysis = analyze_article_edit_war(client, article, threshold=threshold)
     safe_title = sanitize_filename(article)
     output_path = get_output_path("edit_wars", prefix=f"editwar_{safe_title}")
     save_json(analysis, output_path)
 
-    print_report(analysis)
+    print_editwar_report(analysis)
     logger.info(f"Saved to {output_path}")
     return analysis
 
 
+def print_editwar_report(analysis: dict) -> None:
+    """Print human-readable edit war report."""
+    print("\n" + "=" * 50)
+    print(f"EDIT WAR ANALYSIS: {analysis['title']}")
+    print("=" * 50)
+
+    print(f"\nRevisions analyzed: {analysis['revisions_analyzed']}")
+    print(f"Revert count: {analysis['revert_count']}")
+    print(f"Revert ratio: {analysis['revert_ratio']:.1%}")
+    print(f"Unique editors: {analysis['unique_editors']}")
+
+    if analysis["edit_war_detected"]:
+        print("\n⚠️  EDIT WAR DETECTED")
+    else:
+        print("\n✓ No significant edit war activity")
+
+    if analysis.get("protection"):
+        print(f"\nPage protection: {analysis['protection']}")
+
+    if analysis.get("top_reverters"):
+        print("\nTop reverters:")
+        for user, count in list(analysis["top_reverters"].items())[:5]:
+            print(f"  {user}: {count}")
+
+
 def main():
     global logger
-    
+
     parser = argparse.ArgumentParser(
         description="Wikipedia dispute data collection CLI"
     )
@@ -124,7 +150,11 @@ def main():
         "--threshold", type=float, default=0.1, help="Edit war threshold"
     )
     parser.add_argument("--all", action="store_true", help="Run all collectors")
-    parser.add_argument("--dry-run", action="store_true", help="Preview what would be fetched without making API calls")
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Preview what would be fetched without making API calls",
+    )
 
     args = parser.parse_args()
 
@@ -136,7 +166,7 @@ def main():
         logger = setup_logging("fetch_all")
         logger.info("Wikipedia Dispute Data Collection")
         logger.info("=" * 50)
-        
+
         # Check for API credentials and warn if missing
         check_api_credentials(logger)
     else:
