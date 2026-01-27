@@ -3,6 +3,8 @@
 from src.analysis import (
     analyze_edit_war,
     detect_reverts,
+    detect_3rr_violations,
+    detect_revert_chains,
     extract_user_conflicts,
     is_revert,
 )
@@ -109,18 +111,182 @@ class TestExtractUserConflicts:
     """Tests for extract_user_conflicts function."""
 
     def test_finds_conflict_pairs(self):
+        # Revisions in reverse chronological order (newest first)
         revisions = [
-            {"user": "Alice", "comment": "Added content", "is_revert": False},
-            {"user": "Bob", "comment": "Reverted", "is_revert": True},
-            {"user": "Alice", "comment": "Content again", "is_revert": False},
             {"user": "Bob", "comment": "Reverted again", "is_revert": True},
+            {"user": "Alice", "comment": "Content again", "is_revert": False},
+            {"user": "Bob", "comment": "Reverted", "is_revert": True},
+            {"user": "Alice", "comment": "Added content", "is_revert": False},
         ]
         conflicts = extract_user_conflicts(revisions)
 
         # Bob reverted Alice twice
         assert len(conflicts) >= 1
-        alice_bob = [c for c in conflicts if "Alice" in c and "Bob" in c]
+        # Check that Alice-Bob pair exists with count 2
+        alice_bob = [c for c in conflicts if "Alice" in c[:2] and "Bob" in c[:2]]
         assert len(alice_bob) == 1
+        assert alice_bob[0][2] == 2  # Count should be 2
 
     def test_empty_revisions(self):
         assert extract_user_conflicts([]) == []
+
+    def test_no_reverts(self):
+        revisions = [
+            {"user": "Alice", "comment": "Added content", "is_revert": False},
+            {"user": "Bob", "comment": "More content", "is_revert": False},
+        ]
+        conflicts = extract_user_conflicts(revisions)
+        assert conflicts == []
+
+    def test_self_revert_ignored(self):
+        """User reverting themselves should not count as conflict."""
+        revisions = [
+            {"user": "Alice", "comment": "Reverted myself", "is_revert": True},
+            {"user": "Alice", "comment": "Oops wrong edit", "is_revert": False},
+        ]
+        conflicts = extract_user_conflicts(revisions)
+        assert conflicts == []
+
+    def test_multiple_conflict_pairs(self):
+        """Test that multiple distinct conflict pairs are detected."""
+        revisions = [
+            {"user": "Charlie", "comment": "Reverted", "is_revert": True},
+            {"user": "Dave", "comment": "Edit", "is_revert": False},
+            {"user": "Bob", "comment": "Reverted", "is_revert": True},
+            {"user": "Alice", "comment": "Edit", "is_revert": False},
+        ]
+        conflicts = extract_user_conflicts(revisions)
+        
+        # Should have two pairs: Charlie-Dave and Alice-Bob
+        assert len(conflicts) == 2
+        users_in_conflicts = set()
+        for u1, u2, _ in conflicts:
+            users_in_conflicts.add(u1)
+            users_in_conflicts.add(u2)
+        assert users_in_conflicts == {"Alice", "Bob", "Charlie", "Dave"}
+
+    def test_detects_revert_from_comment_if_no_flag(self):
+        """Test that reverts are detected from comment even without is_revert flag."""
+        revisions = [
+            {"user": "Bob", "comment": "Reverted vandalism"},
+            {"user": "Alice", "comment": "Bad edit"},
+        ]
+        conflicts = extract_user_conflicts(revisions)
+        
+        assert len(conflicts) == 1
+        assert "Alice" in conflicts[0][:2]
+        assert "Bob" in conflicts[0][:2]
+
+    def test_sorted_by_count(self):
+        """Conflicts should be returned sorted by count descending."""
+        revisions = [
+            {"user": "Bob", "comment": "Reverted", "is_revert": True},
+            {"user": "Alice", "comment": "Edit", "is_revert": False},
+            {"user": "Bob", "comment": "Reverted", "is_revert": True},
+            {"user": "Alice", "comment": "Edit", "is_revert": False},
+            {"user": "Bob", "comment": "Reverted", "is_revert": True},
+            {"user": "Alice", "comment": "Edit", "is_revert": False},
+            {"user": "Dave", "comment": "Reverted", "is_revert": True},
+            {"user": "Charlie", "comment": "Edit", "is_revert": False},
+        ]
+        conflicts = extract_user_conflicts(revisions)
+        
+        # Alice-Bob should be first with 3, Charlie-Dave second with 1
+        assert len(conflicts) == 2
+        assert conflicts[0][2] >= conflicts[1][2]  # Sorted descending
+
+
+class TestDetect3RRViolations:
+    """Tests for detect_3rr_violations function."""
+
+    def test_detects_violation(self):
+        """User with 4 reverts in 24h should be flagged."""
+        from datetime import datetime, timedelta
+        
+        base_time = datetime(2025, 1, 1, 12, 0, 0)
+        revisions = [
+            {"user": "WarEditor", "timestamp": (base_time + timedelta(hours=i)).isoformat() + "Z", "is_revert": True}
+            for i in range(4)
+        ]
+        violations = detect_3rr_violations(revisions)
+        
+        assert len(violations) == 1
+        assert violations[0]["user"] == "WarEditor"
+        assert violations[0]["reverts_in_window"] == 4
+
+    def test_no_violation_under_threshold(self):
+        """3 reverts in 24h should NOT be flagged (need > 3)."""
+        from datetime import datetime, timedelta
+        
+        base_time = datetime(2025, 1, 1, 12, 0, 0)
+        revisions = [
+            {"user": "NormalUser", "timestamp": (base_time + timedelta(hours=i)).isoformat() + "Z", "is_revert": True}
+            for i in range(3)
+        ]
+        violations = detect_3rr_violations(revisions)
+        
+        assert len(violations) == 0
+
+    def test_no_violation_outside_window(self):
+        """4 reverts spread over >24h should NOT be flagged."""
+        from datetime import datetime, timedelta
+        
+        base_time = datetime(2025, 1, 1, 12, 0, 0)
+        revisions = [
+            {"user": "SpreadUser", "timestamp": (base_time + timedelta(hours=i*10)).isoformat() + "Z", "is_revert": True}
+            for i in range(4)
+        ]
+        violations = detect_3rr_violations(revisions)
+        
+        assert len(violations) == 0
+
+    def test_empty_revisions(self):
+        assert detect_3rr_violations([]) == []
+
+
+class TestDetectRevertChains:
+    """Tests for detect_revert_chains function."""
+
+    def test_detects_chain(self):
+        """3+ consecutive reverts should be detected."""
+        revisions = [
+            {"user": "Alice", "comment": "Normal edit", "is_revert": False},
+            {"user": "Bob", "comment": "Reverted", "is_revert": True, "timestamp": "2025-01-01T01:00:00Z"},
+            {"user": "Alice", "comment": "Reverted back", "is_revert": True, "timestamp": "2025-01-01T02:00:00Z"},
+            {"user": "Bob", "comment": "Reverted again", "is_revert": True, "timestamp": "2025-01-01T03:00:00Z"},
+            {"user": "Charlie", "comment": "Normal edit", "is_revert": False},
+        ]
+        chains = detect_revert_chains(revisions, min_chain_length=3)
+        
+        assert len(chains) == 1
+        assert chains[0]["length"] == 3
+        assert set(chains[0]["users"]) == {"Alice", "Bob"}
+
+    def test_no_chain_below_threshold(self):
+        """2 consecutive reverts should NOT be flagged with min_chain_length=3."""
+        revisions = [
+            {"user": "Bob", "comment": "Reverted", "is_revert": True},
+            {"user": "Alice", "comment": "Reverted back", "is_revert": True},
+            {"user": "Charlie", "comment": "Normal edit", "is_revert": False},
+        ]
+        chains = detect_revert_chains(revisions, min_chain_length=3)
+        
+        assert len(chains) == 0
+
+    def test_empty_revisions(self):
+        assert detect_revert_chains([]) == []
+
+    def test_multiple_chains(self):
+        """Multiple separate chains should be detected."""
+        revisions = [
+            {"user": "A", "comment": "Reverted", "is_revert": True, "timestamp": "T1"},
+            {"user": "B", "comment": "Reverted", "is_revert": True, "timestamp": "T2"},
+            {"user": "A", "comment": "Reverted", "is_revert": True, "timestamp": "T3"},
+            {"user": "C", "comment": "Normal", "is_revert": False},  # breaks chain
+            {"user": "D", "comment": "Reverted", "is_revert": True, "timestamp": "T4"},
+            {"user": "E", "comment": "Reverted", "is_revert": True, "timestamp": "T5"},
+            {"user": "D", "comment": "Reverted", "is_revert": True, "timestamp": "T6"},
+        ]
+        chains = detect_revert_chains(revisions, min_chain_length=3)
+        
+        assert len(chains) == 2

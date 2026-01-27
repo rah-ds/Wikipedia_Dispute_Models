@@ -19,7 +19,7 @@ import mwparserfromhell
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.wiki import WikiClient
-from src.io import save_json, get_output_path
+from src.io import save_json, get_output_path, check_api_credentials
 
 
 def fetch_drn_page(client: WikiClient) -> dict:
@@ -119,9 +119,17 @@ def extract_case_metadata(cases: list[dict]) -> list[dict]:
     return cases
 
 
-def main():
+def main(dry_run: bool = False):
     print("Fetching Dispute Resolution Noticeboard Data")
     print("=" * 50)
+
+    if dry_run:
+        print("[DRY RUN] Would fetch DRN page: Wikipedia:Dispute resolution noticeboard")
+        print("[DRY RUN] No API calls made, no files written.")
+        return
+
+    # Check for API credentials
+    check_api_credentials()
 
     client = WikiClient()
     drn_data = fetch_drn_page(client)
@@ -148,4 +156,10 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Fetch DRN cases from Wikipedia")
+    parser.add_argument("--dry-run", action="store_true", help="Preview what would be fetched without making API calls")
+    args = parser.parse_args()
+
+    main(dry_run=args.dry_run)
