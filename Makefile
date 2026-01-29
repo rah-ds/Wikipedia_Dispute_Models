@@ -29,7 +29,7 @@ install:
 
 install-dev:
 	uv pip install -e ".[dev]"
-	pre-commit install
+	uv run pre-commit install
 
 # Alternative: pip install
 pip-install:

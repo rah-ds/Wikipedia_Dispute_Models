@@ -11,7 +11,8 @@ class WikiClient:
     def __init__(self, lang: str = "en", project: str = "wikipedia"):
         """
         Initialize Wikipedia client.
-
+        Internal pywikibot:
+            pywikibot.config is changing the interal error handling to allow only 3
         Args:
             lang: Language code (default: "en")
             project: Wikimedia project (default: "wikipedia")
@@ -19,6 +20,9 @@ class WikiClient:
         self.site = pywikibot.Site(lang, project)
         self.lang = lang
         self.project = project
+
+        pywikibot.config.max_retries = 3
+        # pywikibot.config.retry_wait = 0
 
     def get_page(self, title: str) -> pywikibot.Page:
         """Get a Wikipedia page by title."""
