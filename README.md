@@ -34,39 +34,41 @@ git clone https://github.com/rah-ds/Wikipedia_Dispute_Models.git
 cd Wikipedia_Dispute_Models
 make install-dev
 
-# Fetch sample data (high + low conflict articles)
-make fetch-small
-
-# Or fetch specific data types
-make fetch-arb   # Arbitration cases
-make fetch-drn   # DRN cases
+# Fetch data
+make fetch-arb
+make fetch-drn
 ```
 
 See `make help` for all available targets.
 
-See [`docs/sample_article_selection.md`](docs/sample_article_selection.md) for article selection rationale.
-
-
-when running with a mac use caffeinate to prevent sleep:
-
+## Windows Start with WSL
+If you are working with Windows, follow here for WSL-friendly setup.
+First download WSL via your preferred IDE.
+Next this should get you uv installed via bash.
 ```bash
-caffeinate -i make fetch-full
+wget -qO- https://astral.sh/uv/install.sh | sh
 ```
+Move/Copy repo to Linux filesystem to avoid /mnt/c/... (OneDrive/Windows FS causes permissions issues). You can find the wsl location with ```\\wsl$``` in your file explorer.
+Once the repo is in the wsl directory, create a WSL terminal and navigate to the repo then run:
+```bash
+uv venv
+make install-dev
+```
+Run Python/tools via uv & no need to manually activate venv — uv handles it.
+
 
 ---
 
 ## Data Sources
 
-| Source | Description |
-| ------ | ----------- |
-| Arbitration Cases | Binding decisions from ArbCom |
-| Revision History | Edit history with timestamps, users, comments |
-| Edit Wars | Pages with high revert activity |
-| DRN Cases | Dispute Resolution Noticeboard threads |
+| Source | Description | Script |
+| ------ | ----------- | ------ |
+| Arbitration Cases | Binding decisions from ArbCom | `fetch_arbitration_cases.py` |
+| Revision History | Edit history with timestamps, users, comments | `fetch_revisions.py` |
+| Edit Wars | Pages with high revert activity | `detect_edit_wars.py` |
+| DRN Cases | Dispute Resolution Noticeboard threads | `fetch_drn_cases.py` |
 
-All data collection runs through `scripts/fetch_all.py` or `scripts/fetch_from_config.py`.
-
-See [`docs/wikimedia_api.md`](docs/wikimedia_api.md) for API documentation.
+See [`docs/wikimedia_api.md`](docs/wikimedia_api.md) for full API documentation.
 
 ---
 
