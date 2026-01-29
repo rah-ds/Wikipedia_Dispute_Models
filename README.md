@@ -41,6 +41,21 @@ make fetch-drn
 
 See `make help` for all available targets.
 
+## Windows Start with WSL
+If you are working with Windows, follow here for WSL-friendly setup.
+First download WSL via your preferred IDE.
+Next this should get you uv installed via bash.
+```bash
+wget -qO- https://astral.sh/uv/install.sh | sh
+```
+Move/Copy repo to Linux filesystem to avoid /mnt/c/... (OneDrive/Windows FS causes permissions issues). You can find the wsl location with ```\\wsl$``` in your file explorer.
+Once the repo is in the wsl directory, create a WSL terminal and navigate to the repo then run:
+```bash
+uv venv
+make install-dev
+```
+Run Python/tools via uv & no need to manually activate venv — uv handles it.
+
 
 ---
 
