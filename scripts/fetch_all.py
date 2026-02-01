@@ -8,6 +8,8 @@ Usage:
     python fetch_all.py --drn              # DRN cases only
     python fetch_all.py --revisions "Title" # Revisions for specific article
     python fetch_all.py --editwar "Title"  # Edit war analysis
+    python fetch_all.py --venues "Title"   # All dispute venues for article
+    python fetch_all.py --ani "Term"       # Search ANI for term
 """
 
 import argparse
@@ -34,6 +36,10 @@ from src.fetchers import (
     extract_case_metadata,
     fetch_revisions,
     analyze_article_edit_war,
+    # Phase 2 fetchers
+    fetch_talk_page_revisions,
+    search_ani_mentions,
+    fetch_dispute_venues_for_article,
 )
 
 # Initialize logger (will be configured in main)
@@ -153,6 +159,123 @@ def print_editwar_report(analysis: dict) -> None:
             print(f"  {user}: {count}")
 
 
+# =============================================================================
+# Phase 2: Dispute Venue Runners
+# =============================================================================
+
+
+def run_dispute_venues(client: WikiClient, article: str, ani_limit: int = 20):
+    """Fetch all dispute venues for an article."""
+    logger.info("=" * 50)
+    logger.info(f"FETCHING DISPUTE VENUES: {article}")
+    logger.info("=" * 50)
+
+    data = fetch_dispute_venues_for_article(
+        client,
+        article,
+        include_talk=True,
+        include_ani=True,
+        include_3o=True,
+        include_rfc=True,
+        ani_limit=ani_limit,
+    )
+
+    safe_title = sanitize_filename(article)
+    output_path = get_output_path("dispute_venues", prefix=f"venues_{safe_title}")
+    save_json(data, output_path)
+
+    print_venue_report(data)
+    logger.info(f"Saved to {output_path}")
+    return data
+
+
+def run_ani_search(client: WikiClient, search_term: str, limit: int = 50):
+    """Search ANI archives for a term."""
+    logger.info("=" * 50)
+    logger.info(f"SEARCHING ANI: {search_term}")
+    logger.info("=" * 50)
+
+    results = search_ani_mentions(client, search_term, limit=limit)
+
+    safe_term = sanitize_filename(search_term)
+    output_path = get_output_path("ani_search", prefix=f"ani_{safe_term}")
+    save_json(
+        {
+            "search_term": search_term,
+            "result_count": len(results),
+            "results": results,
+        },
+        output_path,
+    )
+
+    print_ani_report(search_term, results)
+    logger.info(f"Saved to {output_path}")
+    return results
+
+
+def run_talk_page(client: WikiClient, article: str, limit: int | None = None):
+    """Fetch talk page revisions for an article."""
+    logger.info("=" * 50)
+    logger.info(f"FETCHING TALK PAGE: {article}")
+    logger.info("=" * 50)
+
+    data = fetch_talk_page_revisions(client, article, limit=limit)
+
+    safe_title = sanitize_filename(article)
+    output_path = get_output_path("talk_pages", prefix=f"talk_{safe_title}")
+    save_json(data, output_path)
+
+    if data["exists"]:
+        print(f"\n✓ Talk page: {data['talk_title']}")
+        print(f"  Revisions: {data['revision_count']}")
+    else:
+        print(f"\n✗ No talk page found for: {article}")
+
+    logger.info(f"Saved to {output_path}")
+    return data
+
+
+def print_venue_report(data: dict) -> None:
+    """Print human-readable dispute venue report."""
+    print("\n" + "=" * 50)
+    print(f"DISPUTE VENUES: {data['article']}")
+    print("=" * 50)
+
+    summary = data.get("summary", {})
+
+    print("\n📝 Talk Page:")
+    if summary.get("has_talk_page"):
+        print(f"   ✓ Exists with {summary['talk_revision_count']} revisions")
+    else:
+        print("   ✗ No talk page")
+
+    print(f"\n⚠️  ANI Mentions: {summary.get('ani_mention_count', 0)}")
+    if data.get("ani_mentions"):
+        for mention in data["ani_mentions"][:3]:
+            print(f"   - {mention['title'][:50]}...")
+
+    print(f"\n🔍 Third Opinion: {summary.get('third_opinion_count', 0)}")
+
+    print(f"\n📋 RfCs: {summary.get('rfc_count', 0)}")
+
+
+def print_ani_report(search_term: str, results: list) -> None:
+    """Print human-readable ANI search report."""
+    print("\n" + "=" * 50)
+    print(f"ANI SEARCH: {search_term}")
+    print("=" * 50)
+
+    print(f"\nFound {len(results)} mentions")
+
+    for i, result in enumerate(results[:5], 1):
+        print(f"\n{i}. {result['title']}")
+        print(f"   Source: {result.get('source', 'unknown')}")
+        print(f"   Participants: {', '.join(result.get('participants', [])[:3])}")
+        if result.get("content_preview"):
+            preview = result["content_preview"][:100].replace("\n", " ")
+            print(f"   Preview: {preview}...")
+
+
 def main():
     global logger
 
@@ -166,6 +289,14 @@ def main():
     )
     parser.add_argument(
         "--editwar", metavar="TITLE", help="Analyze article for edit war"
+    )
+    # Phase 2 options
+    parser.add_argument(
+        "--venues", metavar="TITLE", help="Fetch all dispute venues for article"
+    )
+    parser.add_argument("--ani", metavar="TERM", help="Search ANI archives for term")
+    parser.add_argument(
+        "--talk", metavar="TITLE", help="Fetch talk page revisions for article"
     )
     parser.add_argument("--limit", type=int, default=50, help="Limit for fetching")
     parser.add_argument(
@@ -181,7 +312,18 @@ def main():
     args = parser.parse_args()
 
     # Default to --all if no specific flags
-    run_all = args.all or not any([args.arb, args.drn, args.revisions, args.editwar])
+    has_specific = any(
+        [
+            args.arb,
+            args.drn,
+            args.revisions,
+            args.editwar,
+            args.venues,
+            args.ani,
+            args.talk,
+        ]
+    )
+    run_all = args.all or not has_specific
 
     # Set up logging (skip for dry-run)
     if not args.dry_run:
@@ -205,6 +347,12 @@ def main():
             print(f"[DRY RUN] Would fetch revisions for: {args.revisions}")
         if args.editwar:
             print(f"[DRY RUN] Would analyze edit war for: {args.editwar}")
+        if args.venues:
+            print(f"[DRY RUN] Would fetch dispute venues for: {args.venues}")
+        if args.ani:
+            print(f"[DRY RUN] Would search ANI for: {args.ani}")
+        if args.talk:
+            print(f"[DRY RUN] Would fetch talk page for: {args.talk}")
         print("\n[DRY RUN] No files written.")
         return
 
@@ -225,6 +373,16 @@ def main():
 
     if args.editwar:
         run_editwar(client, args.editwar, threshold=args.threshold)
+
+    # Phase 2 commands
+    if args.venues:
+        run_dispute_venues(client, args.venues, ani_limit=args.limit)
+
+    if args.ani:
+        run_ani_search(client, args.ani, limit=args.limit)
+
+    if args.talk:
+        run_talk_page(client, args.talk, limit=args.limit)
 
     # Log API stats
     client.log_stats()

@@ -1,0 +1,902 @@
+#!/usr/bin/env python3
+"""
+Depth-first search fetcher for arbitration cases.
+
+Given an arbitration case name, performs a DFS to collect all related
+conversations and talk pages:
+
+1. The arbitration case main page
+2. Subpages: /Evidence, /Workshop, /Proposed decision, etc.
+3. The case talk page
+4. All articles mentioned in the case
+5. Talk pages for all mentioned articles
+
+This is useful for sponsors who want a complete view of a single case
+with all associated discussions.
+
+Usage:
+    python scripts/fetch_arb_dfs.py "CaseName"
+    python scripts/fetch_arb_dfs.py "CaseName" --dry-run
+    python scripts/fetch_arb_dfs.py "CaseName" --max-articles 10
+
+Example:
+    python scripts/fetch_arb_dfs.py "Climate change"
+    make fetch-arb-dfs CASE="Climate change"
+"""
+
+import argparse
+import logging
+import signal
+import sys
+import time
+from datetime import datetime
+from pathlib import Path
+
+import mwparserfromhell
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from src.wiki import WikiClient
+from src.io import (
+    save_json,
+    get_output_path,
+    sanitize_filename,
+    setup_logging,
+    check_api_credentials,
+)
+
+logger: logging.Logger | None = None
+_client: WikiClient | None = None
+
+
+def shutdown_handler(signum, frame):
+    """Handle Ctrl+C gracefully."""
+    print("\n\n⚠️  Interrupted! Logging stats before exit...")
+    if _client:
+        _client.log_stats()
+    sys.exit(130)
+
+
+signal.signal(signal.SIGINT, shutdown_handler)
+
+
+# Known arbitration case subpages
+ARB_SUBPAGES = [
+    "",  # Main page
+    "/Evidence",
+    "/Workshop",
+    "/Proposed decision",
+    "/Remedies",
+]
+
+
+def get_arb_case_prefix(case_name: str) -> str:
+    """Get the Wikipedia page prefix for an arbitration case."""
+    # Handle if user provides full path or just case name
+    if case_name.startswith("Wikipedia:Arbitration"):
+        return case_name
+    return f"Wikipedia:Arbitration/Requests/Case/{case_name}"
+
+
+def extract_article_links(content: str) -> list[str]:
+    """Extract article wikilinks from page content, filtering out non-articles."""
+    wikicode = mwparserfromhell.parse(content)
+    articles = set()
+
+    for link in wikicode.filter_wikilinks():
+        title = str(link.title).strip()
+
+        # Skip non-article namespaces
+        skip_prefixes = (
+            "User:",
+            "User talk:",
+            "Wikipedia:",
+            "Wikipedia talk:",
+            "Talk:",
+            "Template:",
+            "Template talk:",
+            "Category:",
+            "File:",
+            "Image:",
+            "WP:",
+            "Special:",
+            "Help:",
+            "Portal:",
+            "Draft:",
+            "Module:",
+        )
+        if title.startswith(skip_prefixes):
+            continue
+
+        # Skip section links within same page
+        if title.startswith("#"):
+            continue
+
+        # Remove any anchor/section part
+        if "#" in title:
+            title = title.split("#")[0]
+
+        if title:
+            articles.add(title)
+
+    return list(articles)
+
+
+def fetch_arb_case_dfs(
+    client: WikiClient,
+    case_name: str,
+    max_articles: int = 20,
+    revision_limit: int | None = 100,
+    delay: float = 0.5,
+) -> dict:
+    """
+    Perform depth-first search from an arbitration case.
+
+    Collects:
+    1. All case subpages (main, evidence, workshop, etc.)
+    2. Talk pages for the case
+    3. All linked articles
+    4. Talk pages for linked articles
+
+    Args:
+        client: WikiClient instance
+        case_name: Arbitration case name (e.g., "Climate change")
+        max_articles: Maximum linked articles to fetch (to avoid runaway)
+        revision_limit: Max revisions per page (None = all)
+        delay: Seconds between API calls
+
+    Returns:
+        Dictionary with all fetched data
+    """
+    case_prefix = get_arb_case_prefix(case_name)
+    print(f"\n🔍 DFS starting from: {case_prefix}")
+
+    result = {
+        "case_name": case_name,
+        "case_prefix": case_prefix,
+        "fetched_at": datetime.now().isoformat(),
+        "case_pages": [],
+        "case_talk_pages": [],
+        "linked_articles": [],
+        "article_talk_pages": [],
+        "summary": {},
+    }
+
+    all_linked_articles = set()
+
+    # Step 1: Fetch all case subpages
+    print("\n📄 Fetching case subpages...")
+    for suffix in ARB_SUBPAGES:
+        page_title = f"{case_prefix}{suffix}"
+        try:
+            page = client.get_page(page_title)
+            if not page.exists():
+                print(f"   ✗ {page_title} (not found)")
+                continue
+
+            print(f"   ✓ {page_title}")
+
+            page_data = {
+                "title": page.title(),
+                "url": page.full_url(),
+                "exists": True,
+                "subpage": suffix or "(main)",
+                "revisions": client.get_revisions(page_title, limit=revision_limit),
+                "content": page.text,
+            }
+
+            # Extract linked articles from content
+            links = extract_article_links(page.text)
+            page_data["linked_articles"] = links
+            all_linked_articles.update(links)
+
+            # Don't store full content in output (too large), just metadata
+            page_data["content_length"] = len(page.text)
+            del page_data["content"]
+
+            result["case_pages"].append(page_data)
+            time.sleep(delay)
+
+        except Exception as e:
+            print(f"   ✗ {page_title}: {e}")
+            result["case_pages"].append(
+                {
+                    "title": page_title,
+                    "exists": False,
+                    "error": str(e),
+                }
+            )
+
+    # Step 2: Fetch case talk pages
+    print("\n💬 Fetching case talk pages...")
+    for suffix in ARB_SUBPAGES:
+        page_title = f"{case_prefix}{suffix}"
+        talk_title = f"Wikipedia talk:Arbitration/Requests/Case/{case_name}{suffix}"
+
+        try:
+            talk_page = client.get_page(talk_title)
+            if not talk_page.exists():
+                continue
+
+            print(f"   ✓ {talk_title}")
+
+            talk_data = {
+                "title": talk_page.title(),
+                "url": talk_page.full_url(),
+                "for_page": page_title,
+                "revisions": client.get_revisions(talk_title, limit=revision_limit),
+                "revision_count": 0,
+            }
+            talk_data["revision_count"] = len(talk_data["revisions"])
+
+            result["case_talk_pages"].append(talk_data)
+            time.sleep(delay)
+
+        except Exception as e:
+            print(f"   ✗ {talk_title}: {e}")
+
+    # Step 3: Fetch linked articles (limited)
+    print(
+        f"\n📚 Found {len(all_linked_articles)} linked articles, fetching up to {max_articles}..."
+    )
+    articles_to_fetch = list(all_linked_articles)[:max_articles]
+
+    for article_title in articles_to_fetch:
+        try:
+            page = client.get_page(article_title)
+            if not page.exists():
+                print(f"   ✗ {article_title} (not found)")
+                continue
+
+            print(f"   ✓ {article_title}")
+
+            article_data = {
+                "title": page.title(),
+                "url": page.full_url(),
+                "revisions": client.get_revisions(article_title, limit=revision_limit),
+                "revision_count": 0,
+            }
+            article_data["revision_count"] = len(article_data["revisions"])
+
+            result["linked_articles"].append(article_data)
+            time.sleep(delay)
+
+        except Exception as e:
+            print(f"   ✗ {article_title}: {e}")
+
+    # Step 4: Fetch talk pages for linked articles
+    print("\n💬 Fetching article talk pages...")
+    for article_data in result["linked_articles"]:
+        article_title = article_data["title"]
+        try:
+            talk_page = client.get_talk_page(article_title)
+            if not talk_page:
+                continue
+
+            print(f"   ✓ Talk:{article_title}")
+
+            talk_data = {
+                "title": talk_page.title(),
+                "url": talk_page.full_url(),
+                "for_article": article_title,
+                "revisions": client.get_revisions(
+                    talk_page.title(), limit=revision_limit
+                ),
+                "revision_count": 0,
+            }
+            talk_data["revision_count"] = len(talk_data["revisions"])
+
+            result["article_talk_pages"].append(talk_data)
+            time.sleep(delay)
+
+        except Exception as e:
+            print(f"   ✗ Talk:{article_title}: {e}")
+
+    # Summary
+    result["summary"] = {
+        "case_pages_found": len(
+            [p for p in result["case_pages"] if p.get("exists", False)]
+        ),
+        "case_talk_pages_found": len(result["case_talk_pages"]),
+        "total_linked_articles": len(all_linked_articles),
+        "articles_fetched": len(result["linked_articles"]),
+        "article_talk_pages_found": len(result["article_talk_pages"]),
+        "total_revisions": sum(
+            p.get("revision_count", len(p.get("revisions", [])))
+            for p in (
+                result["case_pages"]
+                + result["case_talk_pages"]
+                + result["linked_articles"]
+                + result["article_talk_pages"]
+            )
+        ),
+    }
+
+    return result
+
+
+def main():
+    global logger, _client
+
+    parser = argparse.ArgumentParser(
+        description="Depth-first search from arbitration case to collect all related pages",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+    python scripts/fetch_arb_dfs.py "Climate change"
+    python scripts/fetch_arb_dfs.py "Abortion" --max-articles 5
+    python scripts/fetch_arb_dfs.py "Macedonia" --dry-run
+        """,
+    )
+    parser.add_argument("case", help="Arbitration case name")
+    parser.add_argument(
+        "--max-articles",
+        type=int,
+        default=20,
+        help="Maximum linked articles to fetch (default: 20)",
+    )
+    parser.add_argument(
+        "--revision-limit",
+        type=int,
+        default=100,
+        help="Maximum revisions per page (default: 100, 0=all)",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Preview what would be fetched without making API calls",
+    )
+
+    args = parser.parse_args()
+
+    revision_limit = args.revision_limit if args.revision_limit > 0 else None
+
+    if args.dry_run:
+        case_prefix = get_arb_case_prefix(args.case)
+        print("Wikipedia Arbitration Case DFS Fetcher")
+        print("=" * 50)
+        print("\n[DRY RUN] Preview mode - no API calls will be made\n")
+        print(f"Case: {args.case}")
+        print(f"Prefix: {case_prefix}")
+        print("\nWould fetch:")
+        for suffix in ARB_SUBPAGES:
+            print(f"  • {case_prefix}{suffix}")
+            print(f"  • Wikipedia talk:Arbitration/Requests/Case/{args.case}{suffix}")
+        print(f"\n  + Up to {args.max_articles} linked articles and their talk pages")
+        print(f"  + Up to {revision_limit or 'all'} revisions per page")
+        print("\n[DRY RUN] No files written.")
+        return
+
+    logger = setup_logging("fetch_arb_dfs")
+    logger.info("Wikipedia Arbitration Case DFS Fetcher")
+    logger.info("=" * 50)
+
+    check_api_credentials(logger)
+
+    client = WikiClient()
+    _client = client
+
+    data = fetch_arb_case_dfs(
+        client,
+        args.case,
+        max_articles=args.max_articles,
+        revision_limit=revision_limit,
+    )
+
+    # Save output
+    safe_name = sanitize_filename(args.case)
+    output_path = get_output_path("arbitration", prefix=f"arb_dfs_{safe_name}")
+    save_json(data, output_path)
+
+    # Print summary
+    print("\n" + "=" * 50)
+    print("SUMMARY")
+    print("=" * 50)
+    for key, value in data["summary"].items():
+        print(f"  {key}: {value}")
+    print(f"\n📁 Saved to: {output_path}")
+
+    client.log_stats()
+    stats = client.get_stats()
+    print(
+        f"\n📊 API Stats: {stats['total_requests']} requests in {stats['runtime_minutes']:.1f} min"
+    )
+
+
+if __name__ == "__main__":
+    main()
+#!/usr/bin/env python3
+"""
+Dispute lifecycle fetcher for arbitration cases.
+
+Given an arbitration case name, traces the FULL dispute resolution lifecycle
+by collecting conversations from each venue in the escalation path:
+
+    ArbCom ← ANI ← DRN ← Talk Page (we trace backwards from arbitration)
+
+Venues collected:
+1. ArbCom case pages (main, Evidence, Workshop, talk pages)
+2. ANI reports (conduct escalation)
+3. DRN cases (content dispute resolution)
+4. Article talk pages (where disputes originate)
+
+Usage:
+    python scripts/fetch_arb_dfs.py "CaseName"
+    python scripts/fetch_arb_dfs.py "CaseName" --dry-run
+
+Example:
+    python scripts/fetch_arb_dfs.py "Climate change"
+    make fetch-arb-dfs CASE="Climate change"
+"""
+
+import argparse
+import logging
+import re
+import signal
+import sys
+import time
+from datetime import datetime
+from pathlib import Path
+
+import mwparserfromhell
+from tqdm import tqdm
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from src.wiki import WikiClient
+from src.io import (
+    save_json,
+    get_output_path,
+    sanitize_filename,
+    setup_logging,
+    check_api_credentials,
+)
+from src.fetchers import search_ani_mentions
+
+
+def get_memory_mb() -> float:
+    """Get current memory usage in MB."""
+    try:
+        import resource
+
+        usage = resource.getrusage(resource.RUSAGE_SELF)
+        return usage.ru_maxrss / 1024 / 1024  # Convert to MB (macOS returns bytes)
+    except Exception:
+        return 0.0
+
+
+logger: logging.Logger | None = None
+_client: WikiClient | None = None
+
+
+def shutdown_handler(signum, frame):
+    """Handle Ctrl+C gracefully."""
+    print("\n\n⚠️  Interrupted! Logging stats before exit...")
+    if _client:
+        _client.log_stats()
+    sys.exit(130)
+
+
+signal.signal(signal.SIGINT, shutdown_handler)
+
+
+# Known arbitration case subpages
+ARB_SUBPAGES = [
+    "",  # Main page
+    "/Evidence",
+    "/Workshop",
+    "/Proposed decision",
+    "/Remedies",
+]
+
+
+def get_arb_case_prefix(case_name: str) -> str:
+    """Get the Wikipedia page prefix for an arbitration case."""
+    # Handle if user provides full path or just case name
+    if case_name.startswith("Wikipedia:Arbitration"):
+        return case_name
+    return f"Wikipedia:Arbitration/Requests/Case/{case_name}"
+
+
+def extract_article_links(content: str) -> list[str]:
+    """Extract article wikilinks from page content, filtering out non-articles."""
+    wikicode = mwparserfromhell.parse(content)
+    articles = set()
+
+    for link in wikicode.filter_wikilinks():
+        title = str(link.title).strip()
+
+        # Skip non-article namespaces
+        skip_prefixes = (
+            "User:",
+            "User talk:",
+            "Wikipedia:",
+            "Wikipedia talk:",
+            "Talk:",
+            "Template:",
+            "Template talk:",
+            "Category:",
+            "File:",
+            "Image:",
+            "WP:",
+            "Special:",
+            "Help:",
+            "Portal:",
+            "Draft:",
+            "Module:",
+        )
+        if title.startswith(skip_prefixes):
+            continue
+
+        # Skip section links within same page
+        if title.startswith("#"):
+            continue
+
+        # Remove any anchor/section part
+        if "#" in title:
+            title = title.split("#")[0]
+
+        if title:
+            articles.add(title)
+
+    return list(articles)
+
+
+def extract_participants(content: str) -> list[str]:
+    """Extract editor usernames from page content (from signatures and User: links)."""
+    # Find User: links
+    user_links = re.findall(r"\[\[User:([^\]|]+)", content, re.IGNORECASE)
+    # Find User talk: links
+    user_talk_links = re.findall(r"\[\[User talk:([^\]|]+)", content, re.IGNORECASE)
+
+    # Combine and deduplicate
+    all_users = set()
+    for user in user_links + user_talk_links:
+        # Clean up username
+        user = user.strip()
+        if user and not user.startswith(("#", "/")):
+            all_users.add(user)
+
+    return list(all_users)
+
+
+def fetch_arb_case_dfs(
+    client: WikiClient,
+    case_name: str,
+    max_talk_pages: int = 5,
+    revision_limit: int | None = 100,
+    ani_limit: int = 30,
+    delay: float = 0.5,
+) -> dict:
+    """
+    Trace the full dispute lifecycle from an arbitration case.
+
+    Collects from each venue in the dispute resolution lifecycle
+    (tracing backwards from arbitration):
+    - ArbCom: Case pages and talk pages
+    - ANI: Conduct reports for case name and top participants
+    - DRN: Content dispute resolution attempts
+    - Talk pages: Where disputes originate (limited)
+
+    Args:
+        client: WikiClient instance
+        case_name: Arbitration case name (e.g., "Climate change")
+        max_talk_pages: Maximum article talk pages to fetch (default: 5)
+        revision_limit: Max revisions per page (None = all)
+        ani_limit: Max ANI results
+        delay: Seconds between API calls
+
+    Returns:
+        Dictionary with dispute lifecycle data organized by venue
+    """
+    case_prefix = get_arb_case_prefix(case_name)
+
+    result = {
+        "case_name": case_name,
+        "case_prefix": case_prefix,
+        "fetched_at": datetime.now().isoformat(),
+        # Dispute venues (following the lifecycle backwards)
+        "venues": {
+            "arbcom": {"pages": [], "talk_pages": []},
+            "ani": [],
+            "drn": [],
+            "talk_pages": [],
+        },
+        # Extracted for linking
+        "participants": [],
+        "articles": [],
+        "summary": {},
+    }
+
+    all_articles = set()
+    all_participants = set()
+
+    # =========================================================================
+    # VENUE 5: ARBCOM (Final stage - we start here and work backwards)
+    # =========================================================================
+    arbcom_pages = [s for s in ARB_SUBPAGES]
+    with tqdm(total=len(arbcom_pages) * 2, desc="⚖️  ArbCom", unit="page") as pbar:
+        for suffix in arbcom_pages:
+            page_title = f"{case_prefix}{suffix}"
+            try:
+                page = client.get_page(page_title)
+                if page.exists():
+                    content = page.text
+                    page_data = {
+                        "title": page.title(),
+                        "url": page.full_url(),
+                        "subpage": suffix or "(main)",
+                        "revisions": client.get_revisions(
+                            page_title, limit=revision_limit
+                        ),
+                        "revision_count": 0,
+                    }
+                    page_data["revision_count"] = len(page_data["revisions"])
+
+                    # Extract entities for linking to other venues
+                    all_articles.update(extract_article_links(content))
+                    all_participants.update(extract_participants(content))
+
+                    result["venues"]["arbcom"]["pages"].append(page_data)
+                    time.sleep(delay)
+            except Exception:
+                pass
+            pbar.update(1)
+
+        # Arb case talk pages
+        for suffix in arbcom_pages:
+            talk_title = f"Wikipedia talk:Arbitration/Requests/Case/{case_name}{suffix}"
+            try:
+                talk_page = client.get_page(talk_title)
+                if talk_page.exists():
+                    talk_data = {
+                        "title": talk_page.title(),
+                        "url": talk_page.full_url(),
+                        "subpage": suffix or "(main)",
+                        "revisions": client.get_revisions(
+                            talk_title, limit=revision_limit
+                        ),
+                    }
+                    talk_data["revision_count"] = len(talk_data["revisions"])
+                    result["venues"]["arbcom"]["talk_pages"].append(talk_data)
+                    time.sleep(delay)
+            except Exception:
+                pass
+            pbar.update(1)
+
+    # Store entities
+    result["participants"] = list(all_participants)
+    result["articles"] = list(all_articles)[:20]
+
+    # =========================================================================
+    # VENUE 4: ANI (conduct escalation - before arbcom)
+    # =========================================================================
+    top_participants = list(all_participants)[:5]
+    ani_searches = [case_name] + top_participants
+
+    with tqdm(total=len(ani_searches), desc="⚠️  ANI", unit="search") as pbar:
+        for search_term in ani_searches:
+            try:
+                limit = ani_limit if search_term == case_name else 10
+                ani_results = search_ani_mentions(client, search_term, limit=limit)
+                for r in ani_results:
+                    r["search_term"] = search_term
+                    r["search_type"] = (
+                        "case_name" if search_term == case_name else "participant"
+                    )
+                result["venues"]["ani"].extend(ani_results)
+                time.sleep(delay)
+            except Exception:
+                pass
+            pbar.update(1)
+
+    # Deduplicate
+    seen = set()
+    unique = []
+    for r in result["venues"]["ani"]:
+        key = (r.get("title", ""), r.get("source", ""))
+        if key not in seen:
+            seen.add(key)
+            unique.append(r)
+    result["venues"]["ani"] = unique
+
+    # =========================================================================
+    # VENUE 3: DRN (content dispute resolution)
+    # =========================================================================
+    with tqdm(total=1, desc="📋 DRN", unit="page") as pbar:
+        try:
+            drn_page = client.get_page("Wikipedia:Dispute resolution noticeboard")
+            if drn_page.exists():
+                drn_content = drn_page.text
+
+                # Check for case name mention
+                if case_name.lower() in drn_content.lower():
+                    result["venues"]["drn"].append(
+                        {
+                            "type": "case_name_mention",
+                            "search_term": case_name,
+                            "url": drn_page.full_url(),
+                        }
+                    )
+
+                # Check for participant mentions
+                for participant in top_participants[:3]:
+                    if participant.lower() in drn_content.lower():
+                        result["venues"]["drn"].append(
+                            {
+                                "type": "participant_mention",
+                                "search_term": participant,
+                                "url": drn_page.full_url(),
+                            }
+                        )
+        except Exception:
+            pass
+        pbar.update(1)
+
+    # =========================================================================
+    # VENUE 1-2: TALK PAGES (where disputes originate - 3O/RfC happen here)
+    # =========================================================================
+    articles_to_fetch = list(all_articles)[:max_talk_pages]
+
+    with tqdm(total=len(articles_to_fetch), desc="💬 Talk", unit="page") as pbar:
+        for article_title in articles_to_fetch:
+            try:
+                talk_page = client.get_talk_page(article_title)
+                if talk_page:
+                    talk_data = {
+                        "article": article_title,
+                        "title": talk_page.title(),
+                        "url": talk_page.full_url(),
+                        "revisions": client.get_revisions(
+                            talk_page.title(), limit=revision_limit
+                        ),
+                    }
+                    talk_data["revision_count"] = len(talk_data["revisions"])
+                    result["venues"]["talk_pages"].append(talk_data)
+                    time.sleep(delay)
+            except Exception:
+                pass
+            pbar.update(1)
+
+    # =========================================================================
+    # SUMMARY
+    # =========================================================================
+    result["summary"] = {
+        "arbcom_pages": len(result["venues"]["arbcom"]["pages"]),
+        "arbcom_talk_pages": len(result["venues"]["arbcom"]["talk_pages"]),
+        "ani_reports": len(result["venues"]["ani"]),
+        "drn_mentions": len(result["venues"]["drn"]),
+        "talk_pages": len(result["venues"]["talk_pages"]),
+        "participants_extracted": len(result["participants"]),
+        "total_revisions": sum(
+            p.get("revision_count", 0)
+            for p in (
+                result["venues"]["arbcom"]["pages"]
+                + result["venues"]["arbcom"]["talk_pages"]
+                + result["venues"]["talk_pages"]
+            )
+        ),
+    }
+
+    return result
+
+
+def main():
+    global logger, _client
+
+    parser = argparse.ArgumentParser(
+        description="Trace dispute lifecycle from arbitration case through all venues",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Traces the dispute resolution lifecycle backwards from an arbitration case:
+
+    ArbCom ← ANI ← DRN ← Talk Page
+
+Collects from each venue:
+  ⚖️  ArbCom: Case pages and talk pages
+  ⚠️  ANI: Conduct reports (case name + participants)
+  📋 DRN: Content dispute resolution attempts
+  💬 Talk pages: Where disputes originate
+
+Examples:
+    python scripts/fetch_arb_dfs.py "Climate change"
+    python scripts/fetch_arb_dfs.py "Gamergate" --max-talk-pages 3
+    python scripts/fetch_arb_dfs.py "Scientology" --dry-run
+        """,
+    )
+    parser.add_argument("case", help="Arbitration case name")
+    parser.add_argument(
+        "--max-talk-pages",
+        type=int,
+        default=5,
+        help="Maximum article talk pages to fetch (default: 5)",
+    )
+    parser.add_argument(
+        "--revision-limit",
+        type=int,
+        default=100,
+        help="Maximum revisions per page (default: 100, 0=all)",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Preview what would be fetched without making API calls",
+    )
+
+    args = parser.parse_args()
+
+    revision_limit = args.revision_limit if args.revision_limit > 0 else None
+
+    if args.dry_run:
+        case_prefix = get_arb_case_prefix(args.case)
+        print("Wikipedia Dispute Lifecycle Fetcher")
+        print("=" * 50)
+        print("\n[DRY RUN] Preview mode\n")
+        print(f"Case: {args.case}")
+        print("\nVenues to trace (backwards from arbitration):")
+        print("\n  ⚖️  ARBCOM:")
+        for suffix in ARB_SUBPAGES:
+            print(f"     • {case_prefix}{suffix}")
+        print("\n  ⚠️  ANI:")
+        print("     • Search for case name")
+        print("     • Search for top 5 participants")
+        print("\n  📋 DRN:")
+        print("     • Check for case/participant mentions")
+        print("\n  💬 TALK PAGES:")
+        print(f"     • Up to {args.max_talk_pages} article talk pages")
+        print(f"\n  Revision limit: {revision_limit or 'all'} per page")
+        print("\n[DRY RUN] No files written.")
+        return
+
+    logger = setup_logging("fetch_arb_dfs")
+    logger.info("Wikipedia Dispute Lifecycle Fetcher")
+    logger.info("=" * 50)
+
+    check_api_credentials(logger)
+
+    client = WikiClient()
+    _client = client
+
+    print(f"\n🔍 Tracing dispute lifecycle: {args.case}")
+    print("=" * 50)
+
+    data = fetch_arb_case_dfs(
+        client,
+        args.case,
+        max_talk_pages=args.max_talk_pages,
+        revision_limit=revision_limit,
+    )
+
+    # Save output
+    safe_name = sanitize_filename(args.case)
+    output_path = get_output_path("arbitration", prefix=f"lifecycle_{safe_name}")
+    save_json(data, output_path)
+
+    # Print summary
+    print("\n" + "=" * 50)
+    print("DISPUTE LIFECYCLE SUMMARY")
+    print("=" * 50)
+    print("\n  Venues collected:")
+    print(
+        f"    ⚖️  ArbCom pages: {data['summary']['arbcom_pages']} + {data['summary']['arbcom_talk_pages']} talk"
+    )
+    print(f"    ⚠️  ANI reports:  {data['summary']['ani_reports']}")
+    print(f"    📋 DRN mentions: {data['summary']['drn_mentions']}")
+    print(f"    💬 Talk pages:   {data['summary']['talk_pages']}")
+    print(f"\n  Participants extracted: {data['summary']['participants_extracted']}")
+    print(f"  Total revisions: {data['summary']['total_revisions']}")
+    print(f"\n📁 Saved to: {output_path}")
+
+    # Memory footprint
+    mem_mb = get_memory_mb()
+    print(f"💾 Memory footprint: {mem_mb:.1f} MB")
+
+    client.log_stats()
+    stats = client.get_stats()
+    print(
+        f"📊 API Stats: {stats['total_requests']} requests in {stats['runtime_minutes']:.1f} min"
+    )
+
+
+if __name__ == "__main__":
+    main()

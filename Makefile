@@ -1,4 +1,4 @@
-.PHONY: install install-dev clean data-dirs help lint fetch-all fetch-full fetch-arb fetch-drn fetch-small test test-unit test-cov
+.PHONY: install install-dev clean data-dirs help lint fetch-all fetch-full fetch-arb fetch-drn fetch-small test test-unit test-cov fetch-venues fetch-ani fetch-talk fetch-arb-dfs fetch-arb-dfs-sample fetch-arb-dfs-sample-full fetch-arb-dfs-all fetch-arb-dfs-all-full update-arb-cases-list fetch-lifecycle fetch-lifecycle-dry fetch-lifecycle-sample fetch-lifecycle-all
 
 # Default target
 help:
@@ -25,6 +25,26 @@ help:
 	@echo "  fetch-all       Run arb + drn collectors only (no articles)"
 	@echo "  fetch-arb       Fetch arbitration cases only"
 	@echo "  fetch-drn       Fetch DRN cases only"
+	@echo ""
+	@echo "Phase 2 - Dispute Venues:"
+	@echo "  fetch-venues ARTICLE=<title>  Fetch all dispute venues for article"
+	@echo "  fetch-ani TERM=<term>         Search ANI archives for term"
+	@echo "  fetch-talk ARTICLE=<title>    Fetch talk page revisions"
+	@echo ""
+	@echo "Arbitration Case DFS:"
+	@echo "  fetch-arb-dfs CASE=<name>     DFS from arb case to all related pages"
+	@echo "  fetch-arb-dfs-dry CASE=<name> Preview what fetch-arb-dfs would fetch"
+	@echo "  fetch-arb-dfs-sample          Fetch 5 example arb cases with DFS (limited)"
+	@echo "  fetch-arb-dfs-sample-full     Fetch 5 example arb cases with ALL pages"
+	@echo "  fetch-arb-dfs-all             Fetch ALL arb cases (~481 cases from Wikipedia)"
+	@echo "  fetch-arb-dfs-all-full        Fetch ALL arb cases with ALL pages (very long)"
+	@echo "  update-arb-cases-list         Update artifacts/arb_cases.txt from Wikipedia"
+	@echo ""
+	@echo "Full Dispute Lifecycle (RECOMMENDED - captures all escalation stages):"
+	@echo "  fetch-lifecycle CASE=<name>   Fetch full lifecycle: Talk→DRN→ANI→ArbCom"
+	@echo "  fetch-lifecycle-dry CASE=<n>  Preview lifecycle fetch"
+	@echo "  fetch-lifecycle-sample        Fetch 5 sample cases with full lifecycle"
+	@echo "  fetch-lifecycle-all           Fetch ALL cases with full lifecycle"
 	@echo ""
 
 # Installation
@@ -64,6 +84,9 @@ data-dirs:
 	mkdir -p data/raw/revisions
 	mkdir -p data/raw/edit_wars
 	mkdir -p data/raw/drn
+	mkdir -p data/raw/dispute_venues
+	mkdir -p data/raw/ani_search
+	mkdir -p data/raw/talk_pages
 	mkdir -p data/processed
 	mkdir -p data/external
 	mkdir -p artifacts/models
@@ -101,6 +124,137 @@ fetch-arb: data-dirs
 fetch-drn: data-dirs
 	uv run python scripts/fetch_all.py --drn
 
+# Phase 2: Dispute venue fetchers
+# Usage: make fetch-venues ARTICLE="Article Title"
+fetch-venues: data-dirs
+ifndef ARTICLE
+	@echo "Error: ARTICLE is required. Usage: make fetch-venues ARTICLE=\"Article Title\""
+	@exit 1
+endif
+	uv run python scripts/fetch_all.py --venues "$(ARTICLE)"
+
+# Usage: make fetch-ani TERM="search term"
+fetch-ani: data-dirs
+ifndef TERM
+	@echo "Error: TERM is required. Usage: make fetch-ani TERM=\"search term\""
+	@exit 1
+endif
+	uv run python scripts/fetch_all.py --ani "$(TERM)"
+
+# Usage: make fetch-talk ARTICLE="Article Title"
+fetch-talk: data-dirs
+ifndef ARTICLE
+	@echo "Error: ARTICLE is required. Usage: make fetch-talk ARTICLE=\"Article Title\""
+	@exit 1
+endif
+	uv run python scripts/fetch_all.py --talk "$(ARTICLE)"
+
+# Arbitration Case DFS: Depth-first search from a case to all related pages
+# Usage: make fetch-arb-dfs CASE="Case Name"
+fetch-arb-dfs: data-dirs
+ifndef CASE
+	@echo "Error: CASE is required. Usage: make fetch-arb-dfs CASE=\"Case Name\""
+	@exit 1
+endif
+	uv run python scripts/fetch_arb_dfs.py "$(CASE)"
+
+fetch-arb-dfs-dry: data-dirs
+ifndef CASE
+	@echo "Error: CASE is required. Usage: make fetch-arb-dfs-dry CASE=\"Case Name\""
+	@exit 1
+endif
+	uv run python scripts/fetch_arb_dfs.py "$(CASE)" --dry-run
+
+# Sample arbitration cases - fetch 5 notable cases with DFS
+# Good examples spanning different topic areas and time periods
+SAMPLE_ARB_CASES := "Climate change" "Gamergate" "Eastern Europe" "Scientology" "Muhammad images"
+
+fetch-arb-dfs-sample: data-dirs
+	@echo "Fetching 5 sample arbitration cases with DFS (limited)..."
+	@echo "Cases: $(SAMPLE_ARB_CASES)"
+	@echo ""
+	@for case in $(SAMPLE_ARB_CASES); do \
+		echo "========================================"; \
+		echo "Fetching: $$case"; \
+		echo "========================================"; \
+		uv run python scripts/fetch_arb_dfs.py "$$case"; \
+	done
+	@echo ""
+	@echo "✓ Sample arbitration cases fetched to data/raw/arbitration/"
+
+# Full sample - fetch ALL pages for 5 sample arbitration cases (no limits)
+fetch-arb-dfs-sample-full: data-dirs
+	@echo "Fetching 5 sample arbitration cases with FULL DFS (all pages, all revisions)..."
+	@echo "Cases: $(SAMPLE_ARB_CASES)"
+	@echo "⚠️  This will take significantly longer - fetching ALL talk pages and ALL revisions"
+	@echo ""
+	@for case in $(SAMPLE_ARB_CASES); do \
+		echo "========================================"; \
+		echo "Fetching (FULL): $$case"; \
+		echo "========================================"; \
+		uv run python scripts/fetch_arb_dfs.py "$$case" --max-talk-pages 0 --revision-limit 0; \
+	done
+	@echo ""
+	@echo "✓ FULL sample arbitration cases fetched to data/raw/arbitration/"
+
+# Path to the list of all arbitration cases (fetched from Wikipedia category)
+ARB_CASES_FILE := artifacts/arb_cases.txt
+
+# Update the arbitration cases list from Wikipedia
+update-arb-cases-list:
+	@echo "Fetching arbitration cases list from Wikipedia..."
+	uv run python scripts/fetch_arb_cases_list.py --output $(ARB_CASES_FILE)
+	@echo "✓ Updated $(ARB_CASES_FILE)"
+
+# Fetch all arbitration cases with default limits
+# Cases are read from artifacts/arb_cases.txt (sourced from Wikipedia category)
+fetch-arb-dfs-all: data-dirs
+	@if [ ! -f $(ARB_CASES_FILE) ]; then \
+		echo "Case list not found. Fetching from Wikipedia..."; \
+		uv run python scripts/fetch_arb_cases_list.py --output $(ARB_CASES_FILE); \
+	fi
+	@total=$$(wc -l < $(ARB_CASES_FILE) | tr -d ' '); \
+	echo "Fetching ALL arbitration cases with DFS..."; \
+	echo "Total cases: $$total (from $(ARB_CASES_FILE))"; \
+	echo "Source: https://en.wikipedia.org/wiki/Category:Wikipedia_arbitration_cases"; \
+	echo "⚠️  This will take many hours. Use Ctrl+C to interrupt (progress is saved)."; \
+	echo ""; \
+	count=0; \
+	while IFS= read -r case || [ -n "$$case" ]; do \
+		count=$$((count + 1)); \
+		echo ""; \
+		echo "========================================"; \
+		echo "[$$count/$$total] Fetching: $$case"; \
+		echo "========================================"; \
+		uv run python scripts/fetch_arb_dfs.py "$$case" || echo "⚠️  Failed: $$case (continuing...)"; \
+	done < $(ARB_CASES_FILE)
+	@echo ""
+	@echo "✓ All arbitration cases fetched to data/raw/arbitration/"
+
+# Fetch all arbitration cases with NO limits (full data)
+fetch-arb-dfs-all-full: data-dirs
+	@if [ ! -f $(ARB_CASES_FILE) ]; then \
+		echo "Case list not found. Fetching from Wikipedia..."; \
+		uv run python scripts/fetch_arb_cases_list.py --output $(ARB_CASES_FILE); \
+	fi
+	@total=$$(wc -l < $(ARB_CASES_FILE) | tr -d ' '); \
+	echo "Fetching ALL arbitration cases with FULL DFS (all pages, all revisions)..."; \
+	echo "Total cases: $$total (from $(ARB_CASES_FILE))"; \
+	echo "Source: https://en.wikipedia.org/wiki/Category:Wikipedia_arbitration_cases"; \
+	echo "⚠️  WARNING: This will take MANY hours. Fetching ALL pages and ALL revisions."; \
+	echo ""; \
+	count=0; \
+	while IFS= read -r case || [ -n "$$case" ]; do \
+		count=$$((count + 1)); \
+		echo ""; \
+		echo "========================================"; \
+		echo "[$$count/$$total] Fetching (FULL): $$case"; \
+		echo "========================================"; \
+		uv run python scripts/fetch_arb_dfs.py "$$case" --max-articles 0 --revision-limit 0 || echo "⚠️  Failed: $$case (continuing...)"; \
+	done < $(ARB_CASES_FILE)
+	@echo ""
+	@echo "✓ FULL arbitration cases fetched to data/raw/arbitration/"
+
 # Clean generated files
 clean:
 	rm -rf data/raw/*
@@ -108,3 +262,64 @@ clean:
 	rm -rf artifacts/logs/*
 	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 	find . -type f -name "*.pyc" -delete 2>/dev/null || true
+# =============================================================================
+# FULL DISPUTE LIFECYCLE FETCHER (RECOMMENDED)
+# =============================================================================
+# This is the correct way to study dispute escalation patterns.
+# Collects data from ALL stages: Talk Pages → DRN → ANI → ArbCom
+# See docs/wikipedia_dispute_resolution_lifecycle.md for the theory.
+
+# Single case lifecycle fetch
+# Usage: make fetch-lifecycle CASE="Climate change"
+fetch-lifecycle: data-dirs
+ifndef CASE
+	@echo "Error: CASE is required. Usage: make fetch-lifecycle CASE=\"Case Name\""
+	@exit 1
+endif
+	uv run python scripts/fetch_dispute_lifecycle.py "$(CASE)"
+
+fetch-lifecycle-dry: data-dirs
+ifndef CASE
+	@echo "Error: CASE is required. Usage: make fetch-lifecycle-dry CASE=\"Case Name\""
+	@exit 1
+endif
+	uv run python scripts/fetch_dispute_lifecycle.py "$(CASE)" --dry-run
+
+# Fetch 5 sample cases with full lifecycle data
+fetch-lifecycle-sample: data-dirs
+	@echo "Fetching 5 sample cases with FULL DISPUTE LIFECYCLE..."
+	@echo "Stages collected: Talk Pages → DRN → ANI → ArbCom"
+	@echo "Cases: $(SAMPLE_ARB_CASES)"
+	@echo ""
+	@for case in $(SAMPLE_ARB_CASES); do \
+		echo "========================================"; \
+		echo "Fetching lifecycle: $$case"; \
+		echo "========================================"; \
+		uv run python scripts/fetch_dispute_lifecycle.py "$$case"; \
+	done
+	@echo ""
+	@echo "✓ Sample lifecycle data saved to data/raw/dispute_venues/"
+
+# Fetch ALL cases with full lifecycle
+fetch-lifecycle-all: data-dirs
+	@if [ ! -f $(ARB_CASES_FILE) ]; then \
+		echo "Case list not found. Fetching from Wikipedia..."; \
+		uv run python scripts/fetch_arb_cases_list.py --output $(ARB_CASES_FILE); \
+	fi
+	@total=$$(wc -l < $(ARB_CASES_FILE) | tr -d ' '); \
+	echo "Fetching ALL cases with FULL DISPUTE LIFECYCLE..."; \
+	echo "Stages: Talk Pages → DRN → ANI → ArbCom"; \
+	echo "Total cases: $$total (from $(ARB_CASES_FILE))"; \
+	echo "⚠️  This will take many hours. Use Ctrl+C to interrupt."; \
+	echo ""; \
+	count=0; \
+	while IFS= read -r case || [ -n "$$case" ]; do \
+		count=$$((count + 1)); \
+		echo ""; \
+		echo "========================================"; \
+		echo "[$$count/$$total] Lifecycle: $$case"; \
+		echo "========================================"; \
+		uv run python scripts/fetch_dispute_lifecycle.py "$$case" || echo "⚠️  Failed: $$case (continuing...)"; \
+	done < $(ARB_CASES_FILE)
+	@echo ""
+	@echo "✓ All lifecycle data saved to data/raw/dispute_venues/"
