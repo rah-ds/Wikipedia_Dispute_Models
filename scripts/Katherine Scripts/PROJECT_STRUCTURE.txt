@@ -1,0 +1,241 @@
+Wikipedia Dispute Resolution Research Project
+==============================================
+
+COMPLETE FILE STRUCTURE:
+
+wikipedia-disputes/
+│
+├── scripts/                                    [Data Collection & Analysis Scripts]
+│   ├── fetch_arbitration_cases.py             Fetches ~485 arbitration cases
+│   ├── fetch_requests_for_comments.py         Fetches ~345 RfCs from Meta-Wiki
+│   └── analyze_case_rfc_relationships.py      Maps cases→RfCs + DR analysis
+│
+├── src/                                        [Core Python Modules]
+│   ├── wiki.py                                Wikipedia API client with OAuth
+│   └── io.py                                  JSON I/O and file utilities
+│
+├── data/                                       [Data Storage - Created on first run]
+│   └── raw/
+│       ├── arbitration/                       Arbitration case JSON files
+│       ├── rfc/                               RfC JSON files
+│       └── analysis/                          Analysis results JSON
+│
+├── run_all.py                                  [Master Script - Run everything]
+│
+├── requirements.txt                            [Python Dependencies]
+│   └── requests>=2.31.0
+│   └── python-dotenv>=1.0.0
+│
+├── .env.example                                [OAuth Token Template]
+│   └── WIKIPEDIA_ACCESS_TOKEN=
+│
+├── .gitignore                                  [Git Ignore Rules]
+│
+└── Documentation Files:
+    ├── GETTING_STARTED.md                     ⭐ START HERE - Quick setup guide
+    ├── QUICKSTART.md                          Fast track to running the project
+    ├── README.md                              Complete documentation
+    └── PROJECT_OVERVIEW.md                    Technical details & research uses
+
+
+INSTALLATION STEPS:
+===================
+
+1. Install dependencies:
+   $ pip install -r requirements.txt
+
+2. (Optional) Add OAuth token:
+   $ cp .env.example .env
+   $ # Edit .env and add your token
+
+3. Run everything:
+   $ python run_all.py
+
+
+WHAT GETS CREATED:
+==================
+
+After running, you'll have these files:
+
+data/raw/arbitration/all_arbitration_cases_YYYYMMDD_HHMMSS.json
+  ├── 485 arbitration cases
+  ├── Full wikitext content
+  ├── Metadata and timestamps
+  └── ~50-100 MB file size
+
+data/raw/rfc/all_requests_for_comments_YYYYMMDD_HHMMSS.json
+  ├── 345 RfCs across 4 categories
+  ├── Full wikitext content
+  ├── Category classifications
+  └── ~30-60 MB file size
+
+data/raw/analysis/arb_rfc_relationships_YYYYMMDD_HHMMSS.json
+  ├── Case → RfC mappings
+  ├── Dispute resolution categorization
+  ├── Summary statistics
+  └── ~5-10 MB file size
+
+
+KEY FEATURES:
+=============
+
+✅ Fetches ALL data (no 250-item limit)
+✅ Automatic pagination with continuation
+✅ OAuth support for higher rate limits (5,000/hour vs 200/hour)
+✅ Built-in rate limiting and error handling
+✅ Progress indicators
+✅ Timestamped outputs
+✅ Complete documentation
+
+
+SCRIPTS OVERVIEW:
+=================
+
+fetch_arbitration_cases.py
+  • Retrieves all arbitration cases from Wikipedia category
+  • Uses categorymembers API with pagination
+  • Fetches full page content for each case
+  • Time: ~5-10 minutes with OAuth, ~12-15 without
+  • Output: JSON with all cases + metadata
+
+fetch_requests_for_comments.py
+  • Retrieves RfCs from 4 Meta-Wiki categories:
+    - Resolved
+    - Unsuccessful
+    - Invalid
+    - Inactive
+  • Fetches full page content
+  • Time: ~5-7 minutes with OAuth, ~10-12 without
+  • Output: JSON with all RfCs + category info
+
+analyze_case_rfc_relationships.py
+  • Maps arbitration cases to RfC references
+  • Extracts dispute resolution methods:
+    - Formal: DRN, AN/I, ArbCom, RfC, 3RR, Mediation
+    - Informal: Talk pages, Third Opinion, etc.
+  • Generates frequency statistics
+  • Creates summary reports
+  • Time: <1 minute
+  • Output: JSON with relationships + analysis
+
+run_all.py
+  • Master script that runs all three scripts
+  • Handles errors and reports status
+  • Options: --skip-arb, --skip-rfc, --analyze-only
+  • Time: ~10-20 minutes total
+
+
+DATA STRUCTURE:
+===============
+
+Arbitration Cases JSON:
+{
+  "category": "Wikipedia arbitration cases",
+  "fetch_timestamp": "2024-01-15 14:30:00",
+  "total_cases": 485,
+  "cases": [
+    {
+      "title": "Wikipedia:Arbitration/Requests/Case/Example",
+      "page_id": 12345,
+      "content": "Full wikitext...",
+      "timestamp": "2024-01-01T00:00:00Z",
+      ...
+    }
+  ]
+}
+
+RfC JSON:
+{
+  "source": "Meta-Wiki Requests for Comments",
+  "categories_fetched": [...],
+  "category_counts": {...},
+  "total_rfcs": 345,
+  "rfcs": [
+    {
+      "title": "Requests for comment/Example",
+      "category": "Requests for comments (resolved)",
+      "content": "Full wikitext...",
+      ...
+    }
+  ]
+}
+
+Analysis JSON:
+{
+  "summary_statistics": {
+    "total_cases_analyzed": 485,
+    "cases_with_rfc_refs": 42,
+    "venue_type_totals": {...},
+    ...
+  },
+  "case_relationships": [
+    {
+      "case_title": "...",
+      "rfc_references": [...],
+      "dispute_resolution_methods": {
+        "formal_methods": [...],
+        "informal_methods": [...],
+        "venue_types": {...}
+      }
+    }
+  ]
+}
+
+
+AUTHENTICATION:
+===============
+
+Without OAuth Token:
+  • Rate limit: 200 requests/hour
+  • Still works, just slower
+  • No configuration needed
+
+With OAuth Token:
+  • Rate limit: 5,000 requests/hour
+  • Much faster data collection
+  • Get token: https://meta.wikimedia.org/wiki/Special:OAuthConsumerRegistration
+  • Add to .env file: WIKIPEDIA_ACCESS_TOKEN=your_token
+
+
+RESEARCH USES:
+==============
+
+1. Process Mining
+   • Map dispute resolution workflows
+   • Identify common escalation paths
+   • Analyze venue effectiveness
+
+2. Network Analysis
+   • Case → RfC relationship graphs
+   • Dispute clustering
+   • Temporal patterns
+
+3. Content Analysis
+   • Topic modeling of disputes
+   • Language patterns
+   • Outcome prediction
+
+4. Effectiveness Studies
+   • Success rates by venue
+   • Time to resolution
+   • Prior DR impact on outcomes
+
+
+NEXT STEPS:
+===========
+
+1. Read GETTING_STARTED.md
+2. Install dependencies
+3. (Optional) Configure OAuth
+4. Run: python run_all.py
+5. Explore the data/raw/ directory
+6. Build your analysis!
+
+
+SUPPORT:
+========
+
+• Quick Setup: GETTING_STARTED.md
+• Full Docs: README.md
+• Technical Details: PROJECT_OVERVIEW.md
+• Code Comments: In all .py files

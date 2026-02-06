@@ -12,8 +12,8 @@ from pathlib import Path
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from wiki_kk import WikiClient
-from io_kk import save_json, get_output_path
+from wiki import WikiClient
+from io import save_json, get_output_path
 import time
 import re
 
