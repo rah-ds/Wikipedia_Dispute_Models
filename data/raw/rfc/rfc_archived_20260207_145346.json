@@ -1,0 +1,190 @@
+{
+  "fetch_type": "archived",
+  "fetched_at": "2026-02-07T14:53:46.514472",
+  "pages_scanned": 1,
+  "total_pages_available": 10,
+  "entry_count": 10,
+  "limit_applied": 10,
+  "entries": [
+    {
+      "title": "U",
+      "case_page": "WP:RFC/U",
+      "level": 2,
+      "start_date": "search=yes",
+      "description": "searchprefix=Wikipedia:Requests for comment/User conduct/Archive}}\n\nThis page is for archiving user conduct disputes listed on [[Wikipedia:Requests for comment]]. Archived disputes should not be added to. Disputes should be archived under any of the following circumstances:\n# If no additional complaints are registered for an extended period of time, and the dispute appears to have stopped.\n# The parties to the dispute agree.\n# The dispute proceeds to another method of dispute resolution, such as mediation or arbitration.\nIf the dispute is handled in mediation or arbitration, please make a note of where the dispute resolution process continued.\n\n==Archived disputes==\n*''Newer entries towards the top''\n*''This page only displays user RFCs from the most recent year and the current year, older discussions can be found in the archives, a search box is provided above''\n*'''As of March 25, 2013, the names of the certifiers are no longer a required field. You can find this information easily by clicking the link to the RFC itself.'''\n\n{| class=\"wikitable\"\n!Name!!Start date!!Description!!Notes\n<!-- Copy and use this template",
+      "notes": "",
+      "content": "searchprefix=Wikipedia:Requests for comment/User conduct/Archive}}\n\nThis page is for archiving user conduct disputes listed on [[Wikipedia:Requests for comment]]. Archived disputes should not be added to. Disputes should be archived under any of the following circumstances:\n# If no additional complaints are registered for an extended period of time, and the dispute appears to have stopped.\n# The parties to the dispute agree.\n# The dispute proceeds to another method of dispute resolution, such as mediation or arbitration.\nIf the dispute is handled in mediation or arbitration, please make a note of where the dispute resolution process continued.\n\n==Archived disputes==\n*''Newer entries towards the top''\n*''This page only displays user RFCs from the most recent year and the current year, older discussions can be found in the archives, a search box is provided above''\n*'''As of March 25, 2013, the names of the certifiers are no longer a required field. You can find this information easily by clicking the link to the RFC itself.'''\n\n{| class=\"wikitable\"\n!Name!!Start date!!Description!!Notes\n<!-- Copy and use this template ",
+      "templates": [],
+      "links": [
+        "WP:RFC/U"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Case Name",
+      "case_page": "Wikipedia:Requests for comment/Case Name",
+      "level": 2,
+      "start_date": "Date filed",
+      "description": "Issues",
+      "notes": "Outcome of the Rfc (agreement, arbitration, mediation, etc).-->",
+      "content": "Issues Outcome of the Rfc (agreement, arbitration, mediation, etc).-->",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Case Name"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Atsme",
+      "case_page": "Wikipedia:Requests for comment/Atsme",
+      "level": 2,
+      "start_date": "24 October 2014",
+      "description": "Canvassing, Ownership of Articles, Battleground behavior",
+      "notes": "Closed due to lack of progress.",
+      "content": "Canvassing, Ownership of Articles, Battleground behavior Closed due to lack of progress.",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Atsme"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "30 SW",
+      "case_page": "Wikipedia:Requests for comment/30 SW",
+      "level": 2,
+      "start_date": "26 August 2014",
+      "description": "Copyright and sourcing issues",
+      "notes": "30 SW has not edited since just before the RFC was filed. RFC indefinitely suspended due to inactivity.",
+      "content": "Copyright and sourcing issues 30 SW has not edited since just before the RFC was filed. RFC indefinitely suspended due to inactivity.",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/30 SW"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Dan56",
+      "case_page": "Wikipedia:Requests for comment/Dan56",
+      "level": 2,
+      "start_date": "July 29 2014",
+      "description": "Copyright concerns, ownership of articles",
+      "notes": "several participants blocked as socks, Dan56 reminded of relevant policies",
+      "content": "Copyright concerns, ownership of articles several participants blocked as socks, Dan56 reminded of relevant policies",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Dan56"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Worldedixor",
+      "case_page": "Wikipedia:Requests for comment/Worldedixor",
+      "level": 2,
+      "start_date": "11 September 2014",
+      "description": "Worldedixor's problematic manner in handling disputes",
+      "notes": "Closed due to inactivity",
+      "content": "Worldedixor's problematic manner in handling disputes Closed due to inactivity",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Worldedixor"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Redrose64",
+      "case_page": "Wikipedia:Requests for comment/Redrose64",
+      "level": 2,
+      "start_date": "15 October 2014",
+      "description": "Page protection of template",
+      "notes": "Page protection level reduced, RFC closed per request of filer.",
+      "content": "Page protection of template Page protection level reduced, RFC closed per request of filer.",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Redrose64"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Middayexpress",
+      "case_page": "Wikipedia:Requests for comment/Middayexpress",
+      "level": 2,
+      "start_date": "22 August 2014",
+      "description": "Alleged POV pushing, page ownership, cherry-picking of sources",
+      "notes": "Further discussion is recommended, possibly followed by a topic-ban request (at ANI) or arbitration if necessary.",
+      "content": "Alleged POV pushing, page ownership, cherry-picking of sources Further discussion is recommended, possibly followed by a topic-ban request (at ANI) or arbitration if necessary.",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Middayexpress"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "24.0.133.234",
+      "case_page": "Wikipedia:Requests for comment/24.0.133.234",
+      "level": 2,
+      "start_date": "11 March 2014",
+      "description": "Inability for the IP to follow policy",
+      "notes": "Delisted for inactivity and very little comments, no edits since day 2 of RFC.",
+      "content": "Inability for the IP to follow policy Delisted for inactivity and very little comments, no edits since day 2 of RFC.",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/24.0.133.234"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Scholarlyarticles",
+      "case_page": "Wikipedia:Requests for comment/Scholarlyarticles",
+      "level": 2,
+      "start_date": "28 February 2014",
+      "description": "Aggressive lack of understanding and violations of various Wikipedia policies",
+      "notes": "Involved and outside views; no response; closed due to inactivity. Uncertainty regarding whether subject retired from Wikipedia or not; recommendation to escalate dispute if issues persist in any case.",
+      "content": "Aggressive lack of understanding and violations of various Wikipedia policies Involved and outside views; no response; closed due to inactivity. Uncertainty regarding whether subject retired from Wikipedia or not; recommendation to escalate dispute if issues persist in any case.",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Scholarlyarticles"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    }
+  ]
+}

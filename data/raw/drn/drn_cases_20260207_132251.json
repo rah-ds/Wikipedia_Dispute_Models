@@ -1,0 +1,871 @@
+{
+  "title": "Wikipedia:Dispute resolution noticeboard",
+  "url": "https://en.wikipedia.org/wiki/Wikipedia%3ADispute_resolution_noticeboard",
+  "fetched_at": "2026-02-07T13:17:56.299078",
+  "revisions": [
+    {
+      "revid": 1336931529,
+      "parentid": 1336876808,
+      "timestamp": "2026-02-06T14:29:35Z",
+      "user": "81567518W",
+      "comment": "/* Adam Milstein */ new section",
+      "size": 302522
+    },
+    {
+      "revid": 1336876808,
+      "parentid": 1336876008,
+      "timestamp": "2026-02-06T06:00:24Z",
+      "user": "DannyS712 bot",
+      "comment": "Task 69: Remove do not archive tags from closed cases",
+      "size": 300471
+    },
+    {
+      "revid": 1336876008,
+      "parentid": 1336875341,
+      "timestamp": "2026-02-06T05:55:00Z",
+      "user": "Robert McClenon",
+      "comment": "/* List of highest-grossing concert tours */   closed",
+      "size": 300841
+    },
+    {
+      "revid": 1336875341,
+      "parentid": 1336859238,
+      "timestamp": "2026-02-06T05:50:36Z",
+      "user": "Robert McClenon",
+      "comment": "/* Shenyang */   closed",
+      "size": 300422
+    },
+    {
+      "revid": 1336859238,
+      "parentid": 1336858524,
+      "timestamp": "2026-02-06T03:50:46Z",
+      "user": "Robert McClenon",
+      "comment": "/* Shenyang discussion */   note",
+      "size": 300082
+    },
+    {
+      "revid": 1336858524,
+      "parentid": 1336857073,
+      "timestamp": "2026-02-06T03:44:59Z",
+      "user": "Robert McClenon",
+      "comment": "/* Summary of dispute by Margarita byca */   hat",
+      "size": 299669
+    },
+    {
+      "revid": 1336857073,
+      "parentid": 1336750644,
+      "timestamp": "2026-02-06T03:30:41Z",
+      "user": "H2v5o68z",
+      "comment": "/* Shenyang */",
+      "size": 299374
+    },
+    {
+      "revid": 1336750644,
+      "parentid": 1336704481,
+      "timestamp": "2026-02-05T14:38:58Z",
+      "user": "Margarita byca",
+      "comment": "/* Summary of dispute by Margarita byca */",
+      "size": 299357
+    },
+    {
+      "revid": 1336704481,
+      "parentid": 1336699009,
+      "timestamp": "2026-02-05T06:43:31Z",
+      "user": "H2v5o68z",
+      "comment": "/* Shenyang */",
+      "size": 299041
+    },
+    {
+      "revid": 1336699009,
+      "parentid": 1336696087,
+      "timestamp": "2026-02-05T06:03:33Z",
+      "user": "H2v5o68z",
+      "comment": "/* Shenyang */",
+      "size": 299043
+    },
+    {
+      "revid": 1336696087,
+      "parentid": 1336610389,
+      "timestamp": "2026-02-05T05:35:29Z",
+      "user": "H2v5o68z",
+      "comment": "/* Shenyang */ new section",
+      "size": 299048
+    },
+    {
+      "revid": 1336610389,
+      "parentid": 1336513145,
+      "timestamp": "2026-02-04T19:38:29Z",
+      "user": "Lowercase sigmabot III",
+      "comment": "Archiving 1 discussion(s) to [[Wikipedia:Dispute resolution noticeboard/Archive 267]]) (bot",
+      "size": 296248
+    },
+    {
+      "revid": 1336513145,
+      "parentid": 1336512912,
+      "timestamp": "2026-02-04T06:00:26Z",
+      "user": "DannyS712 bot",
+      "comment": "Task 69: Remove do not archive tags from closed cases",
+      "size": 299304
+    },
+    {
+      "revid": 1336512912,
+      "parentid": 1336512301,
+      "timestamp": "2026-02-04T05:58:15Z",
+      "user": "Robert McClenon",
+      "comment": "/* Ainu language */   closed",
+      "size": 299674
+    },
+    {
+      "revid": 1336512301,
+      "parentid": 1336494637,
+      "timestamp": "2026-02-04T05:52:39Z",
+      "user": "Robert McClenon",
+      "comment": "/* Elliot Rodger */   closed",
+      "size": 298983
+    },
+    {
+      "revid": 1336494637,
+      "parentid": 1336488892,
+      "timestamp": "2026-02-04T03:07:58Z",
+      "user": "TarnishedPath",
+      "comment": "/* Summary of dispute by TarnishedPath */ cmt",
+      "size": 298419
+    },
+    {
+      "revid": 1336488892,
+      "parentid": 1336374822,
+      "timestamp": "2026-02-04T02:21:20Z",
+      "user": "Elevator Vending Machine",
+      "comment": "/* Ainu language */ new section",
+      "size": 298144
+    },
+    {
+      "revid": 1336374822,
+      "parentid": 1336268790,
+      "timestamp": "2026-02-03T12:28:30Z",
+      "user": "Athanelar",
+      "comment": "/* Elliot Rodger */ new section",
+      "size": 295888
+    },
+    {
+      "revid": 1336268790,
+      "parentid": 1336247591,
+      "timestamp": "2026-02-02T20:58:37Z",
+      "user": "Robert McClenon",
+      "comment": "/* List of highest-grossing concert tours */   notes",
+      "size": 293921
+    },
+    {
+      "revid": 1336247591,
+      "parentid": 1336175985,
+      "timestamp": "2026-02-02T18:51:22Z",
+      "user": "StatsFreak",
+      "comment": "/* List of highest-grossing concert tours */ new section",
+      "size": 293282
+    },
+    {
+      "revid": 1336175985,
+      "parentid": 1336121921,
+      "timestamp": "2026-02-02T08:54:19Z",
+      "user": "Msforzese",
+      "comment": "/* Seventh statement by moderator (Maire Tecnimont) */ Reply",
+      "size": 290749
+    },
+    {
+      "revid": 1336121921,
+      "parentid": 1335884082,
+      "timestamp": "2026-02-02T01:36:27Z",
+      "user": "Robert McClenon",
+      "comment": "/* ninth statements   (Maire Tecnimont) */",
+      "size": 290333
+    },
+    {
+      "revid": 1335884082,
+      "parentid": 1335870318,
+      "timestamp": "2026-01-31T19:21:32Z",
+      "user": "Lowercase sigmabot III",
+      "comment": "Archiving 1 discussion(s) to [[Wikipedia:Dispute resolution noticeboard/Archive 267]]) (bot",
+      "size": 289676
+    },
+    {
+      "revid": 1335870318,
+      "parentid": 1335851077,
+      "timestamp": "2026-01-31T17:56:43Z",
+      "user": "Robert McClenon",
+      "comment": "/* Draftification and content removal based on AI-detector claims */   closed",
+      "size": 329584
+    },
+    {
+      "revid": 1335851077,
+      "parentid": 1335850761,
+      "timestamp": "2026-01-31T15:47:28Z",
+      "user": "IrisChronomia",
+      "comment": "/* Maire Tecnimont */ make the entire discussion its own standalone section instead of hijacking another ongoing one",
+      "size": 328574
+    },
+    {
+      "revid": 1335850761,
+      "parentid": 1335850396,
+      "timestamp": "2026-01-31T15:44:45Z",
+      "user": "IrisChronomia",
+      "comment": "/* Draftification and content removal based on AI-detector claims */",
+      "size": 328458
+    },
+    {
+      "revid": 1335850396,
+      "parentid": 1335849117,
+      "timestamp": "2026-01-31T15:41:39Z",
+      "user": "IrisChronomia",
+      "comment": "/* Draftification and content removal based on AI-detector claims */ Reply",
+      "size": 328274
+    },
+    {
+      "revid": 1335849117,
+      "parentid": 1335848868,
+      "timestamp": "2026-01-31T15:30:47Z",
+      "user": "IrisChronomia",
+      "comment": "/* Draftification and content removal based on AI-detector claims */",
+      "size": 327838
+    },
+    {
+      "revid": 1335848868,
+      "parentid": 1335847774,
+      "timestamp": "2026-01-31T15:28:46Z",
+      "user": "IrisChronomia",
+      "comment": "/* Draftification and content removal based on AI-detector claims */ Reply",
+      "size": 327802
+    },
+    {
+      "revid": 1335847774,
+      "parentid": 1335778721,
+      "timestamp": "2026-01-31T15:19:54Z",
+      "user": "Wecklost23",
+      "comment": "",
+      "size": 327593
+    },
+    {
+      "revid": 1335778721,
+      "parentid": 1335712074,
+      "timestamp": "2026-01-31T04:29:21Z",
+      "user": "Robert McClenon",
+      "comment": "/* eighth statements   (Maire Tecnimont) */",
+      "size": 326529
+    },
+    {
+      "revid": 1335712074,
+      "parentid": 1335703954,
+      "timestamp": "2026-01-30T19:44:05Z",
+      "user": "TextGardener",
+      "comment": "/* Seventh statement by moderator (Maire Tecnimont) */ Reply",
+      "size": 326150
+    },
+    {
+      "revid": 1335703954,
+      "parentid": 1335641117,
+      "timestamp": "2026-01-30T18:57:59Z",
+      "user": "Robert McClenon",
+      "comment": "/*  seventh statements  (Maire Tecnimont) */",
+      "size": 325715
+    },
+    {
+      "revid": 1335641117,
+      "parentid": 1335613557,
+      "timestamp": "2026-01-30T09:54:27Z",
+      "user": "Msforzese",
+      "comment": "/* Sixth statement by moderator (Maire Tecnimont) */ Reply",
+      "size": 324840
+    },
+    {
+      "revid": 1335613557,
+      "parentid": 1335535637,
+      "timestamp": "2026-01-30T05:04:12Z",
+      "user": "Robert McClenon",
+      "comment": "/* sixth statements   (Maire Tecnimont) */",
+      "size": 323085
+    },
+    {
+      "revid": 1335535637,
+      "parentid": 1335495479,
+      "timestamp": "2026-01-29T19:32:28Z",
+      "user": "Lowercase sigmabot III",
+      "comment": "Archiving 1 discussion(s) to [[Wikipedia:Dispute resolution noticeboard/Archive 267]]) (bot",
+      "size": 322584
+    },
+    {
+      "revid": 1335495479,
+      "parentid": 1335472013,
+      "timestamp": "2026-01-29T15:13:24Z",
+      "user": "Perfecnot",
+      "comment": "/* Fourth statement by moderator (Maire Tecnimont) */ Reply",
+      "size": 325592
+    },
+    {
+      "revid": 1335472013,
+      "parentid": 1335465979,
+      "timestamp": "2026-01-29T11:43:09Z",
+      "user": "TextGardener",
+      "comment": "/* Fifth statement by moderator (Maire Tecnimont) */ Reply",
+      "size": 324533
+    },
+    {
+      "revid": 1335465979,
+      "parentid": 1335333809,
+      "timestamp": "2026-01-29T10:37:39Z",
+      "user": "Msforzese",
+      "comment": "/* Fifth statement by moderator (Maire Tecnimont) */ Reply",
+      "size": 324304
+    },
+    {
+      "revid": 1335333809,
+      "parentid": 1335280070,
+      "timestamp": "2026-01-28T17:41:49Z",
+      "user": "Robert McClenon",
+      "comment": "/* fifth statements   (Maire Tecnimont) */",
+      "size": 316577
+    },
+    {
+      "revid": 1335280070,
+      "parentid": 1335202429,
+      "timestamp": "2026-01-28T10:07:25Z",
+      "user": "Msforzese",
+      "comment": "/* Fourth statement by moderator (Maire Tecnimont) */ Reply",
+      "size": 315776
+    },
+    {
+      "revid": 1335202429,
+      "parentid": 1335202302,
+      "timestamp": "2026-01-27T23:00:15Z",
+      "user": "DannyS712 bot",
+      "comment": "Task 69: Remove do not archive tags from closed cases",
+      "size": 313712
+    },
+    {
+      "revid": 1335202302,
+      "parentid": 1335178845,
+      "timestamp": "2026-01-27T22:59:21Z",
+      "user": "Robert McClenon",
+      "comment": "/* Military–industrial complex */   closed",
+      "size": 313901
+    },
+    {
+      "revid": 1335178845,
+      "parentid": 1335177392,
+      "timestamp": "2026-01-27T20:14:50Z",
+      "user": "Uhoj",
+      "comment": "/* Eighth statements by editors (Military-industrial complex) */ ce",
+      "size": 313662
+    },
+    {
+      "revid": 1335177392,
+      "parentid": 1335170652,
+      "timestamp": "2026-01-27T20:05:45Z",
+      "user": "Perfecnot",
+      "comment": "/* Fourth statement by moderator (Maire Tecnimont) */ Reply",
+      "size": 313666
+    },
+    {
+      "revid": 1335170652,
+      "parentid": 1335127906,
+      "timestamp": "2026-01-27T19:19:46Z",
+      "user": "Uhoj",
+      "comment": "/* Eighth statements by editors (Military-industrial complex) */ discussion is moving back to [[Talk:Military–industrial_complex#Excessive_Spending]]",
+      "size": 313336
+    },
+    {
+      "revid": 1335127906,
+      "parentid": 1335106632,
+      "timestamp": "2026-01-27T14:13:34Z",
+      "user": "Msforzese",
+      "comment": "/* Fourth statement by moderator (Maire Tecnimont) */ Reply",
+      "size": 312945
+    },
+    {
+      "revid": 1335106632,
+      "parentid": 1335080685,
+      "timestamp": "2026-01-27T10:48:29Z",
+      "user": "TextGardener",
+      "comment": "/* Fourth statement by moderator (Maire Tecnimont) */ Reply",
+      "size": 311327
+    },
+    {
+      "revid": 1335080685,
+      "parentid": 1334999863,
+      "timestamp": "2026-01-27T06:10:47Z",
+      "user": "Robert McClenon",
+      "comment": "/* eighth statements   (Military-industrial complex) */",
+      "size": 310592
+    },
+    {
+      "revid": 1334999863,
+      "parentid": 1334956110,
+      "timestamp": "2026-01-26T20:38:19Z",
+      "user": "Uhoj",
+      "comment": "/* Seventh statements by editors (Military-industrial complex) */ questions",
+      "size": 309624
+    },
+    {
+      "revid": 1334956110,
+      "parentid": 1334928127,
+      "timestamp": "2026-01-26T15:27:14Z",
+      "user": "Msforzese",
+      "comment": "/* Fourth statement by moderator (Maire Tecnimont) */ Reply",
+      "size": 309340
+    },
+    {
+      "revid": 1334928127,
+      "parentid": 1334926024,
+      "timestamp": "2026-01-26T11:25:09Z",
+      "user": "Msforzese",
+      "comment": "/* Fourth statement by moderator (Maire Tecnimont) */ Reply",
+      "size": 307369
+    },
+    {
+      "revid": 1334926024,
+      "parentid": 1334884049,
+      "timestamp": "2026-01-26T11:01:30Z",
+      "user": "TextGardener",
+      "comment": "/* Fourth statement by moderator (Maire Tecnimont) */ Reply",
+      "size": 302881
+    },
+    {
+      "revid": 1334884049,
+      "parentid": 1334883946,
+      "timestamp": "2026-01-26T04:30:09Z",
+      "user": "DannyS712 bot",
+      "comment": "Task 69: Remove do not archive tags from closed cases",
+      "size": 302433
+    },
+    {
+      "revid": 1334883946,
+      "parentid": 1334868640,
+      "timestamp": "2026-01-26T04:29:20Z",
+      "user": "Robert McClenon",
+      "comment": "/* UFC 324#Bonus_awards */   closed",
+      "size": 302622
+    },
+    {
+      "revid": 1334868640,
+      "parentid": 1334868564,
+      "timestamp": "2026-01-26T02:32:17Z",
+      "user": "UFCBonusExpertParamount",
+      "comment": "/* UFC 324#Bonus_awards */",
+      "size": 302200
+    },
+    {
+      "revid": 1334868564,
+      "parentid": 1334867064,
+      "timestamp": "2026-01-26T02:31:34Z",
+      "user": "UFCBonusExpertParamount",
+      "comment": "/* UFC 324#Bonus_awards */",
+      "size": 302029
+    },
+    {
+      "revid": 1334867064,
+      "parentid": 1334866841,
+      "timestamp": "2026-01-26T02:20:28Z",
+      "user": "UFCBonusExpertParamount",
+      "comment": "/* UFC 324#Bonus_awards */",
+      "size": 302007
+    },
+    {
+      "revid": 1334866841,
+      "parentid": 1334856320,
+      "timestamp": "2026-01-26T02:18:36Z",
+      "user": "UFCBonusExpertParamount",
+      "comment": "/* UFC 324#Bonus_awards */ new section",
+      "size": 301969
+    },
+    {
+      "revid": 1334856320,
+      "parentid": 1334804081,
+      "timestamp": "2026-01-26T00:55:59Z",
+      "user": "Robert McClenon",
+      "comment": "/* seventh statements   */",
+      "size": 299425
+    },
+    {
+      "revid": 1334804081,
+      "parentid": 1334795240,
+      "timestamp": "2026-01-25T19:19:58Z",
+      "user": "Lowercase sigmabot III",
+      "comment": "Archiving 1 discussion(s) to [[Wikipedia:Dispute resolution noticeboard/Archive 267]]) (bot",
+      "size": 298158
+    },
+    {
+      "revid": 1334795240,
+      "parentid": 1334791949,
+      "timestamp": "2026-01-25T18:26:20Z",
+      "user": "Uhoj",
+      "comment": "/* Third statement by Uhoj */ I don't know what change is being proposed",
+      "size": 300498
+    },
+    {
+      "revid": 1334791949,
+      "parentid": 1334775918,
+      "timestamp": "2026-01-25T18:05:36Z",
+      "user": "Uhoj",
+      "comment": "/* Sixth statement by Apfelmaische */ suggested change made and more added from Tan",
+      "size": 300230
+    },
+    {
+      "revid": 1334775918,
+      "parentid": 1334775278,
+      "timestamp": "2026-01-25T16:07:16Z",
+      "user": "Apfelmaische",
+      "comment": "/* Third statement by Uhoj */ Reply",
+      "size": 299996
+    },
+    {
+      "revid": 1334775278,
+      "parentid": 1334771176,
+      "timestamp": "2026-01-25T16:02:28Z",
+      "user": "Apfelmaische",
+      "comment": "/* Military–industrial complex */",
+      "size": 299730
+    },
+    {
+      "revid": 1334771176,
+      "parentid": 1334753431,
+      "timestamp": "2026-01-25T15:30:26Z",
+      "user": "IzzySwag",
+      "comment": "/* Fourth statement by moderator (This City Made Us) */ Reply",
+      "size": 299180
+    },
+    {
+      "revid": 1334753431,
+      "parentid": 1334753041,
+      "timestamp": "2026-01-25T13:04:58Z",
+      "user": "David Tornheim",
+      "comment": "/* Sixth statement by moderator (Military-industrial complex) */ Reply",
+      "size": 299020
+    },
+    {
+      "revid": 1334753041,
+      "parentid": 1334752819,
+      "timestamp": "2026-01-25T13:01:21Z",
+      "user": "David Tornheim",
+      "comment": "/* Sixth statements by David Tornheim (Military-industrial complex) */ replies re \"excessive spending\"",
+      "size": 298719
+    },
+    {
+      "revid": 1334752819,
+      "parentid": 1334750274,
+      "timestamp": "2026-01-25T12:59:21Z",
+      "user": "David Tornheim",
+      "comment": "/* Fifth statements by editors (Military-industrial complex) */ Reply",
+      "size": 298642
+    },
+    {
+      "revid": 1334750274,
+      "parentid": 1334750212,
+      "timestamp": "2026-01-25T12:35:35Z",
+      "user": "David Tornheim",
+      "comment": "/* Third statement by Uhoj */ Reply",
+      "size": 296966
+    },
+    {
+      "revid": 1334750212,
+      "parentid": 1334747514,
+      "timestamp": "2026-01-25T12:35:03Z",
+      "user": "David Tornheim",
+      "comment": "/* Third statement by Uhoj */ Reply",
+      "size": 296847
+    },
+    {
+      "revid": 1334747514,
+      "parentid": 1334734020,
+      "timestamp": "2026-01-25T12:07:48Z",
+      "user": "David Tornheim",
+      "comment": "/* Sixth statements by David Tornheim (Military-industrial complex) */ revise comment and put it in its own section",
+      "size": 295155
+    },
+    {
+      "revid": 1334734020,
+      "parentid": 1334708691,
+      "timestamp": "2026-01-25T09:58:16Z",
+      "user": "PBugaboo",
+      "comment": "/* Fourth statement by moderator (This City Made Us) */ Reply",
+      "size": 294795
+    },
+    {
+      "revid": 1334708691,
+      "parentid": 1334708206,
+      "timestamp": "2026-01-25T05:23:49Z",
+      "user": "Robert McClenon",
+      "comment": "/* fourth statements   (This City Made Us) */",
+      "size": 294222
+    },
+    {
+      "revid": 1334708206,
+      "parentid": 1334666924,
+      "timestamp": "2026-01-25T05:18:46Z",
+      "user": "Robert McClenon",
+      "comment": "/* fourth statements   (Maire Tecnimont) */",
+      "size": 293704
+    },
+    {
+      "revid": 1334666924,
+      "parentid": 1334666776,
+      "timestamp": "2026-01-24T23:29:47Z",
+      "user": "David Tornheim",
+      "comment": "/* Sixth statements by editors (Military-industrial complex) */ remove ping detritus",
+      "size": 293192
+    },
+    {
+      "revid": 1334666776,
+      "parentid": 1334665859,
+      "timestamp": "2026-01-24T23:28:54Z",
+      "user": "David Tornheim",
+      "comment": "/* Sixth statements by editors (Military-industrial complex) */ add {{u|Volodia.woldemar}}'s comment of desire to discuss at talk page",
+      "size": 293326
+    },
+    {
+      "revid": 1334665859,
+      "parentid": 1334648248,
+      "timestamp": "2026-01-24T23:22:20Z",
+      "user": "David Tornheim",
+      "comment": "/* Sixth statements by editors (Military-industrial complex) */ Reply",
+      "size": 292912
+    },
+    {
+      "revid": 1334648248,
+      "parentid": 1334615158,
+      "timestamp": "2026-01-24T21:11:19Z",
+      "user": "Uhoj",
+      "comment": "/* Sixth statements by editors (Military-industrial complex) */ support RfC",
+      "size": 291779
+    },
+    {
+      "revid": 1334615158,
+      "parentid": 1334615076,
+      "timestamp": "2026-01-24T17:10:15Z",
+      "user": "Robert McClenon",
+      "comment": "/* Maire Tecnimont */   open",
+      "size": 291246
+    },
+    {
+      "revid": 1334615076,
+      "parentid": 1334614950,
+      "timestamp": "2026-01-24T17:09:38Z",
+      "user": "Robert McClenon",
+      "comment": "/* List of video games considered the best */   open",
+      "size": 291241
+    },
+    {
+      "revid": 1334614950,
+      "parentid": 1334580770,
+      "timestamp": "2026-01-24T17:08:47Z",
+      "user": "Robert McClenon",
+      "comment": "/* Act III:_This_City_Made_Us */   open",
+      "size": 291236
+    },
+    {
+      "revid": 1334580770,
+      "parentid": 1334579258,
+      "timestamp": "2026-01-24T11:45:29Z",
+      "user": "Msforzese",
+      "comment": "/* Third statement by moderator (Maire Tecnimont) */ Reply",
+      "size": 291231
+    },
+    {
+      "revid": 1334579258,
+      "parentid": 1334547990,
+      "timestamp": "2026-01-24T11:27:44Z",
+      "user": "TextGardener",
+      "comment": "/* Third statement by moderator (Maire Tecnimont) */ Reply",
+      "size": 289926
+    },
+    {
+      "revid": 1334547990,
+      "parentid": 1334535891,
+      "timestamp": "2026-01-24T05:23:39Z",
+      "user": "Robert McClenon",
+      "comment": "/* sixth statements   (Military-industrial complex) */",
+      "size": 289642
+    },
+    {
+      "revid": 1334535891,
+      "parentid": 1334535645,
+      "timestamp": "2026-01-24T03:51:32Z",
+      "user": "Robert McClenon",
+      "comment": "/* Military–industrial complex */   open",
+      "size": 288440
+    },
+    {
+      "revid": 1334535645,
+      "parentid": 1334501752,
+      "timestamp": "2026-01-24T03:48:21Z",
+      "user": "Robert McClenon",
+      "comment": "/* third statements   (Maire Tecnimont) */",
+      "size": 288435
+    },
+    {
+      "revid": 1334501752,
+      "parentid": 1334493291,
+      "timestamp": "2026-01-23T23:15:38Z",
+      "user": "Uhoj",
+      "comment": "/* Fifth statements by editors (Military-industrial complex) */ does a source exist that contests the statement?",
+      "size": 286352
+    },
+    {
+      "revid": 1334493291,
+      "parentid": 1334492780,
+      "timestamp": "2026-01-23T21:59:20Z",
+      "user": "Apfelmaische",
+      "comment": "/* Military–industrial complex */ Cleaning up unnecessary reflists from my replies",
+      "size": 286139
+    },
+    {
+      "revid": 1334492780,
+      "parentid": 1334492128,
+      "timestamp": "2026-01-23T21:55:18Z",
+      "user": "Apfelmaische",
+      "comment": "/* Fifth statements by editors (Military-industrial complex) */ Typo and section link",
+      "size": 286223
+    },
+    {
+      "revid": 1334492128,
+      "parentid": 1334492057,
+      "timestamp": "2026-01-23T21:50:49Z",
+      "user": "Apfelmaische",
+      "comment": "/* Fifth statements by editors (Military-industrial complex) */ Fix broken notes reflist",
+      "size": 286142
+    },
+    {
+      "revid": 1334492057,
+      "parentid": 1334491787,
+      "timestamp": "2026-01-23T21:50:13Z",
+      "user": "Apfelmaische",
+      "comment": "/* Fifth statements by editors (Military-industrial complex) */ note reflist",
+      "size": 286141
+    },
+    {
+      "revid": 1334491787,
+      "parentid": 1334479232,
+      "timestamp": "2026-01-23T21:48:12Z",
+      "user": "Apfelmaische",
+      "comment": "/* Fifth statements by editors (Military-industrial complex) */",
+      "size": 286117
+    },
+    {
+      "revid": 1334479232,
+      "parentid": 1334473690,
+      "timestamp": "2026-01-23T20:07:03Z",
+      "user": "Robert McClenon",
+      "comment": "/* Second statements by editors (Maire Tecnimont)= */ Fixing style/layout errors",
+      "size": 285154
+    },
+    {
+      "revid": 1334473690,
+      "parentid": 1334407321,
+      "timestamp": "2026-01-23T19:26:51Z",
+      "user": "Lowercase sigmabot III",
+      "comment": "Archiving 3 discussion(s) to [[Wikipedia:Dispute resolution noticeboard/Archive 267]]) (bot",
+      "size": 285153
+    },
+    {
+      "revid": 1334407321,
+      "parentid": 1334404648,
+      "timestamp": "2026-01-23T10:23:13Z",
+      "user": "Msforzese",
+      "comment": "/* Second statement by moderator (Maire Tecnimont) */ Reply",
+      "size": 325050
+    },
+    {
+      "revid": 1334404648,
+      "parentid": 1334399346,
+      "timestamp": "2026-01-23T09:50:48Z",
+      "user": "TextGardener",
+      "comment": "/* Second statement by moderator (Maire Tecnimont) */ Reply",
+      "size": 323044
+    },
+    {
+      "revid": 1334399346,
+      "parentid": 1334380851,
+      "timestamp": "2026-01-23T08:41:55Z",
+      "user": "Msforzese",
+      "comment": "/* First statement by moderator (Maire Tecnimont) */ Reply",
+      "size": 322747
+    },
+    {
+      "revid": 1334380851,
+      "parentid": 1334369703,
+      "timestamp": "2026-01-23T05:45:25Z",
+      "user": "PBugaboo",
+      "comment": "/* Third statements by editors (This City Made Us) */ Reply",
+      "size": 322328
+    },
+    {
+      "revid": 1334369703,
+      "parentid": 1334367579,
+      "timestamp": "2026-01-23T03:39:53Z",
+      "user": "Robert McClenon",
+      "comment": "/* second statements  (Maire Tecnimont) */",
+      "size": 322203
+    }
+  ],
+  "parsed_cases": [
+    {
+      "title": "List of video games considered the best",
+      "level": 2,
+      "content": "\n\n{{DR case status|open}}\n<!-- [[User:DoNotArchiveUntil]] 00:45, 8 March 2026 (UTC) -->{{User:ClueBot III/DoNotArchiveUntil|1770511512}}<!-- REMEMBER TO REMOVE THE PREVIOUS COMMENT WHEN CLOSING THIS THREAD! -->\n{{drn filing editor|Andrzejbanas|00:45, 11 January 2026 (UTC)}}\n\n<span style=\"font-size:110%\">'''Have you discussed this on a talk page?'''</span>\n\nYes, I have discussed this issue on a talk page already.\n\n<span style=\"font-size:110%\">'''Location of dispute'''</span>\n* {{pagelinks|List of video games considered the best}}\n<span style=\"font-size:110%\">'''Users involved'''</span>\n* {{User|Andrzejbanas}}\n* {{User|Pro translator}}\n* {{User|NegativeMP1}}\n* {{User|TompaDompa}}\n* {{User|Phediuk}}\n* {{User|Rollinginhisgrave}}\n* {{User|SnowFire}}\n* {{User|Shooterwalker}}\n<span style=\"font-size:110%\">'''Dispute overview'''</span>\n\nA discussion that initially involved suggesting changing the past \"List of video games considered the best\" to \"List of video games voted the best\". From there, the conversation has been expanded to the list being against various guidelines. The ones brought up were [[WP:LISTCRITERIA]] (\" Avoid original or arbitrary criteria that would synthesize a list that is not plainly verifiable in reliable sources.\"), [[WP:INTERPRETING]] (on how the data is interpreted to clarify \"considered the best\" games). Further discussion has come as discussion went further on clarify that if what \"best\" is meant to be, as sources put different figures on this or if even using the term \"best\" is appropriate here per [[MOS:WTW]]. All the editors can not seem to agree if the current format is following the guidelines or not.\n\n<span style=\"font-size:110%\">'''How have you tried to resolve this dispute before coming here?'''</span>\n\n[[Talk:List of video games considered the best#Changing title to \"List of video games voted the best\"]]\n\n<span style=\"font-size:110%\">'''How do you think we can help resolve the dispute?'''</span>\n\nThe discussion has come to us sort of continuously replying or re-iterating points to hope and convince each other. It's gotten to a point where it's unclear on what points we are all at and how to analyze rules and guidelines. Mediation on where we currently stand and fresh guidance to help us get our points across would help us move forward with how to handle the article.\n{{collapse top|Discussion taking place at [[Wikipedia:Dispute resolution noticeboard/List of video games]].  [[User:Robert McClenon|Robert McClenon]] ([[User talk:Robert McClenon|talk]]) 03:00, 22 January 2026 (UTC)}}\n",
+      "templates": [
+        "DR case status",
+        "User:ClueBot III/DoNotArchiveUntil",
+        "drn filing editor",
+        "pagelinks",
+        "User",
+        "User",
+        "User",
+        "User",
+        "User",
+        "User",
+        "User",
+        "User",
+        "collapse top"
+      ],
+      "links": [
+        "WP:LISTCRITERIA",
+        "WP:INTERPRETING",
+        "MOS:WTW",
+        "Talk:List of video games considered the best#Changing title to \"List of video games voted the best\""
+      ],
+      "status": "unknown",
+      "participants": [
+        "DoNotArchiveUntil",
+        "Robert McClenon"
+      ],
+      "participant_count": 2,
+      "disputed_articles": [
+        "WP:LISTCRITERIA",
+        "WP:INTERPRETING",
+        "MOS:WTW"
+      ]
+    },
+    {
+      "title": "Adam Milstein",
+      "level": 2,
+      "content": "\n\n{{DR case status}}\n<!-- [[User:DoNotArchiveUntil]] 14:29, 6 March 2026 (UTC) -->{{User:ClueBot III/DoNotArchiveUntil|1772807375}}<!-- REMEMBER TO REMOVE THE PREVIOUS COMMENT WHEN CLOSING THIS THREAD! -->\n{{drn filing editor|81567518W|14:29, 6 February 2026 (UTC)}}\n\n<span style=\"font-size:110%\">'''Have you discussed this on a talk page?'''</span>\n\nYes, I have discussed this issue on a talk page already.\n\n<span style=\"font-size:110%\">'''Location of dispute'''</span>\n* {{pagelinks|Adam Milstein}}\n<span style=\"font-size:110%\">'''Users involved'''</span>\n* {{User|81567518W}}\n* {{User|Metallurgist}}\n* {{User|Kentuckyfriedtucker}}\n<span style=\"font-size:110%\">'''Dispute overview'''</span>\n\nThis BLP currently identifies the subject as \"Israeli-American\", which is an ethnicity. Per MOS:ETHNICITY, nationality should generally be favored over ethnicity. The subject of the BLP is a dual-citizen, therefore changes have been made from \"Israeli-American\" to \"Israeli and American\" which have been reverted. Some editors suggest that the way the subject is identified in RS should supersede the MoS.\n\n<span style=\"font-size:110%\">'''How have you tried to resolve this dispute before coming here?'''</span>\n\n[[Talk:Adam_Milstein/Archive_3]]\n[[Talk:Adam_Milstein]]\n\n<span style=\"font-size:110%\">'''How do you think we can help resolve the dispute?'''</span>\n\nIt appears there's a misunderstanding of the MoS, its contents, or applicability here that if clarified would resolve this issue.\n\n",
+      "templates": [
+        "DR case status",
+        "User:ClueBot III/DoNotArchiveUntil",
+        "drn filing editor",
+        "pagelinks",
+        "User",
+        "User",
+        "User"
+      ],
+      "links": [
+        "Talk:Adam_Milstein/Archive_3",
+        "Talk:Adam_Milstein"
+      ],
+      "status": "unknown",
+      "participants": [
+        "DoNotArchiveUntil"
+      ],
+      "participant_count": 1,
+      "disputed_articles": []
+    }
+  ],
+  "case_count": 2
+}

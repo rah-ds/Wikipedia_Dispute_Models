@@ -1,0 +1,1823 @@
+{
+  "fetch_type": "archived",
+  "fetched_at": "2026-02-07T15:18:36.619552",
+  "pages_scanned": 3,
+  "entry_count": 100,
+  "unique_case_pages": 300,
+  "limit_applied": 100,
+  "sources": {
+    "main_archive": [
+      "Wikipedia:Requests for comment/User conduct/Archive"
+    ],
+    "sub_archives_included": true,
+    "allpages_included": true
+  },
+  "entries": [
+    {
+      "title": "U",
+      "case_page": "WP:RFC/U",
+      "level": 2,
+      "start_date": "search=yes",
+      "description": "searchprefix=Wikipedia:Requests for comment/User conduct/Archive}}\n\nThis page is for archiving user conduct disputes listed on [[Wikipedia:Requests for comment]]. Archived disputes should not be added to. Disputes should be archived under any of the following circumstances:\n# If no additional complaints are registered for an extended period of time, and the dispute appears to have stopped.\n# The parties to the dispute agree.\n# The dispute proceeds to another method of dispute resolution, such as mediation or arbitration.\nIf the dispute is handled in mediation or arbitration, please make a note of where the dispute resolution process continued.\n\n==Archived disputes==\n*''Newer entries towards the top''\n*''This page only displays user RFCs from the most recent year and the current year, older discussions can be found in the archives, a search box is provided above''\n*'''As of March 25, 2013, the names of the certifiers are no longer a required field. You can find this information easily by clicking the link to the RFC itself.'''\n\n{| class=\"wikitable\"\n!Name!!Start date!!Description!!Notes\n<!-- Copy and use this template",
+      "notes": "",
+      "content": "searchprefix=Wikipedia:Requests for comment/User conduct/Archive}}\n\nThis page is for archiving user conduct disputes listed on [[Wikipedia:Requests for comment]]. Archived disputes should not be added to. Disputes should be archived under any of the following circumstances:\n# If no additional complaints are registered for an extended period of time, and the dispute appears to have stopped.\n# The parties to the dispute agree.\n# The dispute proceeds to another method of dispute resolution, such as mediation or arbitration.\nIf the dispute is handled in mediation or arbitration, please make a note of where the dispute resolution process continued.\n\n==Archived disputes==\n*''Newer entries towards the top''\n*''This page only displays user RFCs from the most recent year and the current year, older discussions can be found in the archives, a search box is provided above''\n*'''As of March 25, 2013, the names of the certifiers are no longer a required field. You can find this information easily by clicking the link to the RFC itself.'''\n\n{| class=\"wikitable\"\n!Name!!Start date!!Description!!Notes\n<!-- Copy and use this template ",
+      "templates": [],
+      "links": [
+        "WP:RFC/U"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Case Name",
+      "case_page": "Wikipedia:Requests for comment/Case Name",
+      "level": 2,
+      "start_date": "Date filed",
+      "description": "Issues",
+      "notes": "Outcome of the Rfc (agreement, arbitration, mediation, etc).-->",
+      "content": "Issues Outcome of the Rfc (agreement, arbitration, mediation, etc).-->",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Case Name"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Atsme",
+      "case_page": "Wikipedia:Requests for comment/Atsme",
+      "level": 2,
+      "start_date": "24 October 2014",
+      "description": "Canvassing, Ownership of Articles, Battleground behavior",
+      "notes": "Closed due to lack of progress.",
+      "content": "Canvassing, Ownership of Articles, Battleground behavior Closed due to lack of progress.",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Atsme"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "30 SW",
+      "case_page": "Wikipedia:Requests for comment/30 SW",
+      "level": 2,
+      "start_date": "26 August 2014",
+      "description": "Copyright and sourcing issues",
+      "notes": "30 SW has not edited since just before the RFC was filed. RFC indefinitely suspended due to inactivity.",
+      "content": "Copyright and sourcing issues 30 SW has not edited since just before the RFC was filed. RFC indefinitely suspended due to inactivity.",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/30 SW"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Dan56",
+      "case_page": "Wikipedia:Requests for comment/Dan56",
+      "level": 2,
+      "start_date": "July 29 2014",
+      "description": "Copyright concerns, ownership of articles",
+      "notes": "several participants blocked as socks, Dan56 reminded of relevant policies",
+      "content": "Copyright concerns, ownership of articles several participants blocked as socks, Dan56 reminded of relevant policies",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Dan56"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Worldedixor",
+      "case_page": "Wikipedia:Requests for comment/Worldedixor",
+      "level": 2,
+      "start_date": "11 September 2014",
+      "description": "Worldedixor's problematic manner in handling disputes",
+      "notes": "Closed due to inactivity",
+      "content": "Worldedixor's problematic manner in handling disputes Closed due to inactivity",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Worldedixor"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Redrose64",
+      "case_page": "Wikipedia:Requests for comment/Redrose64",
+      "level": 2,
+      "start_date": "15 October 2014",
+      "description": "Page protection of template",
+      "notes": "Page protection level reduced, RFC closed per request of filer.",
+      "content": "Page protection of template Page protection level reduced, RFC closed per request of filer.",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Redrose64"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Middayexpress",
+      "case_page": "Wikipedia:Requests for comment/Middayexpress",
+      "level": 2,
+      "start_date": "22 August 2014",
+      "description": "Alleged POV pushing, page ownership, cherry-picking of sources",
+      "notes": "Further discussion is recommended, possibly followed by a topic-ban request (at ANI) or arbitration if necessary.",
+      "content": "Alleged POV pushing, page ownership, cherry-picking of sources Further discussion is recommended, possibly followed by a topic-ban request (at ANI) or arbitration if necessary.",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Middayexpress"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "24.0.133.234",
+      "case_page": "Wikipedia:Requests for comment/24.0.133.234",
+      "level": 2,
+      "start_date": "11 March 2014",
+      "description": "Inability for the IP to follow policy",
+      "notes": "Delisted for inactivity and very little comments, no edits since day 2 of RFC.",
+      "content": "Inability for the IP to follow policy Delisted for inactivity and very little comments, no edits since day 2 of RFC.",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/24.0.133.234"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Scholarlyarticles",
+      "case_page": "Wikipedia:Requests for comment/Scholarlyarticles",
+      "level": 2,
+      "start_date": "28 February 2014",
+      "description": "Aggressive lack of understanding and violations of various Wikipedia policies",
+      "notes": "Involved and outside views; no response; closed due to inactivity. Uncertainty regarding whether subject retired from Wikipedia or not; recommendation to escalate dispute if issues persist in any case.",
+      "content": "Aggressive lack of understanding and violations of various Wikipedia policies Involved and outside views; no response; closed due to inactivity. Uncertainty regarding whether subject retired from Wikipedia or not; recommendation to escalate dispute if issues persist in any case.",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Scholarlyarticles"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Arzel.2",
+      "case_page": "Wikipedia:Requests for comment/Arzel.2",
+      "level": 2,
+      "start_date": "11 January 2014",
+      "description": "Issues",
+      "notes": "\"Whitewashing\" not firmly established, but likely NPA violations are.",
+      "content": "Issues \"Whitewashing\" not firmly established, but likely NPA violations are.",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Arzel.2"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "QuackGuru2",
+      "case_page": "Wikipedia:Requests for comment/QuackGuru2",
+      "level": 2,
+      "start_date": "26 January 2014",
+      "description": "Overzealous in efforts to stamp out what they consider fringe",
+      "notes": "No clear consensus that user is disruptive in what is already a contentious area.",
+      "content": "Overzealous in efforts to stamp out what they consider fringe No clear consensus that user is disruptive in what is already a contentious area.",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/QuackGuru2"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "PrivateWiddle",
+      "case_page": "Wikipedia:Requests_for_comment/PrivateWiddle",
+      "level": 2,
+      "start_date": "15 February 2014",
+      "description": "Dispute over user signatures",
+      "notes": "Nearly all comments occurred within a week of original complaint. Clear consensus was that the signature was not offensive",
+      "content": "Dispute over user signatures Nearly all comments occurred within a week of original complaint. Clear consensus was that the signature was not offensive",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests_for_comment/PrivateWiddle"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Colton Cosmic",
+      "case_page": "Wikipedia:Requests for comment/Colton Cosmic",
+      "level": 2,
+      "start_date": "9 February 2014",
+      "description": "Request for unblock, sockpuppetry issues",
+      "notes": "Consensus is to leave the user blocked.",
+      "content": "Request for unblock, sockpuppetry issues Consensus is to leave the user blocked.",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Colton Cosmic"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Oranjelo100",
+      "case_page": "Wikipedia:Requests for comment/Oranjelo100",
+      "level": 2,
+      "start_date": "20 November 2013",
+      "description": "Perform large numbers of edits, with relatively small amounts of actual changes to the articles and not using edit summaries.",
+      "notes": "Closed due to inactivity and low participation.",
+      "content": "Perform large numbers of edits, with relatively small amounts of actual changes to the articles and not using edit summaries. Closed due to inactivity and low participation.",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Oranjelo100"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Joefromrandb",
+      "case_page": "Wikipedia:Requests for comment/Joefromrandb",
+      "level": 2,
+      "start_date": "15 August 2013",
+      "description": "Long-term incivility, personal attacks, and edit-warring",
+      "notes": "No conclusive outcomes, Wikipedia is not a battleground, edit warring is unconstructive",
+      "content": "Long-term incivility, personal attacks, and edit-warring No conclusive outcomes, Wikipedia is not a battleground, edit warring is unconstructive",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Joefromrandb"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Baboon43",
+      "case_page": "Wikipedia:Requests for comment/Baboon43",
+      "level": 2,
+      "start_date": "22 June 2013",
+      "description": "Uncivil behavior, edit warring, and sock puppetry, mostly related to Islam topics",
+      "notes": "Discussion went stale after a few weeks, with Baboon43 refusing to participate, before the issue was taken to AN, resulting in an indefinite block.",
+      "content": "Uncivil behavior, edit warring, and sock puppetry, mostly related to Islam topics Discussion went stale after a few weeks, with Baboon43 refusing to participate, before the issue was taken to AN, resulting in an indefinite block.",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Baboon43"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Arzel",
+      "case_page": "Wikipedia:Requests for comment/Arzel",
+      "level": 2,
+      "start_date": "13 May 2013",
+      "description": "Talk page and behavioral issues",
+      "notes": "Withdrawn after discussion on talk page of RfC/U",
+      "content": "Talk page and behavioral issues Withdrawn after discussion on talk page of RfC/U",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Arzel"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Folken de Fanel",
+      "case_page": "Wikipedia:Requests for comment/Folken de Fanel",
+      "level": 2,
+      "start_date": "30 April 2013",
+      "description": "Problematic behaviour around AfDs and notability issues related to Dungeons & Dragons",
+      "notes": "There was consensus that Folken's approach needs to change. The closing admin suggested that he agree to a voluntary topic ban regarding deletion issues in the problem area.",
+      "content": "Problematic behaviour around AfDs and notability issues related to Dungeons & Dragons There was consensus that Folken's approach needs to change. The closing admin suggested that he agree to a voluntary topic ban regarding deletion issues in the problem area.",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Folken de Fanel"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Jax 0677",
+      "case_page": "Wikipedia:Requests for comment/Jax 0677",
+      "level": 2,
+      "start_date": "29 March 2013",
+      "description": "Problematic creation of navboxes and other content",
+      "notes": "Some progress, later apparenrlty reversed. a proposal for a formal topic ban is anticipated",
+      "content": "Problematic creation of navboxes and other content Some progress, later apparenrlty reversed. a proposal for a formal topic ban is anticipated",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Jax 0677"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Will Beback",
+      "case_page": "User:Jmh649/Will Beback",
+      "level": 2,
+      "start_date": "23 March 2013",
+      "description": "To discuss whether Will should be allowed back to edit",
+      "notes": "No consensus to overturn Arbcom decision",
+      "content": "To discuss whether Will should be allowed back to edit No consensus to overturn Arbcom decision",
+      "templates": [],
+      "links": [
+        "User:Jmh649/Will Beback"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "CartoonDiablo",
+      "case_page": "Wikipedia:Requests for comment/CartoonDiablo",
+      "level": 2,
+      "start_date": "20 January 2013",
+      "description": "Tendentious editing/POV issues",
+      "notes": "All participants other than the certifiers felt that this dispute was about content, not conduct",
+      "content": "Tendentious editing/POV issues All participants other than the certifiers felt that this dispute was about content, not conduct",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/CartoonDiablo"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Apostle12",
+      "case_page": "Wikipedia:Requests for comment/Apostle12",
+      "level": 2,
+      "start_date": "21 December 2012",
+      "description": "Soapboxing, personal attacks, unreliable sources, canvassing",
+      "notes": "Closed due to inactivity",
+      "content": "Soapboxing, personal attacks, unreliable sources, canvassing Closed due to inactivity",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Apostle12"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Cantaloupe2",
+      "case_page": "Wikipedia:Requests for comment/Cantaloupe2",
+      "level": 2,
+      "start_date": "31 January 2013",
+      "description": "Concerns about civility, battlegrounding, and related conduct issues",
+      "notes": "[[User:AndrewDressel|AndrewDressel]], [[User:CorporateM|CorporateM]]",
+      "content": "Concerns about civility, battlegrounding, and related conduct issues [[User:AndrewDressel|AndrewDressel]], [[User:CorporateM|CorporateM]]",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Cantaloupe2"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive",
+      "participants": [
+        "AndrewDressel",
+        "CorporateM"
+      ],
+      "participant_count": 2,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Epeefleche",
+      "case_page": "Wikipedia:Requests for comment/Epeefleche",
+      "level": 2,
+      "start_date": "15 January 2013",
+      "description": "Removal of unsourced content from articles",
+      "notes": "[[User:Danjel|Danjel]], [[User:Graham87|Graham87]]",
+      "content": "Removal of unsourced content from articles [[User:Danjel|Danjel]], [[User:Graham87|Graham87]]",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Epeefleche"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive",
+      "participants": [
+        "Graham87",
+        "Danjel"
+      ],
+      "participant_count": 2,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "AlexCovarrubias",
+      "case_page": "Wikipedia:Requests for comment/AlexCovarrubias",
+      "level": 2,
+      "start_date": "",
+      "description": "2007.  (See above for AlexCovarrubias 2)",
+      "notes": "",
+      "content": "2007.  (See above for AlexCovarrubias 2)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/AlexCovarrubias"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Certified.Gangsta",
+      "case_page": "Wikipedia:Requests for comment/Certified.Gangsta",
+      "level": 2,
+      "start_date": "",
+      "description": "Revert warring.",
+      "notes": "",
+      "content": "Revert warring.",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Certified.Gangsta"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Mattisse",
+      "case_page": "Wikipedia:Requests for comment/Mattisse",
+      "level": 2,
+      "start_date": "",
+      "description": "RfCs brought solely to harass or subdue an adversary",
+      "notes": "",
+      "content": "RfCs brought solely to harass or subdue an adversary",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Mattisse"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "SPUI",
+      "case_page": "Wikipedia:Requests for comment/SPUI",
+      "level": 2,
+      "start_date": "",
+      "description": "Failing to obtain consensus for moving highways articles. Sent to arbitration.",
+      "notes": "",
+      "content": "Failing to obtain consensus for moving highways articles. Sent to arbitration.",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/SPUI"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Cool Cat",
+      "case_page": "Wikipedia:Requests for comment/Cool Cat",
+      "level": 2,
+      "start_date": "",
+      "description": "Failing to interact well with another user.",
+      "notes": "",
+      "content": "Failing to interact well with another user.",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Cool Cat"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Jersey Devil",
+      "case_page": "Wikipedia:Requests for comment/Jersey Devil",
+      "level": 2,
+      "start_date": "",
+      "description": "Misuse of AfD.",
+      "notes": "",
+      "content": "Misuse of AfD.",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Jersey Devil"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Zarbon",
+      "case_page": "Wikipedia:Requests for comment/Zarbon",
+      "level": 2,
+      "start_date": "",
+      "description": "disregards consensus, uses sockpuppets to avoid 3RR. 18:25, 15 August 2006 (UTC)",
+      "notes": "",
+      "content": "disregards consensus, uses sockpuppets to avoid 3RR. 18:25, 15 August 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Zarbon"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Kven users RfC",
+      "case_page": "Wikipedia:Requests for comment/Kven users RfC",
+      "level": 2,
+      "start_date": "",
+      "description": "Allegations of POV pushing and soapboxing. 18:25, 15 August 2006 (UTC)",
+      "notes": "",
+      "content": "Allegations of POV pushing and soapboxing. 18:25, 15 August 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Kven users RfC"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Hurricane Devon",
+      "case_page": "Wikipedia:Requests for comment/Hurricane Devon",
+      "level": 2,
+      "start_date": "",
+      "description": "attacks others, mischaracterizes edits as vandalism. 18:25, 15 August 2006 (UTC)",
+      "notes": "",
+      "content": "attacks others, mischaracterizes edits as vandalism. 18:25, 15 August 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Hurricane Devon"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Futureobservatory",
+      "case_page": "Wikipedia:Requests for comment/Futureobservatory",
+      "level": 2,
+      "start_date": "",
+      "description": "Spamming. 18:25, 15 August 2006 (UTC)",
+      "notes": "",
+      "content": "Spamming. 18:25, 15 August 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Futureobservatory"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Irgendwer",
+      "case_page": "Wikipedia:Requests for comment/Irgendwer",
+      "level": 2,
+      "start_date": "",
+      "description": "Edit-warring on Libertarianism and Anarcho-capitalism. 18:25, 15 August 2006 (UTC)",
+      "notes": "",
+      "content": "Edit-warring on Libertarianism and Anarcho-capitalism. 18:25, 15 August 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Irgendwer"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Pansophia",
+      "case_page": "Wikipedia:Requests for comment/Pansophia",
+      "level": 2,
+      "start_date": "",
+      "description": "18:25, 15 August 2006 (UTC)",
+      "notes": "",
+      "content": "18:25, 15 August 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Pansophia"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Aquirata",
+      "case_page": "Wikipedia:Requests for comment/Aquirata",
+      "level": 2,
+      "start_date": "",
+      "description": "Violations of WP:POINT and WP:V on astrology-related topics. 18:09, 15 August 2006 (UTC)",
+      "notes": "",
+      "content": "Violations of WP:POINT and WP:V on astrology-related topics. 18:09, 15 August 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Aquirata"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "-Barry-",
+      "case_page": "Wikipedia:Requests for comment/-Barry-",
+      "level": 2,
+      "start_date": "",
+      "description": "Moved to Arbitration at [[Wikipedia:Requests for arbitration/Pudgenet]]. 18:07, 15 August 2006 (UTC)",
+      "notes": "",
+      "content": "Moved to Arbitration at [[Wikipedia:Requests for arbitration/Pudgenet]]. 18:07, 15 August 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/-Barry-"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Zer0faults",
+      "case_page": "Wikipedia:Requests for comment/Zer0faults",
+      "level": 2,
+      "start_date": "",
+      "description": "Removes complaints from his talk page, personally attacks other users, ignores NPOV, countless reverts, and endless innuendo on talk pages. Moved to Arbitration [[Wikipedia:Requests for arbitration/Zer0faults]]. 18:04, 15 August 2006 (UTC)",
+      "notes": "",
+      "content": "Removes complaints from his talk page, personally attacks other users, ignores NPOV, countless reverts, and endless innuendo on talk pages. Moved to Arbitration [[Wikipedia:Requests for arbitration/Zer0faults]]. 18:04, 15 August 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Zer0faults"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Iloveminun",
+      "case_page": "Wikipedia:Requests for comment/Iloveminun",
+      "level": 2,
+      "start_date": "",
+      "description": "Problems with fair use, spamming for his own web site, and retaliatory vandalism. Referred to Arbcom as [[Wikipedia:Requests for arbitration/Iloveminun]]. Filed 4 June 2006, archived 15:21, 15 August 2006 (UTC)",
+      "notes": "",
+      "content": "Problems with fair use, spamming for his own web site, and retaliatory vandalism. Referred to Arbcom as [[Wikipedia:Requests for arbitration/Iloveminun]]. Filed 4 June 2006, archived 15:21, 15 August 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Iloveminun"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Ste4k",
+      "case_page": "Wikipedia:Requests for comment/Ste4k",
+      "level": 2,
+      "start_date": "",
+      "description": "Violations of [[WP:HOAX]], [[WP:DICK]], [[WP:CON]], [[WP:POINT]], [[WP:TPG]], [[WP:AGF]], [[WP:CIV]], etc.  21:09, July 21, 2006",
+      "notes": "",
+      "content": "Violations of [[WP:HOAX]], [[WP:DICK]], [[WP:CON]], [[WP:POINT]], [[WP:TPG]], [[WP:AGF]], [[WP:CIV]], etc.  21:09, July 21, 2006",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Ste4k"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Hipocrite",
+      "case_page": "Wikipedia:Requests for comment/Hipocrite",
+      "level": 2,
+      "start_date": "",
+      "description": "Disagreement over whether Hipocrite's reversions and comments to [[user:History21|History21]] based on alleged hoaxes are consistent with [[WP:AGF]], [[Wikipedia:harassment]], and [[WP:Bite]]. 00:49, 1 August 2006 (UTC)",
+      "notes": "",
+      "content": "Disagreement over whether Hipocrite's reversions and comments to [[user:History21|History21]] based on alleged hoaxes are consistent with [[WP:AGF]], [[Wikipedia:harassment]], and [[WP:Bite]]. 00:49, 1 August 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Hipocrite"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Durin and fair use image removals",
+      "case_page": "Wikipedia:Requests for comment/Durin and fair use image removals",
+      "level": 2,
+      "start_date": "",
+      "description": "- User is removing images that are fair use violations from userspace without requesting user to do so.",
+      "notes": "",
+      "content": "- User is removing images that are fair use violations from userspace without requesting user to do so.",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Durin and fair use image removals"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Cyde",
+      "case_page": "Wikipedia:Requests for comment/Cyde",
+      "level": 2,
+      "start_date": "",
+      "description": "misuse of semi-bot to convert reference styles contrary to consensus.[[User:Lulu of the Lotus-Eaters|Lulu of the Lotus-Eaters]] 17:12, 24 April 2006 (UTC)",
+      "notes": "",
+      "content": "misuse of semi-bot to convert reference styles contrary to consensus.[[User:Lulu of the Lotus-Eaters|Lulu of the Lotus-Eaters]] 17:12, 24 April 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Cyde"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Take Me Higher",
+      "case_page": "Wikipedia:Requests for comment/Take Me Higher",
+      "level": 2,
+      "start_date": "",
+      "description": "Image contribution issue of quality over a collection of uploads +200 and no response to comments or requests by other Wikipedians. [[User:Stude62|Stude62]] 20:41, 23 April 2006 (UTC)",
+      "notes": "",
+      "content": "Image contribution issue of quality over a collection of uploads +200 and no response to comments or requests by other Wikipedians. [[User:Stude62|Stude62]] 20:41, 23 April 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Take Me Higher"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "-Lumière",
+      "case_page": "Wikipedia:Requests for comment/-Lumière",
+      "level": 2,
+      "start_date": "",
+      "description": "Refusing to accept consensus at [[Wikipedia talk:Neutral point of view]] and other policy pages and attempting to force the issue. Multiple accounts.",
+      "notes": "",
+      "content": "Refusing to accept consensus at [[Wikipedia talk:Neutral point of view]] and other policy pages and attempting to force the issue. Multiple accounts.",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/-Lumière"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Mikeabundo",
+      "case_page": "Wikipedia:Requests for comment/Mikeabundo",
+      "level": 2,
+      "start_date": "",
+      "description": "",
+      "notes": "",
+      "content": "",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Mikeabundo"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Eyeonvaughan",
+      "case_page": "Wikipedia:Requests for comment/Eyeonvaughan",
+      "level": 2,
+      "start_date": "",
+      "description": "– Consistently violates [[WP:NPOV]] and brings his own personal/political agenda into discussions and edits. Is the cause of a number of edit wars and continuously violates [[WP:NPA]] by attacking my character. [[User:Pm shef|pm_shef]] 04:05, 5 April 2006 (UTC)",
+      "notes": "",
+      "content": "– Consistently violates [[WP:NPOV]] and brings his own personal/political agenda into discussions and edits. Is the cause of a number of edit wars and continuously violates [[WP:NPA]] by attacking my character. [[User:Pm shef|pm_shef]] 04:05, 5 April 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Eyeonvaughan"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Go for it!",
+      "case_page": "Wikipedia:Requests for comment/Go for it!",
+      "level": 2,
+      "start_date": "",
+      "description": "- Unwilling to take wikiquette criticisms seriously. --[[User:Quiddity|Quiddity]] 06:39, 7 April 2006 (UTC)",
+      "notes": "",
+      "content": "- Unwilling to take wikiquette criticisms seriously. --[[User:Quiddity|Quiddity]] 06:39, 7 April 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Go for it!"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Sam Spade",
+      "case_page": "Wikipedia:Requests for comment/Sam Spade",
+      "level": 2,
+      "start_date": "",
+      "description": "- When he is in a dispute and outnumber by consensus ([[Socialism]], [[Human]], [[God]]), he reverts without discussion (or very little of it) and fails to [[WP:COOL|stay cool]] and makes some uncivil comments. -- [[User:Infinity0|<span style=\"color:red;\">infinity</span>]]'''[[User_talk:Infinity0|<span style=\"color:red;\">0</span>]]''' 17:40, 4 April 2006 (UTC)",
+      "notes": "",
+      "content": "- When he is in a dispute and outnumber by consensus ([[Socialism]], [[Human]], [[God]]), he reverts without discussion (or very little of it) and fails to [[WP:COOL|stay cool]] and makes some uncivil comments. -- [[User:Infinity0|<span style=\"color:red;\">infinity</span>]]'''[[User_talk:Infinity0|<span style=\"color:red;\">0</span>]]''' 17:40, 4 April 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Sam Spade"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "WAREL",
+      "case_page": "Wikipedia:Requests for comment/WAREL",
+      "level": 2,
+      "start_date": "",
+      "description": "- widespread flounting of consensus at math articles. -[[User:Lethe/sig|lethe]] <sup>[[User talk:Lethe/sig|talk]] [{{fullurl:User talk:Lethe|action=edit&section=new}} +]</sup> 01:17, 4 April 2006 (UTC)",
+      "notes": "",
+      "content": "- widespread flounting of consensus at math articles. -[[User:Lethe/sig|lethe]] <sup>[[User talk:Lethe/sig|talk]] [{{fullurl:User talk:Lethe|action=edit&section=new}} +]</sup> 01:17, 4 April 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/WAREL"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Rms125a@hotmail.com",
+      "case_page": "Wikipedia:Requests for comment/Rms125a@hotmail.com",
+      "level": 2,
+      "start_date": "",
+      "description": "Civility, POV, sockpuppetry, 3RR, block evasion on Ireland-related articles. 20:17, 28 March 2006 (UTC)",
+      "notes": "",
+      "content": "Civility, POV, sockpuppetry, 3RR, block evasion on Ireland-related articles. 20:17, 28 March 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Rms125a@hotmail.com"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Prasi90",
+      "case_page": "Wikipedia:Requests for comment/Prasi90",
+      "level": 2,
+      "start_date": "",
+      "description": "&ndash; vandalism, trolling and personal attacks; reoffending after several blocks. [[User:Haza-w|<b><span style=\"font-family:Verdana; color:#FF0000;\">haz</span></b>]]&nbsp;<sub>([[User_talk:Haza-w|user&nbsp;talk]])</sub><sup>[[User:Haza-w/Esperanza|'''<span style=\"color:#00FF00;\">e</span>''']]</sup> ''20:09,&nbsp;14&nbsp;March&nbsp;2006''",
+      "notes": "",
+      "content": "&ndash; vandalism, trolling and personal attacks; reoffending after several blocks. [[User:Haza-w|<b><span style=\"font-family:Verdana; color:#FF0000;\">haz</span></b>]]&nbsp;<sub>([[User_talk:Haza-w|user&nbsp;talk]])</sub><sup>[[User:Haza-w/Esperanza|'''<span style=\"color:#00FF00;\">e</span>''']]</sup> ''20:09,&nbsp;14&nbsp;March&nbsp;2006''",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Prasi90"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Aucaman",
+      "case_page": "Wikipedia:Requests for comment/Aucaman",
+      "level": 2,
+      "start_date": "",
+      "description": "Chronic violator of the 3rr, engages in personal attacks ([[WP:NPA]]), ignores consensus ([[WP:CON]]), possibly part of a Zionist [political] movement, hijacks one or two pages by repeatedly reverting, using banners and excessive texts in the discussion page, incivil behavior ([[WP:CIVIL]]), gaming the system ([[WP:POINT]]), assuming bad faith([[WP:AGF]]), harassment ([[WP:STALK]]), and engages in personal attacks ([[WP:NPA]]).",
+      "notes": "",
+      "content": "Chronic violator of the 3rr, engages in personal attacks ([[WP:NPA]]), ignores consensus ([[WP:CON]]), possibly part of a Zionist [political] movement, hijacks one or two pages by repeatedly reverting, using banners and excessive texts in the discussion page, incivil behavior ([[WP:CIVIL]]), gaming the system ([[WP:POINT]]), assuming bad faith([[WP:AGF]]), harassment ([[WP:STALK]]), and engages in personal attacks ([[WP:NPA]]).",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Aucaman"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "FourthAve",
+      "case_page": "Wikipedia:Requests for comment/FourthAve_FourthAve",
+      "level": 2,
+      "start_date": "",
+      "description": "Many violations of [[WP:NPA]] He has received three formal warnings, several informal warnings but continues to attack.  Edits include obscenity and vandalism.  Revision by other editors of vandalism and POV posts are met with bad-faith accusations.",
+      "notes": "",
+      "content": "Many violations of [[WP:NPA]] He has received three formal warnings, several informal warnings but continues to attack.  Edits include obscenity and vandalism.  Revision by other editors of vandalism and POV posts are met with bad-faith accusations.",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/FourthAve_FourthAve"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Happyjoe and associated sockpuppets",
+      "case_page": "Wikipedia:Requests for comment/Happyjoe",
+      "level": 2,
+      "start_date": "",
+      "description": "Insistence on adding [http://en.wikipedia.org/w/index.php?title=Big_Spring%2C_Texas&diff=30777864&oldid=21487597 this unsourced POV edit] despite numerous efforts on talk page to work out solution; 3RR violations; deceptive edit summaries, impersonation, and sockpuppetry. <b>[[User:Ohnoitsjamie|<span style=\"font-family:Arial; color:#D47C14;\">OhNo</span>]][[User:Ohnoitsjamie|<span style=\"color:#7D4C0C;\">itsJamie</span>]][[User talk:Ohnoitsjamie|<sup>Talk</sup>]]</b> 01:05, 23 February 2006 (UTC)",
+      "notes": "",
+      "content": "Insistence on adding [http://en.wikipedia.org/w/index.php?title=Big_Spring%2C_Texas&diff=30777864&oldid=21487597 this unsourced POV edit] despite numerous efforts on talk page to work out solution; 3RR violations; deceptive edit summaries, impersonation, and sockpuppetry. <b>[[User:Ohnoitsjamie|<span style=\"font-family:Arial; color:#D47C14;\">OhNo</span>]][[User:Ohnoitsjamie|<span style=\"color:#7D4C0C;\">itsJamie</span>]][[User talk:Ohnoitsjamie|<sup>Talk</sup>]]</b> 01:05, 23 February 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Happyjoe"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "United States Congress",
+      "case_page": "Wikipedia:Requests for comment/United States Congress",
+      "level": 2,
+      "start_date": "",
+      "description": ", POV-pushing, revert warring by United States congressional staffers, failure to work with the community, constant vandalism. [[User:Natalinasmpf|Elle <small><sub><span style=\"color:#CC9920;\">vécut heureuse</span></sub></small> <small><span style=\"color:blue;\"><sup>à jamais</sup></span></small>]] ([[User talk:Natalinasmpf|Be eudaimonic!]]) 08:03, 30 January 2006 (UTC)",
+      "notes": "",
+      "content": ", POV-pushing, revert warring by United States congressional staffers, failure to work with the community, constant vandalism. [[User:Natalinasmpf|Elle <small><sub><span style=\"color:#CC9920;\">vécut heureuse</span></sub></small> <small><span style=\"color:blue;\"><sup>à jamais</sup></span></small>]] ([[User talk:Natalinasmpf|Be eudaimonic!]]) 08:03, 30 January 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/United States Congress"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Ixfd64",
+      "case_page": "Wikipedia:Requests for comment/Ixfd64",
+      "level": 2,
+      "start_date": "",
+      "description": "- reversing username blocks set by other administrators, with no prior discussion. 14:32, 12 March 2006 (UTC)",
+      "notes": "",
+      "content": "- reversing username blocks set by other administrators, with no prior discussion. 14:32, 12 March 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Ixfd64"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Ta bu shi da yu (2)",
+      "case_page": "Wikipedia:Requests for comment/Ta bu shi da yu 2",
+      "level": 2,
+      "start_date": "",
+      "description": "&ndash; out-of-process deletions of images that were tagged as \"fair use\" but believed not to be.  22:51, 27 February 2006 (UTC)",
+      "notes": "",
+      "content": "&ndash; out-of-process deletions of images that were tagged as \"fair use\" but believed not to be.  22:51, 27 February 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Ta bu shi da yu 2"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "February userbox deletion",
+      "case_page": "Wikipedia:Requests for comment/February userbox deletion",
+      "level": 2,
+      "start_date": "",
+      "description": "&ndash; Both admins were involved in a mass speedy deletion of userboxes this past weekend, and it appears they have only added fuel to the fire.",
+      "notes": "",
+      "content": "&ndash; Both admins were involved in a mass speedy deletion of userboxes this past weekend, and it appears they have only added fuel to the fire.",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/February userbox deletion"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Snowspinner",
+      "case_page": "Wikipedia:Requests for comment/Snowspinner 3",
+      "level": 2,
+      "start_date": "",
+      "description": "(3rd RfC) - violations of blocking and deletion policies",
+      "notes": "",
+      "content": "(3rd RfC) - violations of blocking and deletion policies",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Snowspinner 3"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Diyako",
+      "case_page": "Wikipedia:Requests for comment/Diyako",
+      "level": 2,
+      "start_date": "",
+      "description": "Civility and pov concerns on a number of articles. Systematic bias may also be observed. <small>[[User:Cool Cat|Cool Cat]]<sup>[[User talk:Cool Cat|Talk]]|[[Special:Emailuser/Cool Cat|@]]</sup></small> 00:43, 25 March 2006 (UTC)",
+      "notes": "",
+      "content": "Civility and pov concerns on a number of articles. Systematic bias may also be observed. <small>[[User:Cool Cat|Cool Cat]]<sup>[[User talk:Cool Cat|Talk]]|[[Special:Emailuser/Cool Cat|@]]</sup></small> 00:43, 25 March 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Diyako"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Heja helweda",
+      "case_page": "Wikipedia:Requests for comment/Heja helweda",
+      "level": 2,
+      "start_date": "",
+      "description": "Civility and pov concerns on a number of articles. Systematic bias may also be observed. <small>[[User:Cool Cat|Cool Cat]]<sup>[[User talk:Cool Cat|Talk]]|[[Special:Emailuser/Cool Cat|@]]</sup></small> 00:43, 25 March 2006 (UTC)",
+      "notes": "",
+      "content": "Civility and pov concerns on a number of articles. Systematic bias may also be observed. <small>[[User:Cool Cat|Cool Cat]]<sup>[[User talk:Cool Cat|Talk]]|[[Special:Emailuser/Cool Cat|@]]</sup></small> 00:43, 25 March 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Heja helweda"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Muhamed",
+      "case_page": "Wikipedia:Requests for comment/Muhamed",
+      "level": 2,
+      "start_date": "",
+      "description": "Civility and pov concerns on a number of articles. Systematic bias may also be observed. <small>[[User:Cool Cat|Cool Cat]]<sup>[[User talk:Cool Cat|Talk]]|[[Special:Emailuser/Cool Cat|@]]</sup></small> 00:43, 25 March 2006 (UTC)",
+      "notes": "",
+      "content": "Civility and pov concerns on a number of articles. Systematic bias may also be observed. <small>[[User:Cool Cat|Cool Cat]]<sup>[[User talk:Cool Cat|Talk]]|[[Special:Emailuser/Cool Cat|@]]</sup></small> 00:43, 25 March 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Muhamed"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Rydel",
+      "case_page": "Wikipedia:Requests for comment/Rydel",
+      "level": 2,
+      "start_date": "",
+      "description": "for excessive Personal insults in my direction, lack of wikiettiquette [http://en.wikipedia.org/wiki/Special:Contributions/Rydel] (title ''one contributor'') and on [[Belarusian language]] which was reverted back and forth over 50 times since December, and was locked twice as a result. Rydel refused any discussions or medition proposals.--[[User:Kuban kazak|Kuban Cossack]] 18:22, 24 March 2006 (UTC)",
+      "notes": "",
+      "content": "for excessive Personal insults in my direction, lack of wikiettiquette [http://en.wikipedia.org/wiki/Special:Contributions/Rydel] (title ''one contributor'') and on [[Belarusian language]] which was reverted back and forth over 50 times since December, and was locked twice as a result. Rydel refused any discussions or medition proposals.--[[User:Kuban kazak|Kuban Cossack]] 18:22, 24 March 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Rydel"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Williamo1",
+      "case_page": "Wikipedia:Requests for comment/Williamo1",
+      "level": 2,
+      "start_date": "",
+      "description": "Continued placement of POV material on page [[Hyper-Calvinism]]. 17:08, 23 March 2006 (UTC)",
+      "notes": "",
+      "content": "Continued placement of POV material on page [[Hyper-Calvinism]]. 17:08, 23 March 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Williamo1"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Siddiqui",
+      "case_page": "Wikipedia:Requests for comment/Siddiqui",
+      "level": 2,
+      "start_date": "",
+      "description": ": This user has been unilaterally editing sensitive history related articles to conform to his POV.",
+      "notes": "",
+      "content": ": This user has been unilaterally editing sensitive history related articles to conform to his POV.",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Siddiqui"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "hakozen",
+      "case_page": "Wikipedia:Requests for comment/hakozen",
+      "level": 2,
+      "start_date": "",
+      "description": "&ndash; keeps changing the article on the [[Huns]] to claim they were Turkic, even though we've worked hard to make this page show all sides of the issue; the exact ethnic identity of the Huns is disputed, and we want the page to reflect that. Nonetheless, Hakozen keeps changing all NPOV mentions of \"uncertain\" etc. to \"Turkic\" and no longer participates on the Talk page. After I contacted him on his user page, he claimed I and the other level-headed editors were anti-Turk racists serving Greek and Armenian masters. [[User:Crculver|CRCulver]] 01:58, 6 March 2006 (UTC)",
+      "notes": "",
+      "content": "&ndash; keeps changing the article on the [[Huns]] to claim they were Turkic, even though we've worked hard to make this page show all sides of the issue; the exact ethnic identity of the Huns is disputed, and we want the page to reflect that. Nonetheless, Hakozen keeps changing all NPOV mentions of \"uncertain\" etc. to \"Turkic\" and no longer participates on the Talk page. After I contacted him on his user page, he claimed I and the other level-headed editors were anti-Turk racists serving Greek and Armenian masters. [[User:Crculver|CRCulver]] 01:58, 6 March 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/hakozen"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Agapetos angel",
+      "case_page": "Wikipedia:Requests for comment/Agapetos angel",
+      "level": 2,
+      "start_date": "",
+      "description": "- User has been disruptive at the article of her husband. She has also been editing heavily the article of his employer Answers in Genesis, and the article of a colleague of her husband, Ken Ham. Many of these edits have raised concerns over POV and the appropriateness of editors editing articles that they directly have a stake in.",
+      "notes": "",
+      "content": "- User has been disruptive at the article of her husband. She has also been editing heavily the article of his employer Answers in Genesis, and the article of a colleague of her husband, Ken Ham. Many of these edits have raised concerns over POV and the appropriateness of editors editing articles that they directly have a stake in.",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Agapetos angel"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Young Zaphod",
+      "case_page": "Wikipedia:Requests for comment/Young Zaphod",
+      "level": 2,
+      "start_date": "",
+      "description": "&ndash; multiple violations of [[WP:SOCK]] on multiple vote pages; violations of [[WP:3RR]]; problems with [[WP:NOR]]. [[User:Karnesky|Karnesky]] 12:22, 20 February 2006 (UTC)",
+      "notes": "",
+      "content": "&ndash; multiple violations of [[WP:SOCK]] on multiple vote pages; violations of [[WP:3RR]]; problems with [[WP:NOR]]. [[User:Karnesky|Karnesky]] 12:22, 20 February 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Young Zaphod"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Licorne",
+      "case_page": "Wikipedia:Requests for comment/Licorne",
+      "level": 2,
+      "start_date": "",
+      "description": "- accused of persistent and constant POV pushing, personal attacks, and original research. --[[User:Fastfission|Fastfission]] 17:26, 17 February 2006 (UTC)",
+      "notes": "",
+      "content": "- accused of persistent and constant POV pushing, personal attacks, and original research. --[[User:Fastfission|Fastfission]] 17:26, 17 February 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Licorne"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Mr j galt",
+      "case_page": "Wikipedia:Requests for comment/User:Mr j galt",
+      "level": 2,
+      "start_date": "",
+      "description": "&ndash; - Problems with [[WP:NPOV]], [[WP:POINT]], [[WP:AGF]], [[WP:CIVIL]], [[WP:NPA]], [[WP:NOR]], and gaming of [[WP:3RR]], etc. After conducting a multi-front revert war on the [[Plame affair]], [[Larry Johnson (political commentator)]], and [[Valerie Plame]] articles that drove all three into protection, the user then extended his attempt to about a dozen articles related to the Plame matter, repeating the very same kinds of edits in order to cast erroneous doubt on the established facts of the case. Any editor challenging him is inevitably accused by Mr j galt of whatever it is he himself has been accused, in a classic Troll style. 22:25, 4 February 2006 (UTC)",
+      "notes": "",
+      "content": "&ndash; - Problems with [[WP:NPOV]], [[WP:POINT]], [[WP:AGF]], [[WP:CIVIL]], [[WP:NPA]], [[WP:NOR]], and gaming of [[WP:3RR]], etc. After conducting a multi-front revert war on the [[Plame affair]], [[Larry Johnson (political commentator)]], and [[Valerie Plame]] articles that drove all three into protection, the user then extended his attempt to about a dozen articles related to the Plame matter, repeating the very same kinds of edits in order to cast erroneous doubt on the established facts of the case. Any editor challenging him is inevitably accused by Mr j galt of whatever it is he himself has been accused, in a classic Troll style. 22:25, 4 February 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/User:Mr j galt"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "65.182.172.x",
+      "case_page": "Wikipedia:Requests for comment/65.182.172.x",
+      "level": 2,
+      "start_date": "",
+      "description": "&ndash; '''NOTE: The IP 65.182.172.87 has been blocked for one month as of February 6, 2006.''' User shows repeated pattern of violating [[WP:AGF]], [[WP:NPA]], and [[Wikipedia:Harassment]] with talk page comments.  Has repeatedly posted personally identifying information about Wikipedia editors despite having been told not to. - [[User:AdelaMae|AdelaMa]][[Wikipedia:Esperanza|<span style=\"color:green;\">e</span>]] <sup>([[User_talk:AdelaMae|talk]] - [[Special:Contributions/AdelaMae|contribs]])</sup> 12:31, 4 February 2006 (UTC)",
+      "notes": "",
+      "content": "&ndash; '''NOTE: The IP 65.182.172.87 has been blocked for one month as of February 6, 2006.''' User shows repeated pattern of violating [[WP:AGF]], [[WP:NPA]], and [[Wikipedia:Harassment]] with talk page comments.  Has repeatedly posted personally identifying information about Wikipedia editors despite having been told not to. - [[User:AdelaMae|AdelaMa]][[Wikipedia:Esperanza|<span style=\"color:green;\">e</span>]] <sup>([[User_talk:AdelaMae|talk]] - [[Special:Contributions/AdelaMae|contribs]])</sup> 12:31, 4 February 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/65.182.172.x"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Sarcelles",
+      "case_page": "Wikipedia:Requests for comment/Sarcelles",
+      "level": 2,
+      "start_date": "",
+      "description": ": Mainly [[WP:NPOV]], [[WP:RS]], and [[WP:V]]. He has forced at least three Wikipedians to chase after every single one of his edits since April 2005. This has got to stop. -- [[User:Ran|ran]] ([[User talk:Ran|talk]]) 18:58, 25 January 2006 (UTC)",
+      "notes": "",
+      "content": ": Mainly [[WP:NPOV]], [[WP:RS]], and [[WP:V]]. He has forced at least three Wikipedians to chase after every single one of his edits since April 2005. This has got to stop. -- [[User:Ran|ran]] ([[User talk:Ran|talk]]) 18:58, 25 January 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Sarcelles"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "84.59.112.101",
+      "case_page": "Wikipedia:Requests for comment/84.59.112.101",
+      "level": 2,
+      "start_date": "",
+      "description": ": Problems with [[WP:NPOV]], [[WP:POINT]], [[WP:AGF]], [[WP:CIVIL]], [[WP:NPA]], [[WP:3RR]], etc. (long version deleted, is listed in the actual request.) [[User:Swatjester|Swatjester]] 17:00, 31 January 2006 (UTC)",
+      "notes": "",
+      "content": ": Problems with [[WP:NPOV]], [[WP:POINT]], [[WP:AGF]], [[WP:CIVIL]], [[WP:NPA]], [[WP:3RR]], etc. (long version deleted, is listed in the actual request.) [[User:Swatjester|Swatjester]] 17:00, 31 January 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/84.59.112.101"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Dabljuh",
+      "case_page": "Wikipedia:Requests for comment/Dabljuh",
+      "level": 2,
+      "start_date": "",
+      "description": ": Multiple violations of various policies and guidelines ([[WP:NPOV]], [[WP:CON]], [[WP:NOR]], [[WP:CIV]], [[WP:V]], [[WP:NPA]]).  [[User:TShilo12|Tom]][[Wikipedia:Esperanza|<span style=\"color:#008000;\">e</span>]][[User:TShilo12|r]][[User talk:TShilo12|<sup style=\"font-variant: small-caps; color: #129dbc!important;\">talk</sup>]] 22:22, 16 January 2006 (UTC)",
+      "notes": "",
+      "content": ": Multiple violations of various policies and guidelines ([[WP:NPOV]], [[WP:CON]], [[WP:NOR]], [[WP:CIV]], [[WP:V]], [[WP:NPA]]).  [[User:TShilo12|Tom]][[Wikipedia:Esperanza|<span style=\"color:#008000;\">e</span>]][[User:TShilo12|r]][[User talk:TShilo12|<sup style=\"font-variant: small-caps; color: #129dbc!important;\">talk</sup>]] 22:22, 16 January 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Dabljuh"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Sgactorny",
+      "case_page": "Wikipedia:Requests for comment/Sgactorny",
+      "level": 2,
+      "start_date": "",
+      "description": ": Has been harrassing other editors who disagree with him on the article [[AIDS reappraisal]]. Any edit that refutes his view sets of a tirade of insults from this editor towards other editors. He has been repeatedly warned: [http://en.wikipedia.org/w/index.php?title=User_talk:Sgactorny&diff=prev&oldid=35583583],[http://en.wikipedia.org/w/index.php?title=User_talk%3ASgactorny&diff=36015446&oldid=36008562],[http://en.wikipedia.org/w/index.php?title=Talk%3AAIDS_reappraisal&diff=37023471&oldid=37000516]",
+      "notes": "",
+      "content": ": Has been harrassing other editors who disagree with him on the article [[AIDS reappraisal]]. Any edit that refutes his view sets of a tirade of insults from this editor towards other editors. He has been repeatedly warned: [http://en.wikipedia.org/w/index.php?title=User_talk:Sgactorny&diff=prev&oldid=35583583],[http://en.wikipedia.org/w/index.php?title=User_talk%3ASgactorny&diff=36015446&oldid=36008562],[http://en.wikipedia.org/w/index.php?title=Talk%3AAIDS_reappraisal&diff=37023471&oldid=37000516]",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Sgactorny"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Jeffrey O. Gustafson",
+      "case_page": "Wikipedia:Requests for comment/Jeffrey O. Gustafson",
+      "level": 2,
+      "start_date": "",
+      "description": "- regarding attitude towards new contributors unfamiliar with Wikipedia. [[User:Talrias|Talrias]] ([[User_talk:Talrias|t]] | [[Special:Emailuser/Talrias|e]] | [[Special:Contributions/Talrias|c]]) 20:22, 9 January 2006 (UTC)",
+      "notes": "",
+      "content": "- regarding attitude towards new contributors unfamiliar with Wikipedia. [[User:Talrias|Talrias]] ([[User_talk:Talrias|t]] | [[Special:Emailuser/Talrias|e]] | [[Special:Contributions/Talrias|c]]) 20:22, 9 January 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Jeffrey O. Gustafson"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Terryeo",
+      "case_page": "Wikipedia:Requests for comment/Terryeo",
+      "level": 2,
+      "start_date": "",
+      "description": ": This user has repeatedly come into conflict with a wide range of other users. He has engaged in a persistent and wilful pattern of personal attacks, accusations of bad faith, making strongly POV edits, refusing to abide by consensus, misrepresenting Wikipedia policies to support his POV edits, making legal accusations that at the very least violate the spirit of WP:NLT, removing sources with which he doesn't agree and declining to cite sources for his own edits. He has spent much of the last two months fighting edit wars with around a dozen other users in a range of articles and one template, all concerning Scientology. A mediation attempt has failed. The matter has now been submitted to the Arbitration Committee. -- [[User:ChrisO|ChrisO]] 18:04, 29 March 2006 (UTC)",
+      "notes": "",
+      "content": ": This user has repeatedly come into conflict with a wide range of other users. He has engaged in a persistent and wilful pattern of personal attacks, accusations of bad faith, making strongly POV edits, refusing to abide by consensus, misrepresenting Wikipedia policies to support his POV edits, making legal accusations that at the very least violate the spirit of WP:NLT, removing sources with which he doesn't agree and declining to cite sources for his own edits. He has spent much of the last two months fighting edit wars with around a dozen other users in a range of articles and one template, all concerning Scientology. A mediation attempt has failed. The matter has now been submitted to the Arbitration Committee. -- [[User:ChrisO|ChrisO]] 18:04, 29 March 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Terryeo"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Jason Gastrich",
+      "case_page": "Wikipedia:Requests for comment/Jason Gastrich",
+      "level": 2,
+      "start_date": "",
+      "description": ": Various policies including [[WP:SOCK]], [[WP:CIVIL]], [[WP:NPA]], [[WP:NPOV]] and [[WP:VAIN]]. - [[User:JzG|Just zis <span style=\"border: 1px; border-style:solid\">&nbsp;Guy,</span> you know?]] <sup>[[User_talk:JzG|[T]]]</sup>/<sub>[[Special:Contributions/JzG|[C]]]</sub> [[Image:Flag of the United Kingdom.svg|25px|<nowiki></nowiki>]] ''[[User:JzG/AfD|AfD?]]'' 11:26, 22 January 2006 (UTC) Taken to ArbCom - [[Wikipedia:Requests for arbitration/Jason Gastrich]] - and user blocked for one year. --[[User:Kingboyk|kingboyk]] 09:18, 22 March 2006 (UTC)",
+      "notes": "",
+      "content": ": Various policies including [[WP:SOCK]], [[WP:CIVIL]], [[WP:NPA]], [[WP:NPOV]] and [[WP:VAIN]]. - [[User:JzG|Just zis <span style=\"border: 1px; border-style:solid\">&nbsp;Guy,</span> you know?]] <sup>[[User_talk:JzG|[T]]]</sup>/<sub>[[Special:Contributions/JzG|[C]]]</sub> [[Image:Flag of the United Kingdom.svg|25px|<nowiki></nowiki>]] ''[[User:JzG/AfD|AfD?]]'' 11:26, 22 January 2006 (UTC) Taken to ArbCom - [[Wikipedia:Requests for arbitration/Jason Gastrich]] - and user blocked for one year. --[[User:Kingboyk|kingboyk]] 09:18, 22 March 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Jason Gastrich"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Elerner",
+      "case_page": "Wikipedia:Requests for comment/Elerner",
+      "level": 2,
+      "start_date": "",
+      "description": "&ndash; User had taken a break, but has now returned under an anonymous username and is continuing to promote the same activities including personal attacks and thwarting Wikipedia policy involving content disputes. --[[User:ScienceApologist|ScienceApologist]]",
+      "notes": "",
+      "content": "&ndash; User had taken a break, but has now returned under an anonymous username and is continuing to promote the same activities including personal attacks and thwarting Wikipedia policy involving content disputes. --[[User:ScienceApologist|ScienceApologist]]",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Elerner"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "NoseNuggets",
+      "case_page": "Wikipedia:Requests for comment/NoseNuggets",
+      "level": 2,
+      "start_date": "",
+      "description": ": Refuses to abide by long-standing rules of current-events pages at [[Current sports events]]. -- 03:58, 16 January 2006 (UTC)",
+      "notes": "",
+      "content": ": Refuses to abide by long-standing rules of current-events pages at [[Current sports events]]. -- 03:58, 16 January 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/NoseNuggets"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Theodore7",
+      "case_page": "Wikipedia:Requests for comment/Theodore7",
+      "level": 2,
+      "start_date": "",
+      "description": ": revert warring against consensus at [[Astrology]] and [[Astronomy]], personal attacks. 19:33, 13 January 2006 (UTC).",
+      "notes": "",
+      "content": ": revert warring against consensus at [[Astrology]] and [[Astronomy]], personal attacks. 19:33, 13 January 2006 (UTC).",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Theodore7"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Anittas (second RfC)",
+      "case_page": "Wikipedia:Requests for comment/Anittas 2",
+      "level": 2,
+      "start_date": "",
+      "description": "&ndash; has made anti-gay statements as well as anti-Jewish and anti-Russian ones. Refuses to apologise. [[Image:Flag of Europe.svg|20px]][[Image:Flag of Romania.svg|20px]] '''[[User:Ronline|Ronline]]''' [[User talk:Ronline|✉]] 22:11, 11 January 2006 (UTC)",
+      "notes": "",
+      "content": "&ndash; has made anti-gay statements as well as anti-Jewish and anti-Russian ones. Refuses to apologise. [[Image:Flag of Europe.svg|20px]][[Image:Flag of Romania.svg|20px]] '''[[User:Ronline|Ronline]]''' [[User talk:Ronline|✉]] 22:11, 11 January 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Anittas 2"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Haizum",
+      "case_page": "Wikipedia:Requests for comment/Haizum",
+      "level": 2,
+      "start_date": "",
+      "description": "Repeated personal attacks, refusal to change course",
+      "notes": "",
+      "content": "Repeated personal attacks, refusal to change course",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Haizum"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Chisinau",
+      "case_page": "Wikipedia:Requests for comment/Chisinau",
+      "level": 2,
+      "start_date": "",
+      "description": "&ndash; suspected sockpuppet of [[User:Bonaparte]]. Created on March 1st and dived headlong into vandalizing of Moldova-related articles, the favorite target of Bonaparte, with accusing everyone else in anti-Romanian discrimination annd with curious knowledge of wikipedia policies and places. Permanent ban requested. 20:48, 1 March 2006 (UTC)",
+      "notes": "",
+      "content": "&ndash; suspected sockpuppet of [[User:Bonaparte]]. Created on March 1st and dived headlong into vandalizing of Moldova-related articles, the favorite target of Bonaparte, with accusing everyone else in anti-Romanian discrimination annd with curious knowledge of wikipedia policies and places. Permanent ban requested. 20:48, 1 March 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Chisinau"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Comandante",
+      "case_page": "Wikipedia:Requests for comment/Comandante",
+      "level": 2,
+      "start_date": "",
+      "description": "Constantly revert wars without discussing changes on talk. [[User:CJK|CJK]] 17:05, 7 January 2006 (UTC)",
+      "notes": "",
+      "content": "Constantly revert wars without discussing changes on talk. [[User:CJK|CJK]] 17:05, 7 January 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Comandante"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Robertjkoenig",
+      "case_page": "Wikipedia:Requests for comment/Robertjkoenig",
+      "level": 2,
+      "start_date": "",
+      "description": "Using wikipedia as a blog to air dissatifaction with a company.  [[User:Movementarian|Movementarian]] 19:52, 3 January 2006 (UTC)",
+      "notes": "",
+      "content": "Using wikipedia as a blog to air dissatifaction with a company.  [[User:Movementarian|Movementarian]] 19:52, 3 January 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Robertjkoenig"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Allabout2006 and socks",
+      "case_page": "Wikipedia:Requests for comment/Allabout2006 and socks",
+      "level": 2,
+      "start_date": "",
+      "description": "Spamming, incivility, refusal to accept consensus, 3rr, and more on [[Alkyl nitrites]] --[[User:Heah|Heah]] <sup>[[User_talk:Heah|talk]]</sup> 04:15, 5 January 2006 (UTC)",
+      "notes": "",
+      "content": "Spamming, incivility, refusal to accept consensus, 3rr, and more on [[Alkyl nitrites]] --[[User:Heah|Heah]] <sup>[[User_talk:Heah|talk]]</sup> 04:15, 5 January 2006 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Allabout2006 and socks"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Rbj",
+      "case_page": "Wikipedia:Requests for comment/Rbj",
+      "level": 2,
+      "start_date": "",
+      "description": "Conducting a hate campaign against users.",
+      "notes": "",
+      "content": "Conducting a hate campaign against users.",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Rbj"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "70.182.219.158",
+      "case_page": "Wikipedia:Requests for comment/70.182.219.158",
+      "level": 2,
+      "start_date": "",
+      "description": "Repeatedly makes vicious personal attacks, makes unsubstantiated (and libelous) accusations of illegal behavior, vandalizes articles, and engages in edit wars.  In short, a menace to the wikipedia community.",
+      "notes": "",
+      "content": "Repeatedly makes vicious personal attacks, makes unsubstantiated (and libelous) accusations of illegal behavior, vandalizes articles, and engages in edit wars.  In short, a menace to the wikipedia community.",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/70.182.219.158"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Monicasdude 2",
+      "case_page": "Wikipedia:Requests for comment/Monicasdude 2",
+      "level": 2,
+      "start_date": "",
+      "description": "Gaming the system ([[WP:POINT]]), assuming bad faith([[WP:AGF]]), incivil behavior ([[WP:CIVIL]]), harassment ([[WP:STALK]]), ignores consensus ([[WP:CON]]), and engages in personal attacks ([[WP:NPA]]).",
+      "notes": "",
+      "content": "Gaming the system ([[WP:POINT]]), assuming bad faith([[WP:AGF]]), incivil behavior ([[WP:CIVIL]]), harassment ([[WP:STALK]]), ignores consensus ([[WP:CON]]), and engages in personal attacks ([[WP:NPA]]).",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Monicasdude 2"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Larvatus",
+      "case_page": "Wikipedia:Requests for comment/Larvatus",
+      "level": 2,
+      "start_date": "",
+      "description": "Legal threats, incivil behavior, etc. relating to pushing unverified and potentially libelous allegations that [[Min Zhu]] committed sex crimes with his daughter, and then conspired with his company to cover it up.",
+      "notes": "",
+      "content": "Legal threats, incivil behavior, etc. relating to pushing unverified and potentially libelous allegations that [[Min Zhu]] committed sex crimes with his daughter, and then conspired with his company to cover it up.",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Larvatus"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Huaiwei",
+      "case_page": "Wikipedia:Requests for comment/Huaiwei",
+      "level": 2,
+      "start_date": "",
+      "description": "- User is engaged in heated discussion on the [[Kung hei fat choi]] page.  User is currently under probation for China/Taiwan related infractions.  Article ends up protected.",
+      "notes": "",
+      "content": "- User is engaged in heated discussion on the [[Kung hei fat choi]] page.  User is currently under probation for China/Taiwan related infractions.  Article ends up protected.",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Huaiwei"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Randallrobinstine",
+      "case_page": "Wikipedia:Requests for comment/Randallrobinstine",
+      "level": 2,
+      "start_date": "",
+      "description": "- User continues to post irrelevent entries into articles (He recently lised a Toledo, Ohio station under stations in Kansas City) and creates articles with little or no content.  All articles in question pertain to radio stations in the Midwest.  He's been warned and banned for vandalism in the past and probably needs some mentoring... and grammar lessons. 04:08, 16 December 2005 (UTC)",
+      "notes": "",
+      "content": "- User continues to post irrelevent entries into articles (He recently lised a Toledo, Ohio station under stations in Kansas City) and creates articles with little or no content.  All articles in question pertain to radio stations in the Midwest.  He's been warned and banned for vandalism in the past and probably needs some mentoring... and grammar lessons. 04:08, 16 December 2005 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Randallrobinstine"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Canaen",
+      "case_page": "Wikipedia:Requests for comment/Canaen",
+      "level": 2,
+      "start_date": "",
+      "description": "User has violated numerous Wikipedia policies in an effort to keep legitimate criticism of veganism out of the [[Veganism]] and [[Environmental vegetarianism]] articles.19:12, 14 December 2005 (UTC)",
+      "notes": "",
+      "content": "User has violated numerous Wikipedia policies in an effort to keep legitimate criticism of veganism out of the [[Veganism]] and [[Environmental vegetarianism]] articles.19:12, 14 December 2005 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Canaen"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Tobias Conradi",
+      "case_page": "Wikipedia:Requests for comment/Tobias Conradi",
+      "level": 2,
+      "start_date": "",
+      "description": "[[WP:3RR]], [[WP:CIVIL]], [[WP:CON]], [[WP:NPA]], [[WP:POINT]]. Besides the edit war, massive disruption of place names, thousands of moves and edits per day, immediate concern. Already tried 3rd party. [[User:William Allen Simpson|William Allen Simpson]] 03:10, 14 December 2005 (UTC)",
+      "notes": "",
+      "content": "[[WP:3RR]], [[WP:CIVIL]], [[WP:CON]], [[WP:NPA]], [[WP:POINT]]. Besides the edit war, massive disruption of place names, thousands of moves and edits per day, immediate concern. Already tried 3rd party. [[User:William Allen Simpson|William Allen Simpson]] 03:10, 14 December 2005 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Tobias Conradi"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Molobo",
+      "case_page": "Wikipedia:Requests for comment/Molobo",
+      "level": 2,
+      "start_date": "",
+      "description": "&ndash; strongly biased contributions that lead to strong personal discussions. [[User:Alx-pl|<span style=\"color:#055505;\">Alx-pl</span>]] [[User Talk:Alx-pl|<span style=\"color:#128812;\">D</span>]] 20:01, 13 December 2005 (UTC)",
+      "notes": "",
+      "content": "&ndash; strongly biased contributions that lead to strong personal discussions. [[User:Alx-pl|<span style=\"color:#055505;\">Alx-pl</span>]] [[User Talk:Alx-pl|<span style=\"color:#128812;\">D</span>]] 20:01, 13 December 2005 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Molobo"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    },
+    {
+      "title": "Dominick",
+      "case_page": "Wikipedia:Requests for comment/Dominick",
+      "level": 2,
+      "start_date": "",
+      "description": "&ndash; repeated POV deletion of perfectly relevant links to a site he doesn't like, coupled with accusations of \"linkspamming.\"\" Deceptive editing, accusations of \"coordinating attacks\" from third party sites, general harrassment of me, [[User:Used2BAnonymous]]. [[User:Used2BAnonymous|Used2BAnonymous]] 05:21, 13 December 2005 (UTC)",
+      "notes": "",
+      "content": "&ndash; repeated POV deletion of perfectly relevant links to a site he doesn't like, coupled with accusations of \"linkspamming.\"\" Deceptive editing, accusations of \"coordinating attacks\" from third party sites, general harrassment of me, [[User:Used2BAnonymous]]. [[User:Used2BAnonymous|Used2BAnonymous]] 05:21, 13 December 2005 (UTC)",
+      "templates": [],
+      "links": [
+        "Wikipedia:Requests for comment/Dominick"
+      ],
+      "source_page": "Wikipedia:Requests for comment/User conduct/Archive 1",
+      "participants": [],
+      "participant_count": 0,
+      "status": "archived",
+      "topic_category": "User conduct"
+    }
+  ]
+}

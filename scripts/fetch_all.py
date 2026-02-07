@@ -100,6 +100,27 @@ def run_editwar(client: WikiClient, article: str, threshold: float = 0.1):
     return analysis
 
 
+def run_rfc(client: WikiClient, mode: str = "active", limit: int = 50):
+    """Fetch RfC cases."""
+    from fetch_rfc_cases import fetch_active_rfcs, fetch_archived_rfcs
+
+    print("\n" + "=" * 50)
+    print("FETCHING RFC CASES")
+    print("=" * 50)
+
+    if mode in ("active", "both"):
+        active_data = fetch_active_rfcs(client, limit=limit)
+        output_path = get_output_path("rfc", prefix="rfc_active")
+        save_json(active_data, output_path)
+        print(f"Saved {active_data['entry_count']} active RfCs to {output_path}")
+
+    if mode in ("archived", "both"):
+        archived_data = fetch_archived_rfcs(client, limit=limit)
+        output_path = get_output_path("rfc", prefix="rfc_archived")
+        save_json(archived_data, output_path)
+        print(f"Saved {archived_data['entry_count']} archived RfCs to {output_path}")
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Wikipedia dispute data collection CLI"
@@ -118,10 +139,14 @@ def main():
     )
     parser.add_argument("--all", action="store_true", help="Run all collectors")
 
+    parser.add_argument("--rfc", action="store_true", help="Fetch RfC cases")
+
     args = parser.parse_args()
 
     # Default to --all if no specific flags
-    run_all = args.all or not any([args.arb, args.drn, args.revisions, args.editwar])
+    run_all = args.all or not any(
+        [args.arb, args.drn, args.rfc, args.revisions, args.editwar]
+    )
 
     print("Wikipedia Dispute Data Collection")
     print("=" * 50)
@@ -133,6 +158,9 @@ def main():
 
     if run_all or args.drn:
         run_drn(client)
+
+    if run_all or args.rfc:
+        run_rfc(client, mode="both", limit=args.limit)
 
     if args.revisions:
         run_revisions(client, args.revisions, limit=args.limit)
