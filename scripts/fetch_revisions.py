@@ -11,12 +11,16 @@ import argparse
 import sys
 from datetime import datetime
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.wiki import WikiClient
 from src.io import save_json, get_output_path, sanitize_filename
+
+env_path = Path(__file__).parent.parent / ".env"
+load_dotenv(dotenv_path=env_path)
 
 
 def fetch_revisions(
@@ -77,7 +81,7 @@ def main():
     print("Fetching Wikipedia Revision History")
     print("=" * 40)
 
-    client = WikiClient()
+    client = WikiClient(use_oauth=True)
     data = fetch_revisions(
         client,
         args.article,
