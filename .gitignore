@@ -3,6 +3,9 @@ notebooks
 src/__pycache__
 src/wikipedia_arbitration.egg-info
 
+# Data folder (ignore everything inside)
+data/
+
 # Artifacts - ignore all except results and imgs/publish
 artifacts/models/
 artifacts/imgs/dev/
