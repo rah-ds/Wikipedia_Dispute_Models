@@ -94,8 +94,23 @@ def main():
         "--lookback", type=int, default=500, help="Revisions to analyze"
     )
     parser.add_argument("--threshold", type=float, default=0.1, help="Revert threshold")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Preview without making API calls"
+    )
 
     args = parser.parse_args()
+
+    if args.dry_run:
+        print(f"[DRY RUN] Would analyze: {args.article}")
+        print(
+            f"[DRY RUN] Lookback: {args.lookback} revisions, Threshold: {args.threshold}"
+        )
+        print("[DRY RUN] No API calls made, no files written.")
+        return
+
+    from src.io import check_api_credentials
+
+    check_api_credentials()
 
     client = WikiClient()
     analysis = run_analysis(
