@@ -11,6 +11,7 @@ from typing import Callable, TypeVar
 
 import pywikibot
 from pywikibot.exceptions import APIError, ServerError
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -97,7 +98,9 @@ def retry_on_rate_limit(
 class WikiClient:
     """Client for interacting with Wikipedia via Pywikibot."""
 
-    def __init__(self, lang: str = "en", project: str = "wikipedia"):
+    def __init__(
+        self, lang: str = "en", project: str = "wikipedia", use_oauth: bool = True
+    ):
         """
         Initialize Wikipedia client.
 
@@ -108,6 +111,19 @@ class WikiClient:
         self.site = pywikibot.Site(lang, project)
         self.lang = lang
         self.project = project
+
+        if use_oauth:
+            token = os.getenv("WIKIPEDIA_ACCESS_TOKEN")
+            if not token:
+                raise ValueError(
+                    "WIKIPEDIA_ACCESS_TOKEN not found in environment variables"
+                )
+
+            # Setup OAuth headers
+            self.site._loginstatus = (
+                True  # pretend logged in to bypass anonymous checks
+            )
+            self.site._custom_headers = {"Authorization": f"Bearer {token}"}
 
         # Request tracking
         self._request_count = 0
@@ -156,6 +172,48 @@ class WikiClient:
         self._track_request()
         return pywikibot.Category(self.site, name)
 
+    def get_pages_latest(
+        self, titles: list[str], batch_size: int = 50, sleep_time: float = 1.0
+    ) -> list[dict]:
+        """
+        Fetch the latest revision for multiple pages in batches with throttle.
+
+        Args:
+            titles: List of page titles
+            batch_size: Number of pages to fetch per request
+            sleep_time: Seconds to sleep between batches
+
+        Returns:
+            List of dicts with latest revision info per page
+        """
+        results = []
+
+        for i in range(0, len(titles), batch_size):
+            batch = titles[i : i + batch_size]
+            params = {
+                "action": "query",
+                "prop": "revisions",
+                "rvprop": "ids|timestamp|user|comment|content",
+                "titles": "|".join(batch),
+                "format": "json",
+            }
+            resp = self.site._client._simple_request(**params).submit()
+            for page_id, page in resp["query"]["pages"].items():
+                rev = page["revisions"][0]
+                results.append(
+                    {
+                        "title": page["title"],
+                        "page_id": page_id,
+                        "user": rev["user"],
+                        "timestamp": rev["timestamp"],
+                        "comment": rev.get("comment", ""),
+                        "text": rev["*"],
+                    }
+                )
+            # Throttle between batches
+            time.sleep(sleep_time)
+        return results
+
     @retry_on_rate_limit()
     def get_revisions(
         self,
@@ -193,6 +251,19 @@ class WikiClient:
                 }
             )
         return revisions
+
+    def get_latest_revision(self, title):
+        page = pywikibot.Page(self.site, title)
+
+        text = page.get()  # SAFE for large pages
+        latest = page.latest_revision
+
+        return {
+            "revid": latest.revid,
+            "timestamp": latest.timestamp.isoformat(),
+            "user": latest.user,
+            "text": text,
+        }
 
     @retry_on_rate_limit()
     def get_page_info(self, title: str) -> dict:

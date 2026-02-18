@@ -10,6 +10,7 @@ Usage:
     python fetch_all.py --editwar "Title"  # Edit war analysis
     python fetch_all.py --venues "Title"   # All dispute venues for article
     python fetch_all.py --ani "Term"       # Search ANI for term
+    python fetch_all.py --rfc               # Fetch RfCs
 """
 
 import argparse
@@ -17,6 +18,8 @@ import logging
 import signal
 import sys
 from pathlib import Path
+from dotenv import load_dotenv
+
 
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -31,9 +34,6 @@ from src.io import (
 )
 from src.fetchers import (
     fetch_arbitration_cases,
-    fetch_drn_page,
-    parse_drn_sections,
-    extract_case_metadata,
     fetch_revisions,
     analyze_article_edit_war,
     # Phase 2 fetchers
@@ -66,8 +66,11 @@ def shutdown_handler(signum, frame):
 # Register signal handler
 signal.signal(signal.SIGINT, shutdown_handler)
 
+env_path = Path(__file__).parent.parent / ".env"
+load_dotenv(dotenv_path=env_path)
 
-def run_arbitration(client: WikiClient, limit: int = 50):
+
+def run_arbitration(client: WikiClient, limit: int = None):
     """Fetch arbitration cases."""
     logger.info("=" * 50)
     logger.info("FETCHING ARBITRATION CASES")
@@ -82,25 +85,36 @@ def run_arbitration(client: WikiClient, limit: int = 50):
 
 
 def run_drn(client: WikiClient):
-    """Fetch DRN cases."""
+    """Fetch DRN cases (live + archives)."""
+    from fetch_drn_archived_cases import fetch_all_drn
+
     logger.info("=" * 50)
-    logger.info("FETCHING DRN CASES")
+    logger.info("FETCHING DRN CASES (LIVE + ARCHIVES)")
     logger.info("=" * 50)
 
-    drn_data = fetch_drn_page(client)
-    cases = parse_drn_sections(drn_data["content"])
-    cases = extract_case_metadata(cases)
-    cases = [c for c in cases if c["level"] == 2 and len(c["content"]) > 100]
+    data = fetch_all_drn(client)
 
-    drn_data["parsed_cases"] = cases
-    drn_data["case_count"] = len(cases)
-    del drn_data["content"]
+    output_path = get_output_path("drn", prefix="drn_all_cases")
+    save_json(data, output_path)
 
-    output_path = get_output_path("drn", prefix="drn_cases")
-    save_json(drn_data, output_path)
+    logger.info(f"Saved {data['case_count']} cases to {output_path}")
+    return data
 
-    logger.info(f"Saved {len(cases)} cases to {output_path}")
-    return drn_data
+
+def run_rfc(client: WikiClient):
+    """Fetch Requests for Comments (RfC) using the dedicated fetch_rfc module."""
+    from fetch_rfc import fetch_all_rfcs
+
+    logger.info("=" * 50)
+    logger.info("FETCHING REQUESTS FOR COMMENTS (RfC)")
+    logger.info("=" * 50)
+
+    data = fetch_all_rfcs(client)
+    output_path = get_output_path("rfc", prefix="all_requests_for_comments")
+    save_json(data, output_path)
+
+    logger.info(f"Saved {len(data['rfcs'])} RfCs to {output_path}")
+    return data
 
 
 def run_revisions(client: WikiClient, article: str, limit: int | None = None):
@@ -285,6 +299,9 @@ def main():
     parser.add_argument("--arb", action="store_true", help="Fetch arbitration cases")
     parser.add_argument("--drn", action="store_true", help="Fetch DRN cases")
     parser.add_argument(
+        "--rfc", action="store_true", help="Fetch Requests for Comments"
+    )
+    parser.add_argument(
         "--revisions", metavar="TITLE", help="Fetch revisions for article"
     )
     parser.add_argument(
@@ -316,6 +333,7 @@ def main():
         [
             args.arb,
             args.drn,
+            args.rfc,
             args.revisions,
             args.editwar,
             args.venues,
@@ -356,7 +374,7 @@ def main():
         print("\n[DRY RUN] No files written.")
         return
 
-    client = WikiClient()
+    client = WikiClient(use_oauth=True)
 
     # Set global for shutdown handler
     global _client
@@ -367,6 +385,9 @@ def main():
 
     if run_all or args.drn:
         run_drn(client)
+
+    if run_all or args.rfc:
+        run_rfc(WikiClient(project="meta", use_oauth=True))
 
     if args.revisions:
         run_revisions(client, args.revisions, limit=args.limit)
