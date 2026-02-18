@@ -14,7 +14,12 @@ throttle.ctrl
 # Log files
 *.log
 
+# Backup files
+*.bak
+
 # Artifacts - only ignore logs and temporary outputs
 artifacts/logs/
 
+# Test / coverage artifacts
 .coverage
+.pytest_cache/
