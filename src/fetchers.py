@@ -620,3 +620,165 @@ def fetch_dispute_venues_for_article(
     tqdm.write(f"  Summary: {result['summary']}")
 
     return result
+
+
+# =============================================================================
+# Sockpuppet Investigation (SPI) Scraping
+# =============================================================================
+
+
+def fetch_spi_case(client: WikiClient, username: str) -> dict | None:
+    """
+    Fetch sockpuppet investigation for a user if it exists.
+
+    SPI cases are at: Wikipedia:Sockpuppet investigations/{username}
+
+    Args:
+        client: WikiClient instance
+        username: Wikipedia username
+
+    Returns:
+        Dictionary with SPI data or None if no case exists
+    """
+    page_title = f"Wikipedia:Sockpuppet investigations/{username}"
+
+    try:
+        page = client.get_page(page_title)
+        if not page.exists():
+            return None
+
+        content = page.text
+        result = {
+            "username": username,
+            "spi_page": page_title,
+            "url": page.full_url(),
+            "exists": True,
+            "content": content,
+            "outcome": parse_spi_outcome(content),
+            "revisions": client.get_revisions(page_title, limit=50),
+        }
+
+        return result
+
+    except Exception as e:
+        logger.warning(f"Error fetching SPI for {username}: {e}")
+        return None
+
+
+def parse_spi_outcome(wikitext: str) -> dict:
+    """
+    Parse SPI case outcome from wikitext.
+
+    Looks for common SPI outcome templates and status indicators.
+
+    Args:
+        wikitext: Raw wikitext of SPI page
+
+    Returns:
+        Dictionary with parsed outcome data
+    """
+    outcome = {
+        "status": "unknown",
+        "confirmed": False,
+        "declined": False,
+        "stale": False,
+        "sockpuppets": [],
+        "checkuser_used": False,
+    }
+
+    wikitext_lower = wikitext.lower()
+
+    # Check for outcome templates
+    if "{{spi archive notice" in wikitext_lower:
+        outcome["status"] = "archived"
+
+    if "{{checkuser" in wikitext_lower or "{{cu" in wikitext_lower:
+        outcome["checkuser_used"] = True
+
+    # Check for confirmed/declined status
+    confirmed_patterns = [
+        "{{confirmed}}",
+        "{{confirmed-sock}}",
+        "{{spi confirmed}}",
+        "confirmed sock",
+        "sockpuppet confirmed",
+    ]
+    for pattern in confirmed_patterns:
+        if pattern in wikitext_lower:
+            outcome["confirmed"] = True
+            outcome["status"] = "confirmed"
+            break
+
+    declined_patterns = [
+        "{{declined}}",
+        "{{unlikely}}",
+        "{{endorsed}}",  # means main account endorsed
+        "no evidence",
+        "insufficient evidence",
+    ]
+    for pattern in declined_patterns:
+        if pattern in wikitext_lower:
+            outcome["declined"] = True
+            if outcome["status"] == "unknown":
+                outcome["status"] = "declined"
+            break
+
+    stale_patterns = [
+        "{{stale}}",
+        "{{spi stale}}",
+        "stale case",
+    ]
+    for pattern in stale_patterns:
+        if pattern in wikitext_lower:
+            outcome["stale"] = True
+            if outcome["status"] == "unknown":
+                outcome["status"] = "stale"
+            break
+
+    # Try to extract sockpuppet usernames
+    try:
+        wikicode = mwparserfromhell.parse(wikitext)
+        for template in wikicode.filter_templates():
+            template_name = str(template.name).strip().lower()
+            if "sockpuppet" in template_name or "sock" in template_name:
+                for param in template.params:
+                    param_value = str(param.value).strip()
+                    if param_value and not param_value.startswith("{"):
+                        outcome["sockpuppets"].append(param_value)
+    except Exception:
+        pass
+
+    return outcome
+
+
+def check_user_spi_status(client: WikiClient, username: str) -> dict:
+    """
+    Check if a user has any sockpuppet investigation history.
+
+    Args:
+        client: WikiClient instance
+        username: Wikipedia username
+
+    Returns:
+        Dictionary with SPI status summary
+    """
+    result = {
+        "username": username,
+        "has_spi_case": False,
+        "is_suspected_sockpuppet": False,
+        "is_confirmed_sockpuppet": False,
+        "spi_details": None,
+    }
+
+    # Check if user is the subject of an SPI
+    spi_case = fetch_spi_case(client, username)
+    if spi_case:
+        result["has_spi_case"] = True
+        result["is_suspected_sockpuppet"] = True
+        result["is_confirmed_sockpuppet"] = spi_case["outcome"]["confirmed"]
+        result["spi_details"] = {
+            "url": spi_case["url"],
+            "outcome": spi_case["outcome"],
+        }
+
+    return result
