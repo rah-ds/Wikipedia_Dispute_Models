@@ -1,0 +1,62 @@
+# Development Pull Configuration
+# Minimal data for testing code changes
+# Run with: make pull CONFIG=artifacts/configs/dev.yaml
+
+name: dev
+description: Minimal pull for development (1 case, minimal data)
+
+# Output settings
+output_dir: data/raw
+log_dir: artifacts/logs/data_pull
+
+# State management
+state_file: artifacts/pull_state_dev.json
+resume_enabled: false  # Always start fresh in dev
+checkpoint_interval: 1
+
+# Rate limiting
+rate_limit:
+  requests_per_second: 5.0
+  burst_size: 10
+  min_delay_between_requests: 0.1
+
+# Retry behavior
+retry:
+  max_retries: 3
+  base_delay: 1.0
+  max_delay: 30.0
+  exponential_base: 2.0
+
+# Single case for testing
+case_list:
+  - Climate change
+
+# Data sources - minimal
+arbitration:
+  enabled: true
+  limit: 1
+  include_revisions: true
+  revision_limit: 10
+  include_talk_pages: true
+  max_talk_pages: 2
+
+drn:
+  enabled: false
+
+ani:
+  enabled: false
+
+talk_pages:
+  enabled: false
+
+lifecycle:
+  enabled: false
+
+# Feature flags
+fetch_user_info: false
+fetch_block_history: false
+fetch_edit_tags: false
+
+# Debug options
+dry_run: false
+verbose: true

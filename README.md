@@ -29,14 +29,41 @@ This project maps and analyzes Wikipedia's dispute resolution system—tracking 
 ## Quick Start
 
 ```bash
-# Clone and install
+# Clone and setup
 git clone https://github.com/rah-ds/Wikipedia_Dispute_Models.git
 cd Wikipedia_Dispute_Models
-make install-dev
+make setup
 
-# Fetch data
-make fetch-arb
-make fetch-drn
+# Configure credentials
+cp .env.example .env
+# Edit .env and add your Wikipedia access token
+
+# Validate environment
+make validate
+
+# Fetch sample data (5 cases, resumable)
+make pull
+
+# Fetch full data (all cases, resumable)
+make pull CONFIG=full
+```
+
+### Three Main Commands
+
+| Command | Description |
+| ------- | ----------- |
+| `make setup` | Install dependencies and create directories |
+| `make test` | Run all tests |
+| `make pull` | Fetch data (resumable, configurable) |
+
+### Pull Options
+
+```bash
+make pull                    # Sample config (5 cases)
+make pull CONFIG=full        # Full data (all cases)
+make pull CONFIG=dev         # Minimal for testing
+make pull-status             # Show current progress
+make pull-reset              # Reset state for fresh start
 ```
 
 See `make help` for all available targets.
@@ -71,6 +98,23 @@ Run Python/tools via uv & no need to manually activate venv — uv handles it.
 | Arb Case DFS | Depth-first collection of all related pages | `scripts/fetch_arb_dfs.py` |
 
 See [`docs/wikimedia_api.md`](docs/wikimedia_api.md) for full API documentation.
+
+---
+
+## Core Modules
+
+| Module | Description |
+| ------ | ----------- |
+| `src/wiki.py` | WikiClient - low-level API wrapper with rate limiting |
+| `src/fetchers.py` | High-level fetch functions (cases, revisions, ANI, DRN) |
+| `src/lifecycle.py` | Dispute lifecycle tracing (Talk → DRN → ANI → ArbCom) |
+| `src/arbitration.py` | Case data models (ArbitrationCaseSummary, EditorProfile) |
+| `src/outcome.py` | Decision parsing (votes, findings, remedies) |
+| `src/analysis.py` | Edit war detection, revert analysis |
+| `src/logging_config.py` | Centralized logging with progress tracking |
+| `src/network.py` | Network resilience (circuit breaker, retry) |
+| `src/pull_config.py` | Data pull configuration (sample, full, custom) |
+| `src/pull_state.py` | Resumable state management |
 
 ---
 
