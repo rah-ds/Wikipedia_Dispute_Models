@@ -24,6 +24,7 @@ artifacts/models/
 artifacts/imgs/dev/
 artifacts/logs/
 artifacts/exports/
+artifacts/archives/
 
 # Keep these tracked
 !artifacts/results/
