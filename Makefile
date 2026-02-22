@@ -1,4 +1,4 @@
-.PHONY: install install-dev clean data-dirs help lint fetch-all fetch-full fetch-arb fetch-drn fetch-small test test-unit test-cov fetch-venues fetch-ani fetch-talk fetch-arb-dfs fetch-arb-dfs-sample fetch-arb-dfs-sample-full fetch-arb-dfs-all fetch-arb-dfs-all-full update-arb-cases-list fetch-lifecycle fetch-lifecycle-dry fetch-lifecycle-sample fetch-lifecycle-all setup pull pull-status pull-reset validate
+.PHONY: install install-dev clean data-dirs help lint fetch-all fetch-full fetch-arb fetch-drn fetch-small test test-unit test-cov fetch-venues fetch-ani fetch-talk fetch-arb-dfs fetch-arb-dfs-sample fetch-arb-dfs-sample-full fetch-arb-dfs-all fetch-arb-dfs-all-full update-arb-cases-list fetch-lifecycle fetch-lifecycle-dry fetch-lifecycle-sample fetch-lifecycle-all setup pull pull-status pull-reset validate archive clear-results
 
 # =============================================================================
 # QUICK START - Three simple commands to get started
@@ -26,6 +26,10 @@ help:
 	@echo "  make pull-reset               Reset state for fresh start"
 	@echo "  make validate                 Check environment is ready"
 	@echo ""
+	@echo "Data Management:"
+	@echo "  make archive         Archive results to timestamped zip file"
+	@echo "  make clear-results   Clear all results (data/raw, data/processed)"
+	@echo ""
 	@echo "Development:"
 	@echo "  make install     Install base dependencies"
 	@echo "  make install-dev Install with dev dependencies + pre-commit hooks"
@@ -33,7 +37,7 @@ help:
 	@echo "  make test-unit   Run unit tests only (no network)"
 	@echo "  make test-cov    Run tests with coverage"
 	@echo "  make data-dirs   Create data directory structure"
-	@echo "  make clean       Remove generated files"
+	@echo "  make clean       Remove generated files (cache, pycache)
 	@echo ""
 	@echo "Legacy Data Collection (still supported):"
 	@echo "  fetch-small     Fetch sample dataset (10 articles, 5 arb cases)"
@@ -316,13 +320,51 @@ fetch-arb-dfs-all-full: data-dirs
 	@echo ""
 	@echo "✓ FULL arbitration cases fetched to data/raw/arbitration/"
 
-# Clean generated files
+# Clean generated files (cache, pycache, logs)
 clean:
-	rm -rf data/raw/*
-	rm -rf data/processed/*
 	rm -rf artifacts/logs/*
 	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 	find . -type f -name "*.pyc" -delete 2>/dev/null || true
+	@echo "✓ Cleaned cache and log files"
+
+# Archive results to timestamped zip file
+# Archives are stored in artifacts/archives/ and gitignored
+archive:
+	@mkdir -p artifacts/archives
+	@TIMESTAMP=$$(date +%Y%m%d_%H%M%S); \
+	ARCHIVE_NAME="results_$$TIMESTAMP.zip"; \
+	echo "Creating archive: artifacts/archives/$$ARCHIVE_NAME"; \
+	if [ -d "data/raw" ] && [ "$$(ls -A data/raw 2>/dev/null)" ]; then \
+		zip -r "artifacts/archives/$$ARCHIVE_NAME" data/raw data/processed artifacts/results 2>/dev/null || \
+		zip -r "artifacts/archives/$$ARCHIVE_NAME" data/raw data/processed 2>/dev/null || \
+		zip -r "artifacts/archives/$$ARCHIVE_NAME" data/raw 2>/dev/null; \
+		echo "✓ Archive created: artifacts/archives/$$ARCHIVE_NAME"; \
+		ls -lh "artifacts/archives/$$ARCHIVE_NAME"; \
+	else \
+		echo "⚠️  No data to archive (data/raw is empty)"; \
+	fi
+
+# Clear all results (data/raw, data/processed)
+# WARNING: This permanently deletes fetched data. Use 'make archive' first to backup.
+clear-results:
+	@echo "⚠️  This will permanently delete all fetched data!"
+	@echo "    - data/raw/*"
+	@echo "    - data/processed/*"
+	@echo ""
+	@read -p "Are you sure? [y/N] " confirm; \
+	if [ "$$confirm" = "y" ] || [ "$$confirm" = "Y" ]; then \
+		rm -rf data/raw/*; \
+		rm -rf data/processed/*; \
+		echo "✓ All results cleared"; \
+	else \
+		echo "Cancelled"; \
+	fi
+
+# Force clear results without confirmation (for scripts)
+clear-results-force:
+	rm -rf data/raw/*
+	rm -rf data/processed/*
+	@echo "✓ All results cleared"
 # =============================================================================
 # FULL DISPUTE LIFECYCLE FETCHER (RECOMMENDED)
 # =============================================================================
