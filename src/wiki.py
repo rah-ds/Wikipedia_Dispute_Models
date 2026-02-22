@@ -934,3 +934,111 @@ class WikiClient:
             }
 
         return {"title": title, "assessments": {}}
+
+    # =========================================================================
+    # Abuse Filter Methods
+    # =========================================================================
+
+    @retry_on_rate_limit()
+    def get_abuse_log(
+        self,
+        user: str | None = None,
+        title: str | None = None,
+        limit: int = 100,
+    ) -> list[dict]:
+        """
+        Fetch abuse filter log entries.
+
+        Args:
+            user: Filter by username (optional)
+            title: Filter by page title (optional)
+            limit: Maximum entries to fetch
+
+        Returns:
+            List of abuse filter log entries
+        """
+        self._track_request()
+        entries = []
+        continue_token = None
+
+        while len(entries) < limit:
+            params = {
+                "action": "query",
+                "list": "abuselog",
+                "aflprop": "ids|filter|user|title|action|result|timestamp|details",
+                "afllimit": min(limit - len(entries), 500),
+                "format": "json",
+            }
+            if user:
+                params["afluser"] = user
+            if title:
+                params["afltitle"] = title
+            if continue_token:
+                params["aflstart"] = continue_token
+
+            try:
+                request = self.site._simple_request(**params)
+                response = request.submit()
+            except Exception as e:
+                logger.error(f"Failed to fetch abuse log: {e}")
+                raise
+
+            for entry in response.get("query", {}).get("abuselog", []):
+                entries.append(
+                    {
+                        "log_id": entry.get("id"),
+                        "filter_id": entry.get("filter_id"),
+                        "filter_name": entry.get("filter"),
+                        "user": entry.get("user"),
+                        "title": entry.get("title"),
+                        "action": entry.get("action"),
+                        "result": entry.get("result"),
+                        "timestamp": entry.get("timestamp"),
+                        "revid": entry.get("revid"),
+                    }
+                )
+
+            continue_data = response.get("continue")
+            if continue_data and "aflstart" in continue_data:
+                continue_token = continue_data["aflstart"]
+            else:
+                break
+
+        return entries[:limit]
+
+    @retry_on_rate_limit()
+    def get_user_abuse_hits(self, username: str, limit: int = 50) -> dict:
+        """
+        Get summary of abuse filter hits for a user.
+
+        Args:
+            username: Wikipedia username
+            limit: Maximum entries to check
+
+        Returns:
+            Dictionary with abuse filter statistics
+        """
+        entries = self.get_abuse_log(user=username, limit=limit)
+
+        # Group by filter
+        by_filter: dict[str, int] = {}
+        by_action: dict[str, int] = {}
+        by_result: dict[str, int] = {}
+
+        for entry in entries:
+            filter_name = entry.get("filter_name", "unknown")
+            action = entry.get("action", "unknown")
+            result = entry.get("result", "unknown")
+
+            by_filter[filter_name] = by_filter.get(filter_name, 0) + 1
+            by_action[action] = by_action.get(action, 0) + 1
+            by_result[result] = by_result.get(result, 0) + 1
+
+        return {
+            "username": username,
+            "total_hits": len(entries),
+            "by_filter": by_filter,
+            "by_action": by_action,
+            "by_result": by_result,
+            "entries": entries,
+        }
