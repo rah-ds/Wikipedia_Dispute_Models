@@ -1,4 +1,4 @@
-.PHONY: install install-dev clean data-dirs help lint fetch-all fetch-full fetch-arb fetch-drn fetch-small test test-unit test-cov fetch-venues fetch-ani fetch-talk fetch-arb-dfs fetch-arb-dfs-sample fetch-arb-dfs-sample-full fetch-arb-dfs-all fetch-arb-dfs-all-full update-arb-cases-list fetch-lifecycle fetch-lifecycle-dry fetch-lifecycle-sample fetch-lifecycle-all setup pull pull-status pull-reset validate archive clear-results
+.PHONY: install install-dev clean data-dirs help lint fetch-all fetch-full fetch-arb fetch-drn fetch-small test test-unit test-cov fetch-venues fetch-ani fetch-talk fetch-arb-dfs fetch-arb-dfs-sample fetch-arb-dfs-sample-full fetch-arb-dfs-all fetch-arb-dfs-all-full update-arb-cases-list fetch-lifecycle fetch-lifecycle-dry fetch-lifecycle-sample fetch-lifecycle-all setup pull pull-status pull-reset validate archive clear-results pull-full-arb pull-full-arb-estimate pull-full-arb-force
 
 # =============================================================================
 # QUICK START - Three simple commands to get started
@@ -25,6 +25,12 @@ help:
 	@echo "  make pull-status              Show current pull progress"
 	@echo "  make pull-reset               Reset state for fresh start"
 	@echo "  make validate                 Check environment is ready"
+	@echo ""
+	@echo "Full Arbitration Pull (COMPREHENSIVE):"
+	@echo "  make pull-full-arb            Pull ALL arb cases with full enrichment"
+	@echo "                                (shows estimate first, resumable)"
+	@echo "  make pull-full-arb-estimate   Show time/storage estimate only"
+	@echo "  make pull-full-arb-force      Pull without storage check"
 	@echo ""
 	@echo "Data Management:"
 	@echo "  make archive         Archive results to timestamped zip file"
@@ -426,3 +432,64 @@ fetch-lifecycle-all: data-dirs
 	done < $(ARB_CASES_FILE)
 	@echo ""
 	@echo "✓ All lifecycle data saved to data/raw/dispute_venues/"
+
+# =============================================================================
+# FULL ARBITRATION PULL - COMPREHENSIVE DATA COLLECTION
+# =============================================================================
+# Pulls ALL arbitration cases with FULL enrichment:
+# - All case pages (main, evidence, workshop, proposed decision, remedies)
+# - Full revision history for all pages
+# - Participant profiles (edit count, registration, groups, admin status)
+# - Participant block history and abuse filter hits
+# - Article assessments (WikiProject quality/importance)
+# - Article protection status and history
+# - Article revision history with edit tags
+# - ANI and DRN venue mentions
+# - Case outcome (status, remedies, sanctions)
+#
+# Features:
+# - Checkpointing: resumes from where it left off if interrupted
+# - Storage check: warns if disk space would drop below 10GB
+# - Progress tracking: tqdm progress bars, timing stats, rate limit monitoring
+
+# Show estimate only
+pull-full-arb-estimate:
+	@if [ ! -f $(ARB_CASES_FILE) ]; then \
+		echo "Case list not found. Fetching from Wikipedia..."; \
+		uv run python scripts/fetch_arb_cases_list.py --output $(ARB_CASES_FILE); \
+	fi
+	@uv run python scripts/estimate_pull.py --case-file $(ARB_CASES_FILE)
+
+# Full pull with estimate and storage check
+pull-full-arb: data-dirs
+	@if [ ! -f $(ARB_CASES_FILE) ]; then \
+		echo "Case list not found. Fetching from Wikipedia..."; \
+		uv run python scripts/fetch_arb_cases_list.py --output $(ARB_CASES_FILE); \
+	fi
+	@echo ""
+	@uv run python scripts/estimate_pull.py --case-file $(ARB_CASES_FILE) || exit 1
+	@echo ""
+	@read -p "Proceed with full arbitration pull? [y/N] " confirm; \
+	if [ "$$confirm" = "y" ] || [ "$$confirm" = "Y" ]; then \
+		echo ""; \
+		echo "Starting full arbitration pull..."; \
+		echo "Use Ctrl+C to interrupt (progress is saved, resume with same command)"; \
+		echo ""; \
+		uv run python scripts/pull.py --config full; \
+	else \
+		echo "Cancelled"; \
+	fi
+
+# Full pull without storage check (force mode)
+pull-full-arb-force: data-dirs
+	@if [ ! -f $(ARB_CASES_FILE) ]; then \
+		echo "Case list not found. Fetching from Wikipedia..."; \
+		uv run python scripts/fetch_arb_cases_list.py --output $(ARB_CASES_FILE); \
+	fi
+	@echo ""
+	@uv run python scripts/estimate_pull.py --case-file $(ARB_CASES_FILE) --force
+	@echo ""
+	@echo "Starting full arbitration pull (force mode)..."
+	@echo "Use Ctrl+C to interrupt (progress is saved, resume with same command)"
+	@echo ""
+	uv run python scripts/pull.py --config full

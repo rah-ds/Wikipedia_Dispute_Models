@@ -107,14 +107,12 @@ class TestUserInfo:
                     ]
                 }
             }
-            mock_request = MagicMock()
-            mock_request.submit.return_value = mock_response
-            mock_site._simple_request.return_value = mock_request
 
             from wiki import WikiClient
 
             with patch.dict("os.environ", {"WIKIPEDIA_ACCESS_TOKEN": "test"}):
                 client = WikiClient(use_oauth=True)
+                client._api_request = MagicMock(return_value=mock_response)
                 info = client.get_user_info("TestUser")
 
                 assert info is not None
@@ -142,14 +140,12 @@ class TestUserInfo:
                     ]
                 }
             }
-            mock_request = MagicMock()
-            mock_request.submit.return_value = mock_response
-            mock_site._simple_request.return_value = mock_request
 
             from wiki import WikiClient
 
             with patch.dict("os.environ", {"WIKIPEDIA_ACCESS_TOKEN": "test"}):
                 client = WikiClient(use_oauth=True)
+                client._api_request = MagicMock(return_value=mock_response)
                 info = client.get_user_info("AdminUser")
 
                 assert info["is_admin"] is True
@@ -170,14 +166,12 @@ class TestUserInfo:
                     ]
                 }
             }
-            mock_request = MagicMock()
-            mock_request.submit.return_value = mock_response
-            mock_site._simple_request.return_value = mock_request
 
             from wiki import WikiClient
 
             with patch.dict("os.environ", {"WIKIPEDIA_ACCESS_TOKEN": "test"}):
                 client = WikiClient(use_oauth=True)
+                client._api_request = MagicMock(return_value=mock_response)
                 info = client.get_user_info("NonexistentUser")
 
                 assert info is None
@@ -196,14 +190,12 @@ class TestUserInfo:
                     ]
                 }
             }
-            mock_request = MagicMock()
-            mock_request.submit.return_value = mock_response
-            mock_site._simple_request.return_value = mock_request
 
             from wiki import WikiClient
 
             with patch.dict("os.environ", {"WIKIPEDIA_ACCESS_TOKEN": "test"}):
                 client = WikiClient(use_oauth=True)
+                client._api_request = MagicMock(return_value=mock_response)
                 info = client.get_users_info(["User1", "User2"])
 
                 assert "User1" in info
@@ -235,14 +227,12 @@ class TestBlockHistory:
                     ]
                 }
             }
-            mock_request = MagicMock()
-            mock_request.submit.return_value = mock_response
-            mock_site._simple_request.return_value = mock_request
 
             from wiki import WikiClient
 
             with patch.dict("os.environ", {"WIKIPEDIA_ACCESS_TOKEN": "test"}):
                 client = WikiClient(use_oauth=True)
+                client._api_request = MagicMock(return_value=mock_response)
                 blocks = client.get_user_blocks("BlockedUser")
 
                 assert len(blocks) == 1
@@ -281,14 +271,12 @@ class TestBlockHistory:
                     ]
                 }
             }
-            mock_request = MagicMock()
-            mock_request.submit.return_value = mock_response
-            mock_site._simple_request.return_value = mock_request
 
             from wiki import WikiClient
 
             with patch.dict("os.environ", {"WIKIPEDIA_ACCESS_TOKEN": "test"}):
                 client = WikiClient(use_oauth=True)
+                client._api_request = MagicMock(return_value=mock_response)
                 log = client.get_block_log("BlockedUser")
 
                 assert len(log) == 2
@@ -320,14 +308,12 @@ class TestLogEvents:
                     ]
                 }
             }
-            mock_request = MagicMock()
-            mock_request.submit.return_value = mock_response
-            mock_site._simple_request.return_value = mock_request
 
             from wiki import WikiClient
 
             with patch.dict("os.environ", {"WIKIPEDIA_ACCESS_TOKEN": "test"}):
                 client = WikiClient(use_oauth=True)
+                client._api_request = MagicMock(return_value=mock_response)
                 events = client.get_log_events("protect", title="Test Page")
 
                 assert len(events) == 1
@@ -358,14 +344,12 @@ class TestLogEvents:
                     ]
                 }
             }
-            mock_request = MagicMock()
-            mock_request.submit.return_value = mock_response
-            mock_site._simple_request.return_value = mock_request
 
             from wiki import WikiClient
 
             with patch.dict("os.environ", {"WIKIPEDIA_ACCESS_TOKEN": "test"}):
                 client = WikiClient(use_oauth=True)
+                client._api_request = MagicMock(return_value=mock_response)
                 events = client.get_protection_log("Test Page")
 
                 assert len(events) == 1
@@ -401,14 +385,12 @@ class TestPageAssessments:
                     }
                 }
             }
-            mock_request = MagicMock()
-            mock_request.submit.return_value = mock_response
-            mock_site._simple_request.return_value = mock_request
 
             from wiki import WikiClient
 
             with patch.dict("os.environ", {"WIKIPEDIA_ACCESS_TOKEN": "test"}):
                 client = WikiClient(use_oauth=True)
+                client._api_request = MagicMock(return_value=mock_response)
                 assessments = client.get_page_assessments("Climate change")
 
                 assert assessments["title"] == "Climate change"
@@ -433,14 +415,12 @@ class TestPageAssessments:
                     }
                 }
             }
-            mock_request = MagicMock()
-            mock_request.submit.return_value = mock_response
-            mock_site._simple_request.return_value = mock_request
 
             from wiki import WikiClient
 
             with patch.dict("os.environ", {"WIKIPEDIA_ACCESS_TOKEN": "test"}):
                 client = WikiClient(use_oauth=True)
+                client._api_request = MagicMock(return_value=mock_response)
                 assessments = client.get_page_assessments("Nonexistent Page")
 
                 assert assessments["assessments"] == {}

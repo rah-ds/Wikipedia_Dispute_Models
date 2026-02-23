@@ -47,6 +47,13 @@ class DataSourceConfig:
     include_talk_pages: bool = True
     max_talk_pages: int | None = 50
 
+    # Enrichment options (for arbitration source)
+    enrich_participants: bool = True  # Fetch user info, blocks, abuse hits
+    enrich_articles: bool = True  # Fetch assessments, protection
+    max_articles: int = 20  # Max articles to enrich per case
+    include_ani: bool = True  # Search ANI for mentions
+    include_drn: bool = True  # Search DRN for mentions
+
 
 @dataclass
 class PullConfig:
@@ -186,6 +193,11 @@ def get_sample_config() -> PullConfig:
             limit=5,
             revision_limit=50,
             max_talk_pages=10,
+            enrich_participants=True,
+            enrich_articles=True,
+            max_articles=10,
+            include_ani=True,
+            include_drn=True,
         ),
         drn=DataSourceConfig(
             enabled=True,
@@ -212,6 +224,11 @@ def get_full_config() -> PullConfig:
             limit=None,
             revision_limit=None,
             max_talk_pages=None,
+            enrich_participants=True,
+            enrich_articles=True,
+            max_articles=30,
+            include_ani=True,
+            include_drn=True,
         ),
         drn=DataSourceConfig(
             enabled=True,
@@ -241,6 +258,11 @@ def get_dev_config() -> PullConfig:
             limit=1,
             revision_limit=10,
             max_talk_pages=2,
+            enrich_participants=False,  # Faster for dev
+            enrich_articles=False,
+            max_articles=5,
+            include_ani=False,
+            include_drn=False,
         ),
         drn=DataSourceConfig(enabled=False),
         ani=DataSourceConfig(enabled=False),
