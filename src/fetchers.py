@@ -60,6 +60,120 @@ def fetch_arbitration_cases(
     return cases
 
 
+# Path patterns for arbitration cases (Wikipedia changed format over time)
+ARB_PATH_PATTERNS = [
+    "Wikipedia:Arbitration/Requests/Case/{name}",  # Current format (post-2010)
+    "Wikipedia:Requests for arbitration/{name}",  # Older format
+    "Wikipedia:Arbitration/{name}",  # Very old format
+]
+
+
+def _resolve_arb_case_title(client: WikiClient, case_name: str) -> str:
+    """
+    Resolve a short arbitration case name to its full Wikipedia page title.
+
+    Tries multiple path patterns since Wikipedia changed formats over time.
+
+    Args:
+        client: WikiClient instance
+        case_name: Short case name (e.g. "Climate change") or full title
+
+    Returns:
+        The full page title that exists on Wikipedia
+
+    Raises:
+        ValueError: If no matching page is found under any pattern
+    """
+    # Already a full path
+    if case_name.startswith("Wikipedia:"):
+        page = client.get_page(case_name)
+        if page.exists():
+            return case_name
+        raise ValueError(f"Arbitration case page not found: {case_name}")
+
+    for pattern in ARB_PATH_PATTERNS:
+        full_title = pattern.format(name=case_name)
+        try:
+            page = client.get_page(full_title)
+            if page.exists():
+                return full_title
+        except Exception:
+            continue
+
+    raise ValueError(
+        f"Arbitration case page not found for '{case_name}' "
+        f"(tried {len(ARB_PATH_PATTERNS)} path patterns)"
+    )
+
+
+def fetch_arbitration_case(
+    client: WikiClient,
+    case_name: str,
+    revision_limit: int | None = 100,
+    max_talk_pages: int | None = 10,
+) -> dict:
+    """
+    Fetch a single arbitration case by name.
+
+    Args:
+        client: WikiClient instance
+        case_name: Short case name (e.g. "Climate change") or full page title
+        revision_limit: Maximum number of revisions to fetch (None = all)
+        max_talk_pages: Maximum number of related talk pages to fetch (None = all)
+
+    Returns:
+        Dictionary with case title, content, revisions, and talk page data
+    """
+    full_title = _resolve_arb_case_title(client, case_name)
+    page = client.get_page(full_title)
+
+    case_data: dict = {
+        "title": page.title(),
+        "url": page.full_url(),
+        "fetched_at": datetime.now().isoformat(),
+        "last_edit": None,
+        "revisions": [],
+        "content": None,
+        "talk_pages": [],
+    }
+
+    # Fetch revisions
+    try:
+        case_data["revisions"] = client.get_revisions(
+            page.title(), limit=revision_limit
+        )
+        if case_data["revisions"]:
+            case_data["last_edit"] = case_data["revisions"][0]["timestamp"]
+    except Exception as e:
+        logger.warning("Error fetching revisions for %s: %s", case_name, e)
+        case_data["revision_error"] = str(e)
+
+    # Fetch content
+    try:
+        case_data["content"] = page.text
+    except Exception as e:
+        logger.warning("Error fetching content for %s: %s", case_name, e)
+        case_data["content_error"] = str(e)
+
+    # Fetch related talk page
+    try:
+        talk_page = client.get_talk_page(page.title())
+        if talk_page and talk_page.exists():
+            talk_data = {
+                "title": talk_page.title(),
+                "content": talk_page.text,
+                "revisions": client.get_revisions(
+                    talk_page.title(), limit=revision_limit
+                ),
+            }
+            case_data["talk_pages"].append(talk_data)
+    except Exception as e:
+        logger.warning("Error fetching talk page for %s: %s", case_name, e)
+        case_data["talk_error"] = str(e)
+
+    return case_data
+
+
 def fetch_drn_page(client: WikiClient) -> dict:
     """Fetch the main DRN page content and metadata."""
     page = client.get_page("Wikipedia:Dispute resolution noticeboard")

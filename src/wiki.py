@@ -10,6 +10,7 @@ from functools import wraps
 from typing import Callable, TypeVar
 
 import pywikibot
+from pywikibot import data as pywikibot_data
 from pywikibot.exceptions import APIError, ServerError
 import os
 
@@ -144,6 +145,22 @@ class WikiClient:
                 f"{current_hour} this hour ({hour_key})"
             )
 
+    def _api_request(self, **params) -> dict:
+        """
+        Make a direct API request using pywikibot's Request class.
+
+        This is the proper way to make API requests that works across
+        different pywikibot versions.
+
+        Args:
+            **params: API parameters
+
+        Returns:
+            API response as dictionary
+        """
+        request = pywikibot_data.api.Request(site=self.site, parameters=params)
+        return request.submit()
+
     def get_stats(self) -> dict:
         """Get request statistics."""
         return {
@@ -197,7 +214,7 @@ class WikiClient:
                 "titles": "|".join(batch),
                 "format": "json",
             }
-            resp = self.site._client._simple_request(**params).submit()
+            resp = self._api_request(**params)
             for page_id, page in resp["query"]["pages"].items():
                 rev = page["revisions"][0]
                 results.append(
@@ -291,8 +308,7 @@ class WikiClient:
                 params["rvcontinue"] = continue_token
 
             try:
-                request = self.site._simple_request(**params)
-                response = request.submit()
+                response = self._api_request(**params)
             except Exception as e:
                 logger.error(f"Failed to fetch revisions for {title}: {e}")
                 raise
@@ -434,8 +450,7 @@ class WikiClient:
         }
 
         try:
-            request = self.site._simple_request(**params)
-            response = request.submit()
+            response = self._api_request(**params)
         except Exception as e:
             logger.error(f"Failed to fetch user info for {username}: {e}")
             raise
@@ -495,8 +510,7 @@ class WikiClient:
             }
 
             try:
-                request = self.site._simple_request(**params)
-                response = request.submit()
+                response = self._api_request(**params)
             except Exception as e:
                 logger.error(f"Failed to fetch users info: {e}")
                 continue
@@ -563,8 +577,7 @@ class WikiClient:
                 params["bkcontinue"] = continue_token
 
             try:
-                request = self.site._simple_request(**params)
-                response = request.submit()
+                response = self._api_request(**params)
             except Exception as e:
                 logger.error(f"Failed to fetch blocks for {username}: {e}")
                 raise
@@ -635,8 +648,7 @@ class WikiClient:
                 params["lecontinue"] = continue_token
 
             try:
-                request = self.site._simple_request(**params)
-                response = request.submit()
+                response = self._api_request(**params)
             except Exception as e:
                 logger.error(f"Failed to fetch block log for {username}: {e}")
                 raise
@@ -714,8 +726,7 @@ class WikiClient:
                 params["lecontinue"] = continue_token
 
             try:
-                request = self.site._simple_request(**params)
-                response = request.submit()
+                response = self._api_request(**params)
             except Exception as e:
                 logger.error(f"Failed to fetch {log_type} log: {e}")
                 raise
@@ -798,8 +809,7 @@ class WikiClient:
         }
 
         try:
-            request = self.site._simple_request(**params)
-            response = request.submit()
+            response = self._api_request(**params)
         except Exception as e:
             logger.error(f"Failed to compare revisions {from_rev} -> {to_rev}: {e}")
             raise
@@ -843,8 +853,7 @@ class WikiClient:
         }
 
         try:
-            request = self.site._simple_request(**params)
-            response = request.submit()
+            response = self._api_request(**params)
         except Exception as e:
             logger.error(f"Failed to get revision {revid}: {e}")
             raise
@@ -890,8 +899,7 @@ class WikiClient:
         }
 
         try:
-            request = self.site._simple_request(**params)
-            response = request.submit()
+            response = self._api_request(**params)
         except Exception as e:
             logger.error(f"Failed to fetch assessments for {title}: {e}")
             raise
@@ -977,8 +985,7 @@ class WikiClient:
                 params["aflstart"] = continue_token
 
             try:
-                request = self.site._simple_request(**params)
-                response = request.submit()
+                response = self._api_request(**params)
             except Exception as e:
                 logger.error(f"Failed to fetch abuse log: {e}")
                 raise

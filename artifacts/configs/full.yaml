@@ -40,6 +40,12 @@ arbitration:
   revision_limit: null  # All revisions
   include_talk_pages: true
   max_talk_pages: null  # All talk pages
+  # Enrichment options
+  enrich_participants: true
+  enrich_articles: true
+  max_articles: 30
+  include_ani: true
+  include_drn: true
 
 drn:
   enabled: true

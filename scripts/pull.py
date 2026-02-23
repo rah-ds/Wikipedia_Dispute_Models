@@ -28,8 +28,15 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+from dotenv import load_dotenv
+
+# Load .env from project root
+load_dotenv(dotenv_path=Path(__file__).parent.parent / ".env")
+
+# Add project root and src to path
+_project_root = str(Path(__file__).parent.parent)
+sys.path.insert(0, _project_root)
+sys.path.insert(0, str(Path(_project_root) / "src"))
 
 from logging_config import setup_logging, log_error_with_context
 from pull_config import PullConfig, get_sample_config, get_full_config, get_dev_config
@@ -256,13 +263,13 @@ class PullRunner:
             raise
 
     def _process_arbitration(self, cases: list[str]) -> None:
-        """Process arbitration cases with tqdm progress bar."""
+        """Process arbitration cases with full enrichment and tqdm progress bar."""
         source_start = time.time()
-        self.logger.info("Processing arbitration cases...")
+        self.logger.info("Processing arbitration cases (full enrichment)...")
         source_config = self.config.arbitration
 
         # Import here to avoid circular imports
-        from fetchers import fetch_arbitration_case
+        from arbitration import fetch_full_arbitration_case
         from wiki import WikiClient
 
         client = WikiClient()
@@ -272,6 +279,13 @@ class PullRunner:
         if not pending_cases:
             self.logger.info("All arbitration cases already completed")
             return
+
+        # Log enrichment settings
+        self.logger.info(
+            f"Enrichment: participants={source_config.enrich_participants}, "
+            f"articles={source_config.enrich_articles}, "
+            f"max_articles={source_config.max_articles}"
+        )
 
         # Create progress bar
         pbar_kwargs = {
@@ -301,16 +315,25 @@ class PullRunner:
             self.state_manager.start_item("arbitration", case_name)
 
             try:
-                # Fetch case data
-                result = fetch_arbitration_case(
+                # Fetch case data with full enrichment
+                result = fetch_full_arbitration_case(
                     client,
                     case_name,
-                    revision_limit=source_config.revision_limit,
-                    max_talk_pages=source_config.max_talk_pages,
+                    revision_limit=source_config.revision_limit or 100,
+                    max_articles=source_config.max_articles,
+                    enrich_participants=source_config.enrich_participants,
+                    enrich_articles=source_config.enrich_articles,
+                    include_ani=source_config.include_ani,
+                    include_drn=source_config.include_drn,
                 )
 
-                # Record API usage (estimate based on typical fetch)
-                self.rate_tracker.record("mediawiki_auth", count=10)
+                # Record API usage (estimate based on enrichment)
+                api_calls = 10  # Base calls
+                if source_config.enrich_participants:
+                    api_calls += result.get("summary", {}).get("participants_enriched", 0) * 2
+                if source_config.enrich_articles:
+                    api_calls += result.get("summary", {}).get("articles_enriched", 0) * 3
+                self.rate_tracker.record("mediawiki_auth", count=api_calls)
 
                 # Save to file
                 output_path = (
