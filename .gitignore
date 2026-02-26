@@ -30,6 +30,10 @@ artifacts/archives/
 !artifacts/results/
 !artifacts/imgs/publish/
 
+# Node.js (puppeteer for SVG export)
+node_modules/
+package-lock.json
+
 # Test / coverage artifacts
 .coverage
 .pytest_cache/

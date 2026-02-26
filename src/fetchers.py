@@ -55,7 +55,6 @@ def fetch_arbitration_cases(
             case_data["error"] = str(e)
 
         cases.append(case_data)
-        time.sleep(delay)  # Rate limiting
 
     return cases
 
@@ -444,7 +443,6 @@ def search_ani_mentions(
                     results.append(section)
 
             archive_count += 1
-            time.sleep(0.3)  # Rate limit
         except Exception as e:
             logger.warning(f"Error fetching {archive_title}: {e}")
             consecutive_misses += 1
