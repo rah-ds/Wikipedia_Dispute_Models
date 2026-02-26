@@ -2,17 +2,17 @@
   "config_name": "",
   "config_path": null,
   "started_at": "2026-02-23T12:56:37.295223Z",
-  "last_updated": "2026-02-23T18:01:33.538257Z",
+  "last_updated": "2026-02-25T16:39:02.759021Z",
   "version": 1,
   "status": "paused",
   "current_source": "arbitration",
-  "current_item": "AlisonW",
+  "current_item": "Conduct in deletion-related editing",
   "sources": {
     "arbitration": {
       "name": "arbitration",
       "enabled": true,
       "total_items": 481,
-      "completed_items": 22,
+      "completed_items": 99,
       "failed_items": 0,
       "skipped_items": 0,
       "items": {
@@ -282,701 +282,932 @@
         },
         "AlisonW": {
           "name": "AlisonW",
-          "status": "in_progress",
-          "started_at": "2026-02-23T17:56:13.221829Z",
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T00:09:40.510984Z",
+          "completed_at": "2026-02-25T00:22:32.546412Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/AlisonW.json",
+            "duration_seconds": 772.0355358123779
+          }
         },
         "Alkivar": {
           "name": "Alkivar",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T00:22:32.546710Z",
+          "completed_at": "2026-02-25T00:34:56.424870Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Alkivar.json",
+            "duration_seconds": 743.8782510757446
+          }
         },
         "Allegations of apartheid": {
           "name": "Allegations of apartheid",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T00:34:56.425695Z",
+          "completed_at": "2026-02-25T00:48:19.181211Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Allegations of apartheid.json",
+            "duration_seconds": 802.7556619644165
+          }
         },
         "American politics": {
           "name": "American politics",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T00:48:19.181492Z",
+          "completed_at": "2026-02-25T01:02:20.812532Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/American politics.json",
+            "duration_seconds": 841.6311480998993
+          }
         },
         "American politics 2": {
           "name": "American politics 2",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T01:02:20.812858Z",
+          "completed_at": "2026-02-25T01:15:59.773624Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/American politics 2.json",
+            "duration_seconds": 818.9608731269836
+          }
         },
         "Andrevan": {
           "name": "Andrevan",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T01:15:59.773932Z",
+          "completed_at": "2026-02-25T01:28:30.011135Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Andrevan.json",
+            "duration_seconds": 750.2373037338257
+          }
         },
         "AndriyK": {
           "name": "AndriyK",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T01:28:30.011453Z",
+          "completed_at": "2026-02-25T01:39:31.262210Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/AndriyK.json",
+            "duration_seconds": 661.2508611679077
+          }
         },
         "Anonimu": {
           "name": "Anonimu",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T01:39:31.262548Z",
+          "completed_at": "2026-02-25T01:50:00.470725Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Anonimu.json",
+            "duration_seconds": 629.2082901000977
+          }
         },
         "Anthony DiPierro 2": {
           "name": "Anthony DiPierro 2",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T01:50:00.470967Z",
+          "completed_at": "2026-02-25T01:59:08.850575Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Anthony DiPierro 2.json",
+            "duration_seconds": 548.3796811103821
+          }
         },
         "Antifinnugor": {
           "name": "Antifinnugor",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T01:59:08.850907Z",
+          "completed_at": "2026-02-25T02:10:43.730680Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Antifinnugor.json",
+            "duration_seconds": 694.8798818588257
+          }
         },
         "Antisemitism in Poland": {
           "name": "Antisemitism in Poland",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T02:10:43.731054Z",
+          "completed_at": "2026-02-25T02:24:52.432522Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Antisemitism in Poland.json",
+            "duration_seconds": 848.7015860080719
+          }
         },
         "Appeal of VeryVerily": {
           "name": "Appeal of VeryVerily",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T02:24:52.432823Z",
+          "completed_at": "2026-02-25T02:35:32.502094Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Appeal of VeryVerily.json",
+            "duration_seconds": 640.0693778991699
+          }
         },
         "Arbitration Enforcement sanction handling": {
           "name": "Arbitration Enforcement sanction handling",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T02:35:32.502499Z",
+          "completed_at": "2026-02-25T02:48:29.937082Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Arbitration Enforcement sanction handling.json",
+            "duration_seconds": 777.4347059726715
+          }
         },
         "Arbitration enforcement": {
           "name": "Arbitration enforcement",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T02:48:29.937381Z",
+          "completed_at": "2026-02-25T03:02:33.003716Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Arbitration enforcement.json",
+            "duration_seconds": 843.0664393901825
+          }
         },
         "Arbitration enforcement 2": {
           "name": "Arbitration enforcement 2",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T03:02:33.003927Z",
+          "completed_at": "2026-02-25T03:16:03.221382Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Arbitration enforcement 2.json",
+            "duration_seconds": 810.2175188064575
+          }
         },
         "Argyrosargyrou": {
           "name": "Argyrosargyrou",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T03:16:03.221681Z",
+          "completed_at": "2026-02-25T03:29:14.104792Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Argyrosargyrou.json",
+            "duration_seconds": 790.8832020759583
+          }
         },
         "ArmchairVexillologistDon": {
           "name": "ArmchairVexillologistDon",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T03:29:14.105062Z",
+          "completed_at": "2026-02-25T03:39:47.778058Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/ArmchairVexillologistDon.json",
+            "duration_seconds": 633.6731090545654
+          }
         },
         "Armenia-Azerbaijan 2": {
           "name": "Armenia-Azerbaijan 2",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T03:39:47.778360Z",
+          "completed_at": "2026-02-25T03:53:53.518039Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Armenia-Azerbaijan 2.json",
+            "duration_seconds": 845.7397820949554
+          }
         },
         "Armenia-Azerbaijan 3": {
           "name": "Armenia-Azerbaijan 3",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T03:53:53.518338Z",
+          "completed_at": "2026-02-25T04:08:02.693248Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Armenia-Azerbaijan 3.json",
+            "duration_seconds": 849.1750121116638
+          }
         },
         "Arminius": {
           "name": "Arminius",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T04:08:02.693547Z",
+          "completed_at": "2026-02-25T04:16:50.687103Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Arminius.json",
+            "duration_seconds": 527.9936590194702
+          }
         },
         "Artaxerex": {
           "name": "Artaxerex",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T04:16:50.687469Z",
+          "completed_at": "2026-02-25T04:28:57.723248Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Artaxerex.json",
+            "duration_seconds": 727.0358929634094
+          }
         },
         "Arthur Rubin": {
           "name": "Arthur Rubin",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T04:28:57.723466Z",
+          "completed_at": "2026-02-25T04:41:50.316760Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Arthur Rubin.json",
+            "duration_seconds": 772.5933640003204
+          }
         },
         "Article titles and capitalisation": {
           "name": "Article titles and capitalisation",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T04:41:50.317010Z",
+          "completed_at": "2026-02-25T04:55:52.041226Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Article titles and capitalisation.json",
+            "duration_seconds": 841.7243189811707
+          }
         },
         "Article titles and capitalisation 2": {
           "name": "Article titles and capitalisation 2",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T04:55:52.041444Z",
+          "completed_at": "2026-02-25T05:09:55.837958Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Article titles and capitalisation 2.json",
+            "duration_seconds": 843.7965850830078
+          }
         },
         "Asgardian": {
           "name": "Asgardian",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T05:09:55.838177Z",
+          "completed_at": "2026-02-25T05:24:02.480029Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Asgardian.json",
+            "duration_seconds": 846.6419219970703
+          }
         },
         "Asgardian-Tenebrae": {
           "name": "Asgardian-Tenebrae",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T05:24:02.480338Z",
+          "completed_at": "2026-02-25T05:37:54.468545Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Asgardian-Tenebrae.json",
+            "duration_seconds": 831.9883139133453
+          }
         },
         "Asmahan": {
           "name": "Asmahan",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T05:37:54.468855Z",
+          "completed_at": "2026-02-25T05:51:56.991001Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Asmahan.json",
+            "duration_seconds": 842.5222511291504
+          }
         },
         "Attachment Therapy": {
           "name": "Attachment Therapy",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T05:51:56.991298Z",
+          "completed_at": "2026-02-25T06:06:01.116273Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Attachment Therapy.json",
+            "duration_seconds": 844.1250779628754
+          }
         },
         "Attack sites": {
           "name": "Attack sites",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T06:06:01.116569Z",
+          "completed_at": "2026-02-25T06:19:10.867988Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Attack sites.json",
+            "duration_seconds": 789.7515051364899
+          }
         },
         "Aucaman": {
           "name": "Aucaman",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T06:19:10.868483Z",
+          "completed_at": "2026-02-25T06:30:39.951434Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Aucaman.json",
+            "duration_seconds": 689.0830557346344
+          }
         },
         "Austrian economics": {
           "name": "Austrian economics",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T06:30:39.951819Z",
+          "completed_at": "2026-02-25T06:44:47.539872Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Austrian economics.json",
+            "duration_seconds": 847.5881640911102
+          }
         },
         "Avala": {
           "name": "Avala",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T06:44:47.540091Z",
+          "completed_at": "2026-02-25T06:57:09.296739Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Avala.json",
+            "duration_seconds": 741.7567138671875
+          }
         },
         "Ayn Rand": {
           "name": "Ayn Rand",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T06:57:09.297077Z",
+          "completed_at": "2026-02-25T07:11:05.545267Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Ayn Rand.json",
+            "duration_seconds": 836.2483036518097
+          }
         },
         "A\u00f1oranza": {
           "name": "A\u00f1oranza",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T07:11:05.545575Z",
+          "completed_at": "2026-02-25T07:24:13.074248Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/A\u00f1oranza.json",
+            "duration_seconds": 787.5287816524506
+          }
         },
         "BJAODN": {
           "name": "BJAODN",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T07:24:13.074557Z",
+          "completed_at": "2026-02-25T07:37:13.575952Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/BJAODN.json",
+            "duration_seconds": 780.501503944397
+          }
         },
         "BLP issues on British politics articles": {
           "name": "BLP issues on British politics articles",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T07:37:13.576176Z",
+          "completed_at": "2026-02-25T07:51:15.203238Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/BLP issues on British politics articles.json",
+            "duration_seconds": 841.6271448135376
+          }
         },
         "Baku Ibne, et al.": {
           "name": "Baku Ibne, et al.",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T07:51:15.203455Z",
+          "completed_at": "2026-02-25T08:01:41.722701Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Baku Ibne, et al..json",
+            "duration_seconds": 626.5193150043488
+          }
         },
         "Banning Policy": {
           "name": "Banning Policy",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T08:01:41.723002Z",
+          "completed_at": "2026-02-25T08:14:05.317433Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Banning Policy.json",
+            "duration_seconds": 743.5945391654968
+          }
         },
         "Betacommand": {
           "name": "Betacommand",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T08:14:05.317697Z",
+          "completed_at": "2026-02-25T08:28:00.549059Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Betacommand.json",
+            "duration_seconds": 835.2314319610596
+          }
         },
         "Betacommand 3": {
           "name": "Betacommand 3",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T08:28:00.550374Z",
+          "completed_at": "2026-02-25T08:42:04.883094Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Betacommand 3.json",
+            "duration_seconds": 844.3331060409546
+          }
         },
         "BigDaddy777": {
           "name": "BigDaddy777",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T08:42:04.883452Z",
+          "completed_at": "2026-02-25T08:53:13.124127Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/BigDaddy777.json",
+            "duration_seconds": 668.2407829761505
+          }
         },
         "Blu Aardvark": {
           "name": "Blu Aardvark",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T08:53:13.124390Z",
+          "completed_at": "2026-02-25T09:03:57.680959Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Blu Aardvark.json",
+            "duration_seconds": 644.5566852092743
+          }
         },
         "Boothy443": {
           "name": "Boothy443",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T09:03:57.681269Z",
+          "completed_at": "2026-02-25T09:13:24.161455Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Boothy443.json",
+            "duration_seconds": 566.4802947044373
+          }
         },
         "Boris Stomakhin": {
           "name": "Boris Stomakhin",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T09:13:24.161680Z",
+          "completed_at": "2026-02-25T09:26:11.229981Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Boris Stomakhin.json",
+            "duration_seconds": 767.0683591365814
+          }
         },
         "Bowling for Columbine": {
           "name": "Bowling for Columbine",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T09:26:11.230726Z",
+          "completed_at": "2026-02-25T09:37:29.835658Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Bowling for Columbine.json",
+            "duration_seconds": 678.6052179336548
+          }
         },
         "C68-FM-SV": {
           "name": "C68-FM-SV",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T09:37:29.835964Z",
+          "completed_at": "2026-02-25T09:51:46.215746Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/C68-FM-SV.json",
+            "duration_seconds": 856.3798892498016
+          }
         },
         "CAMERA lobbying": {
           "name": "CAMERA lobbying",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T09:51:46.215996Z",
+          "completed_at": "2026-02-25T10:04:15.487615Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/CAMERA lobbying.json",
+            "duration_seconds": 749.2717151641846
+          }
         },
         "COFS": {
           "name": "COFS",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T10:04:15.487909Z",
+          "completed_at": "2026-02-25T10:18:30.215572Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/COFS.json",
+            "duration_seconds": 854.7277638912201
+          }
         },
         "COVID-19": {
           "name": "COVID-19",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T10:18:30.215876Z",
+          "completed_at": "2026-02-25T10:31:54.964913Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/COVID-19.json",
+            "duration_seconds": 804.7491438388824
+          }
         },
         "Canadian politics": {
           "name": "Canadian politics",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T10:31:54.965219Z",
+          "completed_at": "2026-02-25T10:45:38.501206Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Canadian politics.json",
+            "duration_seconds": 823.5360913276672
+          }
         },
         "Cantus": {
           "name": "Cantus",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T10:45:38.501567Z",
+          "completed_at": "2026-02-25T10:56:34.244716Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Cantus.json",
+            "duration_seconds": 655.7432601451874
+          }
         },
         "Cantus 3": {
           "name": "Cantus 3",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T10:56:34.245144Z",
+          "completed_at": "2026-02-25T11:03:42.846262Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Cantus 3.json",
+            "duration_seconds": 428.60129714012146
+          }
         },
         "Cantus vs. Guanaco": {
           "name": "Cantus vs. Guanaco",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T11:03:42.846653Z",
+          "completed_at": "2026-02-25T11:13:49.903152Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Cantus vs. Guanaco.json",
+            "duration_seconds": 607.0566728115082
+          }
         },
         "Carl Hewitt": {
           "name": "Carl Hewitt",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T11:13:49.903462Z",
+          "completed_at": "2026-02-25T11:24:00.597163Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Carl Hewitt.json",
+            "duration_seconds": 610.6937961578369
+          }
         },
         "Carlossuarez46": {
           "name": "Carlossuarez46",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T11:24:00.597534Z",
+          "completed_at": "2026-02-25T11:36:49.967663Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Carlossuarez46.json",
+            "duration_seconds": 769.3702502250671
+          }
         },
         "Catalonia": {
           "name": "Catalonia",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T11:36:49.967972Z",
+          "completed_at": "2026-02-25T11:50:24.328478Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Catalonia.json",
+            "duration_seconds": 814.3606112003326
+          }
         },
         "Catflap08 and Hijiri88": {
           "name": "Catflap08 and Hijiri88",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T11:50:24.328791Z",
+          "completed_at": "2026-02-25T12:04:19.531546Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Catflap08 and Hijiri88.json",
+            "duration_seconds": 835.2028617858887
+          }
         },
         "Certified.Gangsta-Ideogram": {
           "name": "Certified.Gangsta-Ideogram",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T12:04:19.531842Z",
+          "completed_at": "2026-02-25T12:18:22.707917Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Certified.Gangsta-Ideogram.json",
+            "duration_seconds": 843.1761782169342
+          }
         },
         "Cesar Tort and Ombudsman vs others": {
           "name": "Cesar Tort and Ombudsman vs others",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T12:18:22.708210Z",
+          "completed_at": "2026-02-25T12:30:49.389994Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Cesar Tort and Ombudsman vs others.json",
+            "duration_seconds": 746.6818838119507
+          }
         },
         "Chabad movement": {
           "name": "Chabad movement",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T12:30:49.390294Z",
+          "completed_at": "2026-02-25T12:44:53.368780Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Chabad movement.json",
+            "duration_seconds": 843.9785902500153
+          }
         },
         "Charles Darwin-Lincoln dispute": {
           "name": "Charles Darwin-Lincoln dispute",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T12:44:53.369117Z",
+          "completed_at": "2026-02-25T12:56:19.046799Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Charles Darwin-Lincoln dispute.json",
+            "duration_seconds": 685.6777899265289
+          }
         },
         "CheeseDreams": {
           "name": "CheeseDreams",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T12:56:19.047092Z",
+          "completed_at": "2026-02-25T13:04:12.585821Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/CheeseDreams.json",
+            "duration_seconds": 473.53883171081543
+          }
         },
         "CheeseDreams 2": {
           "name": "CheeseDreams 2",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T13:04:12.586119Z",
+          "completed_at": "2026-02-25T13:14:36.454532Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/CheeseDreams 2.json",
+            "duration_seconds": 623.8685162067413
+          }
         },
         "ChildofMidnight": {
           "name": "ChildofMidnight",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T13:14:36.454845Z",
+          "completed_at": "2026-02-25T13:25:07.327914Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/ChildofMidnight.json",
+            "duration_seconds": 630.873174905777
+          }
         },
         "ChrisO and Levzur": {
           "name": "ChrisO and Levzur",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T13:25:07.328248Z",
+          "completed_at": "2026-02-25T13:36:18.378008Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/ChrisO and Levzur.json",
+            "duration_seconds": 671.0498638153076
+          }
         },
         "Christianity and Sexuality": {
           "name": "Christianity and Sexuality",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T13:36:18.378315Z",
+          "completed_at": "2026-02-25T13:50:16.940111Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Christianity and Sexuality.json",
+            "duration_seconds": 838.561900138855
+          }
         },
         "Chuck F": {
           "name": "Chuck F",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T13:50:16.940432Z",
+          "completed_at": "2026-02-25T14:06:12.925950Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Chuck F.json",
+            "duration_seconds": 955.9856219291687
+          }
         },
         "Cirt and Jayen466": {
           "name": "Cirt and Jayen466",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T14:06:12.926307Z",
+          "completed_at": "2026-02-25T14:20:47.794529Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Cirt and Jayen466.json",
+            "duration_seconds": 874.8683249950409
+          }
         },
         "Civility enforcement": {
           "name": "Civility enforcement",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T14:20:47.794817Z",
+          "completed_at": "2026-02-25T14:35:07.821153Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Civility enforcement.json",
+            "duration_seconds": 860.026435136795
+          }
         },
         "Civility in infobox discussions": {
           "name": "Civility in infobox discussions",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T14:35:07.821453Z",
+          "completed_at": "2026-02-25T14:47:52.428449Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Civility in infobox discussions.json",
+            "duration_seconds": 764.6071000099182
+          }
         },
         "Ciz": {
           "name": "Ciz",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T14:47:52.428802Z",
+          "completed_at": "2026-02-25T15:00:39.613874Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Ciz.json",
+            "duration_seconds": 767.1851787567139
+          }
         },
         "Climate change": {
           "name": "Climate change",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T15:00:39.614088Z",
+          "completed_at": "2026-02-25T15:15:18.859769Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Climate change.json",
+            "duration_seconds": 879.2457482814789
+          }
         },
         "Climate change dispute": {
           "name": "Climate change dispute",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T15:15:18.860049Z",
+          "completed_at": "2026-02-25T15:27:05.217086Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Climate change dispute.json",
+            "duration_seconds": 706.3571329116821
+          }
         },
         "Climate change dispute 2": {
           "name": "Climate change dispute 2",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T15:27:05.217375Z",
+          "completed_at": "2026-02-25T15:34:39.735446Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Climate change dispute 2.json",
+            "duration_seconds": 454.51817178726196
+          }
         },
         "Cold fusion 2": {
           "name": "Cold fusion 2",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T15:34:39.735755Z",
+          "completed_at": "2026-02-25T15:48:08.965559Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Cold fusion 2.json",
+            "duration_seconds": 809.2299098968506
+          }
         },
         "Collect and others": {
           "name": "Collect and others",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T15:48:08.965846Z",
+          "completed_at": "2026-02-25T16:00:37.152161Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Collect and others.json",
+            "duration_seconds": 748.1864140033722
+          }
         },
         "Commodore Sloat-Biophys": {
           "name": "Commodore Sloat-Biophys",
-          "status": "pending",
-          "started_at": null,
-          "completed_at": null,
+          "status": "completed",
+          "started_at": "2026-02-25T16:00:37.152461Z",
+          "completed_at": "2026-02-25T16:14:37.836567Z",
           "error": null,
           "retries": 0,
-          "data": {}
+          "data": {
+            "output_file": "data/raw/arbitration/Commodore Sloat-Biophys.json",
+            "duration_seconds": 840.6842091083527
+          }
         },
         "Conduct in deletion-related editing": {
           "name": "Conduct in deletion-related editing",
-          "status": "pending",
-          "started_at": null,
+          "status": "in_progress",
+          "started_at": "2026-02-25T16:14:37.836821Z",
           "completed_at": null,
           "error": null,
           "retries": 0,
