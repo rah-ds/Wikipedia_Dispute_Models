@@ -401,7 +401,6 @@ def search_drn_mentions(
                                     "found": True,
                                 }
                             )
-                    time.sleep(0.2)
                     break
             except Exception:
                 pass
@@ -527,7 +526,6 @@ def fetch_full_arbitration_case(
                 all_articles.update(extract_article_links(content))
 
                 logger.debug(f"  Fetched: {page_title}")
-                time.sleep(delay)
             else:
                 logger.debug(f"  Not found: {page_title}")
 
@@ -561,7 +559,6 @@ def fetch_full_arbitration_case(
                     }
                 )
                 logger.debug(f"  Fetched: {talk_title}")
-                time.sleep(delay)
         except Exception:
             pass
 
@@ -610,7 +607,6 @@ def fetch_full_arbitration_case(
                 blocks = client.get_user_blocks(username, limit=20)
                 if blocks:
                     result["participant_blocks"][username] = blocks
-                time.sleep(delay / 2)
             except Exception as e:
                 logger.debug(f"Error fetching blocks for {username}: {e}")
 
@@ -620,7 +616,6 @@ def fetch_full_arbitration_case(
                 abuse = client.get_user_abuse_hits(username, limit=20)
                 if abuse.get("total_hits", 0) > 0:
                     result["participant_abuse_hits"][username] = abuse
-                time.sleep(delay / 2)
             except Exception as e:
                 logger.debug(f"Error fetching abuse hits for {username}: {e}")
 
@@ -654,8 +649,6 @@ def fetch_full_arbitration_case(
                     "protection_count": len(protection_log),
                 }
 
-                time.sleep(delay)
-
             except Exception as e:
                 logger.debug(f"Error enriching article {article}: {e}")
 
@@ -665,7 +658,6 @@ def fetch_full_arbitration_case(
             try:
                 revisions = client.get_revisions_with_tags(article, limit=revision_limit)
                 result["article_revisions"][article] = revisions
-                time.sleep(delay)
             except Exception as e:
                 logger.debug(f"Error fetching revisions for {article}: {e}")
 
@@ -690,7 +682,6 @@ def fetch_full_arbitration_case(
                         "case_name" if search_term == case_name else "participant"
                     )
                 result["ani_mentions"].extend(mentions)
-                time.sleep(delay)
 
             # Deduplicate
             seen = set()

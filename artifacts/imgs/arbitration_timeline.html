@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wikipedia Arbitration Cases — Timeline</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #0d1117;
+      color: #c9d1d9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 960px;
+      padding: 40px 30px 30px;
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 600;
+      color: #e6edf3;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: #8b949e;
+      margin-bottom: 28px;
+    }
+
+    svg {
+      overflow: visible;
+    }
+
+    /* Axis styling */
+    .axis path, .axis line { stroke: #30363d; }
+    .axis text { fill: #8b949e; font-size: 12px; }
+
+    /* Tooltip */
+    .tooltip {
+      position: absolute;
+      pointer-events: none;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: #c9d1d9;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      opacity: 0;
+      transition: opacity 0.15s ease;
+    }
+
+    .tooltip .case-name {
+      font-weight: 600;
+      color: #e6edf3;
+      margin-bottom: 4px;
+    }
+
+    .tooltip .detail {
+      color: #8b949e;
+    }
+
+    .tooltip .detail span {
+      color: #c9d1d9;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Wikipedia Arbitration Cases — Timeline</h1>
+  <p class="subtitle">Start and end dates of case activity (based on earliest and latest page revisions)</p>
+  <div id="chart"></div>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+// ── Data ────────────────────────────────────────────────────────────────────
+const cases = [
+  { name: "Climate Change",          start: "2010-07-13", end: "2026-02-25", color: "#f78166" },
+  { name: "Ayn Rand",                start: "2009-01-22", end: "2025-01-17", color: "#d2a8ff" },
+  { name: "COVID-19",                start: "2021-06-16", end: "2025-10-29", color: "#7ee787" },
+  { name: "Antisemitism in Poland",  start: "2019-06-09", end: "2025-10-29", color: "#79c0ff" },
+  { name: "Catalonia",               start: "2007-07-18", end: "2024-10-17", color: "#ffa657" },
+];
+
+const parseDate = d3.timeParse("%Y-%m-%d");
+cases.forEach(d => {
+  d.startDate = parseDate(d.start);
+  d.endDate   = parseDate(d.end);
+});
+
+// ── Dimensions ──────────────────────────────────────────────────────────────
+const margin = { top: 30, right: 40, bottom: 50, left: 200 };
+const width  = 960 - margin.left - margin.right;
+const height = cases.length * 70;
+
+const svg = d3.select("#chart")
+  .append("svg")
+    .attr("width",  width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+// ── Scales ──────────────────────────────────────────────────────────────────
+const xMin = d3.min(cases, d => d.startDate);
+const xMax = d3.max(cases, d => d.endDate);
+
+const x = d3.scaleTime()
+  .domain([d3.timeYear.offset(xMin, -1), d3.timeYear.offset(xMax, 1)])
+  .range([0, width]);
+
+const y = d3.scaleBand()
+  .domain(cases.map(d => d.name))
+  .range([0, height])
+  .padding(0.4);
+
+// ── Axes ────────────────────────────────────────────────────────────────────
+svg.append("g")
+  .attr("class", "axis")
+  .attr("transform", `translate(0,${height})`)
+  .call(d3.axisBottom(x).ticks(d3.timeYear.every(2)).tickFormat(d3.timeFormat("%Y")))
+  .selectAll("text")
+    .attr("dy", "1em");
+
+svg.append("g")
+  .attr("class", "axis")
+  .call(d3.axisLeft(y).tickSize(0).tickPadding(12))
+  .select(".domain").remove();
+
+// Style case labels
+svg.selectAll(".axis text")
+  .filter(function() {
+    return cases.some(c => c.name === this.textContent);
+  })
+  .style("font-size", "13px")
+  .style("font-weight", "500")
+  .style("fill", function() {
+    const match = cases.find(c => c.name === this.textContent);
+    return match ? match.color : "#c9d1d9";
+  });
+
+// ── Grid lines ──────────────────────────────────────────────────────────────
+svg.append("g")
+  .attr("class", "grid")
+  .selectAll("line")
+  .data(x.ticks(d3.timeYear.every(2)))
+  .join("line")
+    .attr("x1", d => x(d))
+    .attr("x2", d => x(d))
+    .attr("y1", 0)
+    .attr("y2", height)
+    .attr("stroke", "#21262d")
+    .attr("stroke-dasharray", "3,3");
+
+// ── Tooltip ─────────────────────────────────────────────────────────────────
+const tooltip = d3.select("#tooltip");
+const dateFmt = d3.timeFormat("%b %d, %Y");
+
+function durationText(start, end) {
+  const years  = end.getFullYear() - start.getFullYear();
+  const months = end.getMonth() - start.getMonth() + years * 12;
+  const y = Math.floor(months / 12);
+  const m = months % 12;
+  return y > 0 ? `${y}y ${m}m` : `${m}m`;
+}
+
+function showTooltip(event, d) {
+  tooltip
+    .html(`
+      <div class="case-name">${d.name}</div>
+      <div class="detail">Start: <span>${dateFmt(d.startDate)}</span></div>
+      <div class="detail">End: <span>${dateFmt(d.endDate)}</span></div>
+      <div class="detail">Duration: <span>${durationText(d.startDate, d.endDate)}</span></div>
+    `)
+    .style("left", (event.pageX + 14) + "px")
+    .style("top",  (event.pageY - 28) + "px")
+    .style("opacity", 1);
+}
+
+function hideTooltip() {
+  tooltip.style("opacity", 0);
+}
+
+// ── Timeline bars ───────────────────────────────────────────────────────────
+const barGroup = svg.selectAll(".bar-group")
+  .data(cases)
+  .join("g")
+    .attr("class", "bar-group");
+
+// Bar (the connecting line)
+barGroup.append("rect")
+  .attr("x",      d => x(d.startDate))
+  .attr("y",      d => y(d.name) + y.bandwidth() / 2 - 4)
+  .attr("width",  d => Math.max(x(d.endDate) - x(d.startDate), 2))
+  .attr("height", 8)
+  .attr("rx", 4)
+  .attr("ry", 4)
+  .attr("fill", d => d.color)
+  .attr("opacity", 0.35)
+  .on("mouseover", showTooltip)
+  .on("mousemove", showTooltip)
+  .on("mouseout",  hideTooltip);
+
+// Start circle
+barGroup.append("circle")
+  .attr("cx", d => x(d.startDate))
+  .attr("cy", d => y(d.name) + y.bandwidth() / 2)
+  .attr("r", 7)
+  .attr("fill", d => d.color)
+  .attr("stroke", "#0d1117")
+  .attr("stroke-width", 2)
+  .on("mouseover", showTooltip)
+  .on("mousemove", showTooltip)
+  .on("mouseout",  hideTooltip);
+
+// End circle
+barGroup.append("circle")
+  .attr("cx", d => x(d.endDate))
+  .attr("cy", d => y(d.name) + y.bandwidth() / 2)
+  .attr("r", 7)
+  .attr("fill", d => d.color)
+  .attr("stroke", "#0d1117")
+  .attr("stroke-width", 2)
+  .on("mouseover", showTooltip)
+  .on("mousemove", showTooltip)
+  .on("mouseout",  hideTooltip);
+
+// ── Animated entrance ───────────────────────────────────────────────────────
+barGroup.selectAll("rect")
+  .attr("width", 0)
+  .transition()
+    .duration(900)
+    .delay((d, i) => i * 120)
+    .ease(d3.easeCubicOut)
+    .attr("width", d => Math.max(x(d.endDate) - x(d.startDate), 2));
+
+barGroup.selectAll("circle")
+  .attr("r", 0)
+  .transition()
+    .duration(500)
+    .delay((d, i) => i * 120 + 400)
+    .ease(d3.easeBackOut)
+    .attr("r", 7);
+
+// ── Legend ───────────────────────────────────────────────────────────────────
+const legend = svg.append("g")
+  .attr("transform", `translate(${width - 120}, ${-20})`);
+
+legend.append("circle").attr("cx", 0).attr("cy", 0).attr("r", 5).attr("fill", "#8b949e");
+legend.append("text").attr("x", 10).attr("y", 4).text("Start / End").attr("fill", "#8b949e").style("font-size", "11px");
+</script>
+</body>
+</html>

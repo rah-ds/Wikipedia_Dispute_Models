@@ -227,8 +227,6 @@ class WikiClient:
                         "text": rev["*"],
                     }
                 )
-            # Throttle between batches
-            time.sleep(sleep_time)
         return results
 
     @retry_on_rate_limit()
@@ -533,10 +531,6 @@ class WikiClient:
                     "blocked_by": user.get("blockedby"),
                     "block_expiry": user.get("blockexpiry"),
                 }
-
-            # Small delay between batches
-            if i + batch_size < len(usernames):
-                time.sleep(0.5)
 
         return results
 
