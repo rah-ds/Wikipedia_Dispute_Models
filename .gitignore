@@ -24,6 +24,7 @@ artifacts/models/
 artifacts/imgs/dev/
 artifacts/logs/
 artifacts/exports/
+artifacts/bpmn
 
 # Keep these tracked
 !artifacts/results/
@@ -32,3 +33,7 @@ artifacts/exports/
 # Test / coverage artifacts
 .coverage
 .pytest_cache/
+
+# Passwords
+user-conf.py
+user-password.py
