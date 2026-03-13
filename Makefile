@@ -1,4 +1,8 @@
-.PHONY: install install-dev clean data-dirs help lint fetch-all fetch-full fetch-arb fetch-drn fetch-small test test-unit test-cov fetch-venues fetch-ani fetch-talk fetch-arb-dfs fetch-arb-dfs-sample fetch-arb-dfs-sample-full fetch-arb-dfs-all fetch-arb-dfs-all-full update-arb-cases-list fetch-lifecycle fetch-lifecycle-dry fetch-lifecycle-sample fetch-lifecycle-all
+# Load .env file if it exists (provides RIVANNA_ID, WIKI_API_KEY, etc.)
+-include .env
+export
+
+.PHONY: install install-dev clean data-dirs help lint fetch-all fetch-full fetch-arb fetch-drn fetch-small test test-unit test-cov fetch-venues fetch-ani fetch-talk fetch-arb-dfs fetch-arb-dfs-sample fetch-arb-dfs-sample-full fetch-arb-dfs-all fetch-arb-dfs-all-full update-arb-cases-list fetch-lifecycle fetch-lifecycle-dry fetch-lifecycle-sample fetch-lifecycle-all rivanna-setup rivanna-submit rivanna-status rivanna-ssh rivanna-sync rivanna-logs
 
 # Default target
 help:
@@ -45,6 +49,14 @@ help:
 	@echo "  fetch-lifecycle-dry CASE=<n>  Preview lifecycle fetch"
 	@echo "  fetch-lifecycle-sample        Fetch 5 sample cases with full lifecycle"
 	@echo "  fetch-lifecycle-all           Fetch ALL cases with full lifecycle"
+	@echo ""
+	@echo "Rivanna HPC (set RIVANNA_ID in .env):"
+	@echo "  rivanna-ssh                   SSH into Rivanna"
+	@echo "  rivanna-setup                 One-time setup on Rivanna (over SSH)"
+	@echo "  rivanna-sync                  Rsync project to Rivanna"
+	@echo "  rivanna-submit                Submit all SLURM jobs on Rivanna"
+	@echo "  rivanna-status                Show job progress and data status"
+	@echo "  rivanna-logs                  Tail recent SLURM logs from Rivanna"
 	@echo ""
 
 # Installation
@@ -323,3 +335,70 @@ fetch-lifecycle-all: data-dirs
 	done < $(ARB_CASES_FILE)
 	@echo ""
 	@echo "✓ All lifecycle data saved to data/raw/dispute_venues/"
+
+# =============================================================================
+# RIVANNA HPC — SLURM job management
+# =============================================================================
+# Set RIVANNA_ID in .env (e.g., RIVANNA_ID=abc1de)
+# All targets SSH into Rivanna to run commands remotely.
+
+RIVANNA_HOST := $(RIVANNA_ID)@rivanna.hpc.virginia.edu
+RIVANNA_PROJECT := ~/Wikipedia_Arbitration
+
+# Validate RIVANNA_ID is set
+_check-rivanna-id:
+	@if [ -z "$(RIVANNA_ID)" ]; then \
+		echo "Error: RIVANNA_ID not set. Add it to .env:"; \
+		echo "  echo 'RIVANNA_ID=your_computing_id' >> .env"; \
+		exit 1; \
+	fi
+
+# SSH into Rivanna
+rivanna-ssh: _check-rivanna-id
+	ssh $(RIVANNA_HOST)
+
+# Rsync project files to Rivanna (excludes data, venv, cache)
+rivanna-sync: _check-rivanna-id
+	@echo "Syncing project to Rivanna ($(RIVANNA_HOST):$(RIVANNA_PROJECT))..."
+	rsync -avz --progress \
+		--exclude '.venv/' \
+		--exclude '__pycache__/' \
+		--exclude 'data/raw/' \
+		--exclude 'data/processed/' \
+		--exclude 'data/external/' \
+		--exclude 'apicache/' \
+		--exclude 'slurmlogs/*.out' \
+		--exclude 'slurmlogs/*.err' \
+		--exclude '.git/' \
+		--exclude 'notebooks/' \
+		./ $(RIVANNA_HOST):$(RIVANNA_PROJECT)/
+	@echo "✓ Sync complete"
+
+# One-time setup on Rivanna
+rivanna-setup: _check-rivanna-id rivanna-sync
+	@echo "Running setup on Rivanna..."
+	ssh $(RIVANNA_HOST) 'cd $(RIVANNA_PROJECT) && bash scripts/slurm/setup_rivanna.sh'
+
+# Submit all SLURM jobs
+rivanna-submit: _check-rivanna-id
+	@echo "Submitting SLURM jobs on Rivanna..."
+	ssh $(RIVANNA_HOST) 'cd $(RIVANNA_PROJECT) && bash scripts/slurm/submit_all.sh'
+
+# Show job progress and data collection status
+rivanna-status: _check-rivanna-id
+	@ssh $(RIVANNA_HOST) 'cd $(RIVANNA_PROJECT) && bash scripts/slurm/status.sh'
+
+# Show compact status
+rivanna-status-short: _check-rivanna-id
+	@ssh $(RIVANNA_HOST) 'cd $(RIVANNA_PROJECT) && bash scripts/slurm/status.sh --short'
+
+# Tail recent SLURM output logs
+rivanna-logs: _check-rivanna-id
+	@echo "Most recent SLURM log files:"
+	@ssh $(RIVANNA_HOST) 'cd $(RIVANNA_PROJECT) && \
+		echo "" && \
+		echo "=== Recent .out files ===" && \
+		ls -lt slurmlogs/*.out 2>/dev/null | head -10 && \
+		echo "" && \
+		echo "=== Last 30 lines of most recent log ===" && \
+		tail -30 $$(ls -t slurmlogs/*.out 2>/dev/null | head -1) 2>/dev/null || echo "No logs yet."'

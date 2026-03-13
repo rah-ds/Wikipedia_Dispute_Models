@@ -32,3 +32,9 @@ artifacts/exports/
 # Test / coverage artifacts
 .coverage
 .pytest_cache/
+
+# SLURM logs (keep .gitkeep only)
+slurmlogs/*.out
+slurmlogs/*.err
+slurmlogs/*.csv
+slurmlogs/*.lock
