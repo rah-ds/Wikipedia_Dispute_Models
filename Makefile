@@ -2,7 +2,7 @@
 -include .env
 export
 
-.PHONY: install install-dev clean data-dirs help lint fetch-all fetch-full fetch-arb fetch-drn fetch-small test test-unit test-cov fetch-venues fetch-ani fetch-talk fetch-arb-dfs fetch-arb-dfs-sample fetch-arb-dfs-sample-full fetch-arb-dfs-all fetch-arb-dfs-all-full update-arb-cases-list fetch-lifecycle fetch-lifecycle-dry fetch-lifecycle-sample fetch-lifecycle-all rivanna-setup rivanna-submit rivanna-status rivanna-ssh rivanna-sync rivanna-logs
+.PHONY: install install-dev clean data-dirs help lint fetch-all fetch-full fetch-arb fetch-drn fetch-small test test-unit test-cov fetch-venues fetch-ani fetch-talk fetch-arb-dfs fetch-arb-dfs-sample fetch-arb-dfs-sample-full fetch-arb-dfs-all fetch-arb-dfs-all-full update-arb-cases-list fetch-lifecycle fetch-lifecycle-dry fetch-lifecycle-sample fetch-lifecycle-all rivanna-setup rivanna-submit rivanna-status rivanna-ssh rivanna-sync rivanna-pull rivanna-logs
 
 # Default target
 help:
@@ -56,6 +56,7 @@ help:
 	@echo "  rivanna-sync                  Rsync project to Rivanna"
 	@echo "  rivanna-submit                Submit all SLURM jobs on Rivanna"
 	@echo "  rivanna-status                Show job progress and data status"
+	@echo "  rivanna-pull                  Pull collected data from Rivanna to local"
 	@echo "  rivanna-logs                  Tail recent SLURM logs from Rivanna"
 	@echo ""
 
@@ -342,8 +343,8 @@ fetch-lifecycle-all: data-dirs
 # Set RIVANNA_ID in .env (e.g., RIVANNA_ID=abc1de)
 # All targets SSH into Rivanna to run commands remotely.
 
-RIVANNA_HOST := $(RIVANNA_ID)@rivanna.hpc.virginia.edu
-RIVANNA_PROJECT := ~/Wikipedia_Arbitration
+RIVANNA_HOST := rivanna
+RIVANNA_PROJECT := /scratch/rah5ff/Wikipedia_Dispute_Models
 
 # Validate RIVANNA_ID is set
 _check-rivanna-id:
@@ -391,6 +392,24 @@ rivanna-status: _check-rivanna-id
 # Show compact status
 rivanna-status-short: _check-rivanna-id
 	@ssh $(RIVANNA_HOST) 'cd $(RIVANNA_PROJECT) && bash scripts/slurm/status.sh --short'
+
+# Pull collected data from Rivanna to local
+rivanna-pull: _check-rivanna-id
+	@echo "Pulling data from Rivanna ($(RIVANNA_HOST):$(RIVANNA_PROJECT)/data/raw/)..."
+	@echo "Checking remote data size first..."
+	@ssh $(RIVANNA_HOST) 'du -sh $(RIVANNA_PROJECT)/data/raw/* 2>/dev/null | grep -v "^0"'
+	@echo ""
+	rsync -avz --progress \
+		$(RIVANNA_HOST):$(RIVANNA_PROJECT)/data/raw/ ./data/raw/
+	@echo ""
+	@echo "Pulling slurmlogs..."
+	rsync -avz --progress \
+		$(RIVANNA_HOST):$(RIVANNA_PROJECT)/slurmlogs/ ./slurmlogs/
+	@echo ""
+	@echo "Pulling artifacts (arb_cases.txt, logs, etc.)..."
+	rsync -avz --progress \
+		$(RIVANNA_HOST):$(RIVANNA_PROJECT)/artifacts/ ./artifacts/
+	@echo "✓ Pull complete. Local data/raw/ is now up to date."
 
 # Tail recent SLURM output logs
 rivanna-logs: _check-rivanna-id

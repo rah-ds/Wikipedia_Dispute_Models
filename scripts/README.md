@@ -29,3 +29,6 @@ uv run python scripts/fetch_all.py --editwar "Title"  # Edit war analysis
 
 Data is saved to `data/raw/{type}/{prefix}_{timestamp}.json`.
 Logs go to `artifacts/logs/data_pull/`.
+
+
+* [rivanna how to ](https://github.com/JustUnoptimized/ds6050-rivanna.git)

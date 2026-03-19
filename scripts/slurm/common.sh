@@ -8,7 +8,7 @@ set -euo pipefail
 # Project root — override with WIKI_PROJECT_ROOT env var if needed
 # Default: the repo cloned into $HOME
 # ---------------------------------------------------------------------------
-export PROJECT_ROOT="${WIKI_PROJECT_ROOT:-$HOME/Wikipedia_Arbitration}"
+export PROJECT_ROOT="${WIKI_PROJECT_ROOT:-/scratch/rah5ff/Wikipedia_Dispute_Models}"
 
 if [[ ! -d "$PROJECT_ROOT" ]]; then
     echo "ERROR: PROJECT_ROOT=$PROJECT_ROOT does not exist."
@@ -17,6 +17,15 @@ if [[ ! -d "$PROJECT_ROOT" ]]; then
 fi
 
 cd "$PROJECT_ROOT"
+
+# ---------------------------------------------------------------------------
+# Load .env file if present (provides WIKI_API_KEY, etc.)
+# ---------------------------------------------------------------------------
+if [[ -f .env ]]; then
+    set -a
+    source .env
+    set +a
+fi
 
 # ---------------------------------------------------------------------------
 # Load uv — installed to ~/.local/bin by the astral installer

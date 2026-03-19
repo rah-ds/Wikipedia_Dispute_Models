@@ -1,6 +1,7 @@
 #!/bin/bash
-#SBATCH -A shakeri_ds6050               # allocation
+#SBATCH -A msds_ds6015                  # allocation
 #SBATCH -p standard                     # CPU partition
+#SBATCH --qos=class
 #SBATCH --ntasks=1
 #SBATCH --nodes=1
 #SBATCH --mem=2G

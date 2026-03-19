@@ -20,18 +20,22 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
 # ---------------------------------------------------------------------------
+# Load .env file if present (provides WIKI_API_KEY, etc.)
+# ---------------------------------------------------------------------------
+if [[ -f .env ]]; then
+    set -a
+    source .env
+    set +a
+    echo "Loaded credentials from .env"
+fi
+
+# ---------------------------------------------------------------------------
 # Validate environment
 # ---------------------------------------------------------------------------
 if [[ -z "${WIKI_API_KEY:-}" ]] && [[ -z "${PYWIKIBOT_PASSWORD:-}" ]]; then
     echo "WARNING: No API credentials set. Jobs will use unauthenticated access (500 req/hr)."
-    echo "  For faster fetching, run:  export WIKI_API_KEY='your-key-here'"
+    echo "  To fix: add WIKI_API_KEY to .env or export it before running."
     echo ""
-    read -p "Continue anyway? [y/N] " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        echo "Aborted."
-        exit 0
-    fi
 fi
 
 # Ensure slurmlogs directory exists

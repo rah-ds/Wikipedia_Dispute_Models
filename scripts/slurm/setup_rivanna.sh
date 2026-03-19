@@ -4,7 +4,7 @@
 #
 # Usage:
 #   ssh <computing_id>@rivanna.hpc.virginia.edu
-#   cd ~/Wikipedia_Arbitration   # or wherever you cloned
+#   cd ~/Wikipedia_Dispute_Models   # or wherever you cloned
 #   bash scripts/slurm/setup_rivanna.sh
 
 set -euo pipefail

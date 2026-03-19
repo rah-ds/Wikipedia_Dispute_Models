@@ -38,3 +38,6 @@ slurmlogs/*.out
 slurmlogs/*.err
 slurmlogs/*.csv
 slurmlogs/*.lock
+package-lock.json
+node_modules
+artifacts/archives
