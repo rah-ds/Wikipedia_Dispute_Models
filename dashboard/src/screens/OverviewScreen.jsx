@@ -22,24 +22,22 @@ export default function OverviewScreen() {
       </div>
 
       {/* KPI row */}
-      <StatPills data={data} />
+      <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', alignItems: 'stretch' }}>
+        <StatPills data={data} style={{ marginBottom: 0, flex: 1 }} />
+        <DurationGauge
+          avgDays={data.averageDurationDays}
+          casesWithDuration={data.casesWithDuration}
+        />
+      </div>
 
-      {/* Charts row 1 */}
-      <div className="chart-grid">
+      {/* Charts row */}
+      <div className="chart-grid" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
         <StatementDistChart data={data.statementByDistribution} />
         <PartiesDonut
           userLinks={data.totalUserLinks}
           adminLinks={data.totalAdminLinks}
         />
-      </div>
-
-      {/* Charts row 2 */}
-      <div className="chart-grid">
         <RemedyVerbsChart data={data.topRemedyVerbs} />
-        <DurationGauge
-          avgDays={data.averageDurationDays}
-          casesWithDuration={data.casesWithDuration}
-        />
       </div>
     </div>
   )
