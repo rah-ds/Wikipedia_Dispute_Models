@@ -3,11 +3,10 @@ import { useState } from 'react'
 const DIAGRAMS = [
   {
     id: 'aggregate',
-    label: 'BPMN Aggregate',
+    label: 'Dispute Resolution Notice (DRN) Process',
     file: '/bpmn/BPMN_Aggregate.png',
     description:
-      'High-level aggregate process model showing the overall arbitration lifecycle — ' +
-      'from case filing through deliberation to final decision and enforcement.',
+      'High-level aggregate process model showing the overall DRN arbitration lifecycle '
   },
   {
     id: 'power-electronics',
