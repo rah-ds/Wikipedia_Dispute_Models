@@ -6,7 +6,7 @@
 #SBATCH --nodes=1
 #SBATCH --mem=8G
 #SBATCH -c 1
-#SBATCH -t 03:00:00                     # 3 hours per case (lifecycle traces more stages)
+#SBATCH -t 2-00:00:00                   # 2 days per case
 #SBATCH -o ./slurmlogs/lifecycle_%A_%a.out
 #SBATCH -e ./slurmlogs/lifecycle_%A_%a.err
 #SBATCH -J wiki-lifecycle

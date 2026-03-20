@@ -6,7 +6,7 @@
 #SBATCH --nodes=1
 #SBATCH --mem=8G
 #SBATCH -c 1
-#SBATCH -t 06:00:00                     # 6 hours (estimate: 2-4 hrs for 51 articles)
+#SBATCH -t 2-00:00:00                   # 2 days
 #SBATCH -o ./slurmlogs/fetch_full_%j.out
 #SBATCH -e ./slurmlogs/fetch_full_%j.err
 #SBATCH -J wiki-fetch-full

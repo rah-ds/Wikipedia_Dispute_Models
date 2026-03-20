@@ -16,6 +16,7 @@ Project documentation for Wikipedia Dispute Models.
 
 ### Guides
 
+- [rivanna_guide.md](rivanna_guide.md) — Rivanna HPC setup, SSH, SLURM job submission, and data pull
 - [zotero_guide.md](zotero_guide.md) — Literature management with Zotero
 
 ### Subdirectories

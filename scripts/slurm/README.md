@@ -4,30 +4,24 @@ SLURM batch scripts for running Wikipedia data-fetching jobs on UVA's Rivanna HP
 
 ## Prerequisites
 
-- **Rivanna access** with allocation `shakeri_ds6050`
-- **VPN** connected (if off-grounds) — see [ds6050-rivanna README](../../ds6050-rivanna/README.md)
-- **Repo cloned** to `~/Wikipedia_Arbitration` on Rivanna
+- **Rivanna access** with allocation `msds_ds6015` and `--qos=class`
+- **VPN** connected (if off-grounds) — see [Rivanna guide](../../docs/rivanna_guide.md)
+- **Repo synced** to `/scratch/<id>/Wikipedia_Dispute_Models` via `make rivanna-sync`
 - **(Recommended)** A Wikimedia API key for authenticated access (5,000+ req/hr vs 500)
 
 ## Quick Start
 
 ```bash
 # 1. SSH into Rivanna
-ssh <computing_id>@rivanna.hpc.virginia.edu
+ssh rivanna
 
-# 2. Clone the repo (if not already done)
-cd ~
-git clone <repo-url> Wikipedia_Arbitration
-cd Wikipedia_Arbitration
-
-# 3. One-time setup (installs uv, creates venv, installs deps)
-bash scripts/slurm/setup_rivanna.sh
-
-# 4. Set your API key (recommended)
-export WIKI_API_KEY='your-key-here'
-
-# 5. Submit all jobs
-bash scripts/slurm/submit_all.sh
+# 2. Or use the Makefile from your local machine:
+make rivanna-sync     # sync project to /scratch/<id>/Wikipedia_Dispute_Models
+make rivanna-setup    # one-time setup (installs uv, creates venv)
+make rivanna-submit   # submit all SLURM jobs
+make rivanna-status   # check progress
+make rivanna-pull     # download collected data locally
+make rivanna-clean    # cancel jobs and clear data
 ```
 
 ## Files
@@ -61,9 +55,9 @@ All jobs use the **standard** (CPU) partition — data fetching is I/O-bound API
 | Job | Partition | Memory | Wall Time | Notes |
 |-----|-----------|--------|-----------|-------|
 | update_arb_cases | standard | 2 GB | 15 min | Single quick API call |
-| fetch_full | standard | 8 GB | 6 hrs | 51 articles + arb cases + DRN |
-| fetch_arb_dfs | standard | 8 GB | 2 hrs/task | Array job, 2 concurrent tasks |
-| fetch_lifecycle | standard | 8 GB | 3 hrs/task | Array job, 2 concurrent tasks |
+| fetch_full | standard | 8 GB | 2 days | 51 articles + arb cases + DRN |
+| fetch_arb_dfs | standard | 8 GB | 2 days/task | Array job, 2 concurrent tasks |
+| fetch_lifecycle | standard | 8 GB | 2 days/task | Array job, 2 concurrent tasks |
 
 ### Array Jobs
 
@@ -175,8 +169,8 @@ bash scripts/slurm/setup_rivanna.sh
 The fetch scripts save progress incrementally. Re-running will skip already-fetched data (use `--force` to re-fetch). For array jobs, just re-submit the failed task indices.
 
 ### Custom project location
-If the repo isn't at `~/Wikipedia_Arbitration`, override in your submit command:
+The project defaults to `/scratch/<id>/Wikipedia_Dispute_Models`. Override with:
 ```bash
-sbatch --export=ALL,WIKI_PROJECT_ROOT=/scratch/$USER/Wikipedia_Arbitration \
+sbatch --export=ALL,WIKI_PROJECT_ROOT=/scratch/$USER/my_path \
     scripts/slurm/fetch_full.slurm
 ```

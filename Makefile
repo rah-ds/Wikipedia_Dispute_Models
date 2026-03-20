@@ -2,7 +2,7 @@
 -include .env
 export
 
-.PHONY: install install-dev clean data-dirs help lint fetch-all fetch-full fetch-arb fetch-drn fetch-small test test-unit test-cov fetch-venues fetch-ani fetch-talk fetch-arb-dfs fetch-arb-dfs-sample fetch-arb-dfs-sample-full fetch-arb-dfs-all fetch-arb-dfs-all-full update-arb-cases-list fetch-lifecycle fetch-lifecycle-dry fetch-lifecycle-sample fetch-lifecycle-all rivanna-setup rivanna-submit rivanna-status rivanna-ssh rivanna-sync rivanna-pull rivanna-logs
+.PHONY: install install-dev clean data-dirs help lint fetch-all fetch-full fetch-arb fetch-drn fetch-small test test-unit test-cov fetch-venues fetch-ani fetch-talk fetch-arb-dfs fetch-arb-dfs-sample fetch-arb-dfs-sample-full fetch-arb-dfs-all fetch-arb-dfs-all-full update-arb-cases-list fetch-lifecycle fetch-lifecycle-dry fetch-lifecycle-sample fetch-lifecycle-all rivanna-setup rivanna-submit rivanna-status rivanna-ssh rivanna-sync rivanna-pull rivanna-clean rivanna-logs
 
 # Default target
 help:
@@ -57,6 +57,7 @@ help:
 	@echo "  rivanna-submit                Submit all SLURM jobs on Rivanna"
 	@echo "  rivanna-status                Show job progress and data status"
 	@echo "  rivanna-pull                  Pull collected data from Rivanna to local"
+	@echo "  rivanna-clean                 Cancel jobs and clear data on Rivanna"
 	@echo "  rivanna-logs                  Tail recent SLURM logs from Rivanna"
 	@echo ""
 
@@ -410,6 +411,19 @@ rivanna-pull: _check-rivanna-id
 	rsync -avz --progress \
 		$(RIVANNA_HOST):$(RIVANNA_PROJECT)/artifacts/ ./artifacts/
 	@echo "✓ Pull complete. Local data/raw/ is now up to date."
+
+# Cancel all jobs and clear collected data on Rivanna
+rivanna-clean: _check-rivanna-id
+	@echo "Cancelling all SLURM jobs..."
+	@ssh $(RIVANNA_HOST) 'scancel -u $$USER 2>/dev/null; echo "Jobs cancelled"'
+	@echo "Clearing data and logs on Rivanna..."
+	@ssh $(RIVANNA_HOST) 'cd $(RIVANNA_PROJECT) && \
+		rm -rf data/raw/arbitration/* data/raw/revisions/* data/raw/edit_wars/* \
+		       data/raw/drn/* data/raw/dispute_venues/* data/raw/ani_search/* \
+		       data/raw/talk_pages/* data/processed/* \
+		       slurmlogs/*.out slurmlogs/*.err slurmlogs/*.csv && \
+		echo "Cleared: data/raw/*, data/processed/*, slurmlogs/*"'
+	@echo "✓ Rivanna cleaned. Run 'make rivanna-submit' to start fresh."
 
 # Tail recent SLURM output logs
 rivanna-logs: _check-rivanna-id
