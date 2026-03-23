@@ -61,12 +61,14 @@ Run Python/tools via uv & no need to manually activate venv — uv handles it.
 
 ## Data Sources
 
-| Source | Description | Script |
-| ------ | ----------- | ------ |
-| Arbitration Cases | Binding decisions from ArbCom | `fetch_arbitration_cases.py` |
-| Revision History | Edit history with timestamps, users, comments | `fetch_revisions.py` |
-| Edit Wars | Pages with high revert activity | `detect_edit_wars.py` |
-| DRN Cases | Dispute Resolution Noticeboard threads | `fetch_drn_cases.py` |
+| Source | Description | Module / Script |
+| ------ | ----------- | --------------- |
+| Arbitration Cases | Binding decisions from ArbCom | `src/fetchers.py` → `fetch_arbitration_cases()` |
+| Revision History | Edit history with timestamps, users, comments | `src/fetchers.py` → `fetch_revisions()` |
+| Edit Wars | Pages with high revert activity | `scripts/detect_edit_wars.py` |
+| DRN Cases | Dispute Resolution Noticeboard threads | `src/fetchers.py` → `fetch_drn_page()` |
+| Dispute Lifecycle | Full escalation path: Talk → DRN → ANI → ArbCom | `scripts/fetch_dispute_lifecycle.py` |
+| Arb Case DFS | Depth-first collection of all related pages | `scripts/fetch_arb_dfs.py` |
 
 See [`docs/wikimedia_api.md`](docs/wikimedia_api.md) for full API documentation.
 

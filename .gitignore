@@ -1,10 +1,23 @@
 notebooks
 .env
+__pycache__/
 src/__pycache__
 src/wikipedia_arbitration.egg-info
 
-# Data folder (ignore everything inside)
-data/
+# Data directory — raw/processed/external data should not be in git
+data/raw/
+data/processed/
+data/external/
+
+# Pywikibot cache and control files
+apicache/
+throttle.ctrl
+
+# Log files
+*.log
+
+# Backup files
+*.bak
 
 # Artifacts - ignore all except results and imgs/publish
 artifacts/models/
@@ -15,3 +28,7 @@ artifacts/exports/
 # Keep these tracked
 !artifacts/results/
 !artifacts/imgs/publish/
+
+# Test / coverage artifacts
+.coverage
+.pytest_cache/
