@@ -8,14 +8,11 @@ HEADERS = [
     "Case Closed",
     "Involved Parties",
     "Confirmation that all parties are aware of the request",
-    "Confirmation that other steps",
+    "Confirmation that other steps in dispute resolution have been tried",
     "Requests for comment",
     "Statement by",
     "Preliminary decisions",
-    "Final decision",
-    "Findings of Fact",
     "Remedies",
-    "Enforcement",
 ]
 
 
@@ -68,32 +65,47 @@ def extract_subsections_remedies(remedies_text):
     return {"note": note, "subsections": subsections}
 
 
-def extract_sections(text, headers=HEADERS):
-    # Build regex for headers: match header value anywhere in the line, after any markup, HTML, template, or at line start, with optional bold/italic, and allow trailing text
-    header_patterns = [rf"(?:^|\n).*?{re.escape(h)}[^\n]*" for h in headers]
-    header_regex = re.compile("|".join(header_patterns), re.IGNORECASE)
+def extract_sections(text):
+    """Extract sections based on headers and handle Remedies specially."""
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
 
-    matches = []
-    for match in header_regex.finditer(text):
-        for idx, h in enumerate(headers):
-            if re.search(rf"{re.escape(h)}", match.group(0), re.IGNORECASE):
-                matches.append((match.start(), idx, match.group(0)))
-                break
-    matches.sort()
-    matches.append((len(text), None, None))
+    normal_headers_pattern = r"==+\s*([^=\n]+?)\s*==+"
+    big_bold_pattern = r"<big>'''([^']+?)'''</big>"
 
-    result = {h: None for h in headers}
-    for i, (start, idx, _) in enumerate(matches[:-1]):
-        end = matches[i + 1][0]
-        section_start = text.find("\n", start)
-        if section_start == -1 or section_start > end:
-            section_start = start
-        else:
-            section_start += 1
-        value = text[section_start:end].strip()
-        header = headers[idx]
-        result[header] = value if value else None
-    return result
+    normal_headers = [
+        (m.start(), m.end(), m.group(1).strip())
+        for m in re.finditer(normal_headers_pattern, text)
+    ]
+    big_bold_headers = [
+        (m.start(), m.end(), m.group(1).strip())
+        for m in re.finditer(big_bold_pattern, text)
+    ]
+
+    all_headers = normal_headers + big_bold_headers
+    all_headers.sort(key=lambda x: x[0])
+
+    sections = {}
+    for i, (start, end, header) in enumerate(all_headers):
+        next_start = all_headers[i + 1][0] if i + 1 < len(all_headers) else len(text)
+        section_text = text[end:next_start].strip()
+
+        if header.lower() in ("proposed remedies", "remedies"):
+            remedies_dict = extract_subsections_remedies(section_text)
+            sections["Remedies"] = remedies_dict
+            continue
+
+        cleaned = clean_wiki_text(section_text)
+
+        for target in HEADERS:
+            if target == "Statement by":
+                # Capture any "Statement by [User]" header as-is
+                if header.lower().startswith("statement by"):
+                    sections[header] = cleaned
+            else:
+                if header.lower() == target.lower():
+                    sections[target] = cleaned
+
+    return sections
 
 
 def list_raw_files(folder="data/raw/arbitration"):
@@ -127,6 +139,7 @@ def process_file(input_path, output_path):
                     "sections": sections,
                 }
             )
+
     with open(output_path, "w", encoding="utf-8") as out_f:
         json.dump(results, out_f, indent=2, ensure_ascii=False)
     print(f"Saved cleaned data to {output_path}")
