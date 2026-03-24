@@ -24,6 +24,7 @@ artifacts/models/
 artifacts/imgs/dev/
 artifacts/logs/
 artifacts/exports/
+artifacts/bpmn
 artifacts/archives/
 
 # Keep these tracked
@@ -37,3 +38,7 @@ package-lock.json
 # Test / coverage artifacts
 .coverage
 .pytest_cache/
+
+# Passwords
+user-conf.py
+user-password.py
