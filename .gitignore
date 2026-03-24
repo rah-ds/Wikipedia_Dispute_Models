@@ -25,10 +25,15 @@ artifacts/imgs/dev/
 artifacts/logs/
 artifacts/exports/
 artifacts/bpmn
+artifacts/archives/
 
 # Keep these tracked
 !artifacts/results/
 !artifacts/imgs/publish/
+
+# Node.js (puppeteer for SVG export)
+node_modules/
+package-lock.json
 
 # Test / coverage artifacts
 .coverage
