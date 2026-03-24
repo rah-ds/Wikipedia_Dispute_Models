@@ -82,10 +82,11 @@ def extract_user_conflicts(revisions: list[dict]) -> list[tuple[str, str, int]]:
     Find pairs of users who frequently revert each other.
 
     Args:
-        revisions: List of revision dictionaries in chronological order
+        revisions: List of revision dictionaries in reverse chronological order
+                   (newest first), as returned by WikiClient.get_revisions()
 
     Returns:
-        List of (user1, user2, count) tuples sorted by conflict count
+        List of (user1, user2, count) tuples sorted by conflict count descending
     """
     conflicts: Counter[tuple[str, str]] = Counter()
 

@@ -1,534 +1,647 @@
-"""Tests for enhanced arbitration case fetching."""
+"""Tests for src.arbitration module."""
 
-import sys
-from pathlib import Path
-from unittest.mock import MagicMock, patch
-
+import json
 import pytest
 
-# Add src to path for direct import
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-
-from arbitration import (
-    find_case_path,
-    extract_participants,
-    extract_article_links,
-    search_drn_mentions,
-    fetch_full_arbitration_case,
-    _is_ip_address,
-    _is_valid_username,
-    _is_valid_article_title,
-    ARB_SUBPAGES,
-    ARB_PATH_PATTERNS,
+from src.arbitration import (
+    ArbitrationCaseSummary,
+    ConflictEdge,
+    PageSummary,
+    Revision,
+    load_all_cases,
+    cases_to_dataframe,
 )
-
-
-class TestExtractParticipants:
-    """Tests for participant extraction from wikitext."""
-
-    def test_extract_user_links(self):
-        content = "This edit by [[User:Example]] was disputed by [[User:Another]]."
-        participants = extract_participants(content)
-
-        assert "Example" in participants
-        assert "Another" in participants
-
-    def test_extract_user_talk_links(self):
-        content = "See [[User talk:TestUser]] for discussion."
-        participants = extract_participants(content)
-
-        assert "TestUser" in participants
-
-    def test_skip_fragments(self):
-        content = "[[User:#top]] [[User:/sandbox]]"
-        participants = extract_participants(content)
-
-        assert len(participants) == 0
-
-    def test_deduplicate_participants(self):
-        content = "[[User:Same]] and [[User:Same]] again [[User talk:Same]]"
-        participants = extract_participants(content)
-
-        assert len(participants) == 1
-        assert "Same" in participants
-
-    def test_empty_content(self):
-        participants = extract_participants("")
-        assert len(participants) == 0
-
-    def test_no_users_in_content(self):
-        content = "This is just regular text with no user links."
-        participants = extract_participants(content)
-
-        assert len(participants) == 0
-
-    def test_skip_ip_addresses(self):
-        """IP addresses should be filtered out since user info can't be fetched for them."""
-        content = "[[User:166.205.138.68]] [[User:67.233.18.28]] [[User:ValidUser]]"
-        participants = extract_participants(content)
-
-        assert "ValidUser" in participants
-        assert "166.205.138.68" not in participants
-        assert "67.233.18.28" not in participants
-        assert len(participants) == 1
-
-    def test_skip_anchors(self):
-        """Fragment anchors like User#top should be filtered out."""
-        content = "[[User:AGK#top]] [[User:ValidUser]]"
-        participants = extract_participants(content)
-
-        assert "ValidUser" in participants
-        assert "AGK#top" not in participants
-        assert "AGK" not in participants  # Shouldn't extract partial
-        assert len(participants) == 1
-
-    def test_skip_subpages(self):
-        """User subpages like User/sandbox should be filtered out."""
-        content = "[[User:ArtifexMayhem/ArbAbort2011]] [[User:NormalUser]]"
-        participants = extract_participants(content)
-
-        assert "NormalUser" in participants
-        assert "ArtifexMayhem/ArbAbort2011" not in participants
-        assert len(participants) == 1
-
-    def test_mixed_valid_and_invalid(self):
-        """Test extraction with a mix of valid users, IPs, anchors, and subpages."""
-        content = """
-        Discussion between [[User:Editor1]], [[User:Editor2]].
-        IP edits from [[User:192.168.1.1]] and [[User:10.0.0.1]].
-        See also [[User:Admin#section]] and [[User:Archiver/2020]].
-        [[User talk:Editor1]] agreed.
-        """
-        participants = extract_participants(content)
-
-        assert "Editor1" in participants
-        assert "Editor2" in participants
-        assert len(participants) == 2
-
-    def test_skip_magic_words(self):
-        """Magic words like {{REVISIONUSER}} should be filtered out."""
-        content = "[[User:{{REVISIONUSER}}]] [[User:ValidUser]]"
-        participants = extract_participants(content)
-
-        assert "ValidUser" in participants
-        assert "{{REVISIONUSER}}" not in participants
-        assert len(participants) == 1
-
-    def test_skip_long_text(self):
-        """Long text strings (likely extraction errors) should be filtered out."""
-        long_text = "A" * 150  # More than 100 chars
-        content = f"[[User:{long_text}]] [[User:ValidUser]]"
-        participants = extract_participants(content)
-
-        assert "ValidUser" in participants
-        assert long_text not in participants
-        assert len(participants) == 1
-
-
-class TestIsValidUsername:
-    """Tests for username validation."""
-
-    def test_valid_usernames(self):
-        assert _is_valid_username("Editor1") is True
-        assert _is_valid_username("Some_User_Name") is True
-        assert _is_valid_username("Admin") is True
-
-    def test_rejects_magic_words(self):
-        assert _is_valid_username("{{REVISIONUSER}}") is False
-        assert _is_valid_username("{{PAGENAME}}") is False
-        assert _is_valid_username("User{{test}}") is False
-
-    def test_rejects_long_strings(self):
-        long_text = "A" * 150
-        assert _is_valid_username(long_text) is False
-
-    def test_rejects_newlines(self):
-        assert _is_valid_username("User\nName") is False
-        assert _is_valid_username("User\rName") is False
-
-    def test_rejects_brackets(self):
-        assert _is_valid_username("User[[link]]Name") is False
-        assert _is_valid_username("User{braces}Name") is False
-
-    def test_rejects_ip_addresses(self):
-        assert _is_valid_username("192.168.1.1") is False
-        assert _is_valid_username("10.0.0.1") is False
-
-
-class TestIsValidArticleTitle:
-    """Tests for article title validation."""
-
-    def test_valid_titles(self):
-        assert _is_valid_article_title("Climate change") is True
-        assert _is_valid_article_title("Global warming") is True
-        assert _is_valid_article_title("United States") is True
-
-    def test_rejects_relative_paths(self):
-        assert _is_valid_article_title("../Workshop") is False
-        assert _is_valid_article_title("../Evidence") is False
-        assert _is_valid_article_title("./Subpage") is False
-
-    def test_rejects_interwiki_prefixes(self):
-        assert _is_valid_article_title("m:Main Page") is False
-        assert _is_valid_article_title("meta:Help") is False
-        assert _is_valid_article_title("wikt:word") is False
-        assert _is_valid_article_title("wiktionary:definition") is False
-        assert _is_valid_article_title("wmuk:Main_Page") is False
-        assert _is_valid_article_title("mail:Clerks-l") is False
-        assert _is_valid_article_title("foundation:Resolution") is False
-
-    def test_rejects_leading_colons(self):
-        assert _is_valid_article_title(":Image:Photo.jpg") is False
-        assert _is_valid_article_title(":m:Privacy policy") is False
-        assert _is_valid_article_title(":foundation:Resolution") is False
-
-    def test_rejects_magic_words(self):
-        assert _is_valid_article_title("{{TALKPAGENAME}}") is False
-        assert _is_valid_article_title("{{PAGENAME}}") is False
-        assert _is_valid_article_title("Some{{template}}Page") is False
-
-    def test_rejects_urls(self):
-        assert _is_valid_article_title("http://example.com") is False
-        assert _is_valid_article_title("https://example.com") is False
-
-    def test_rejects_long_titles(self):
-        long_title = "A" * 250
-        assert _is_valid_article_title(long_title) is False
-
-
-class TestIsIpAddress:
-    """Tests for IP address detection."""
-
-    def test_ipv4_address(self):
-        assert _is_ip_address("192.168.1.1") is True
-        assert _is_ip_address("166.205.138.68") is True
-        assert _is_ip_address("10.0.0.1") is True
-
-    def test_ipv4_edge_cases(self):
-        assert _is_ip_address("0.0.0.0") is True
-        assert _is_ip_address("255.255.255.255") is True
-
-    def test_ipv6_address(self):
-        assert _is_ip_address("2001:0db8:85a3:0000:0000:8a2e:0370:7334") is True
-        assert _is_ip_address("::1") is True
-
-    def test_regular_usernames(self):
-        assert _is_ip_address("Editor1") is False
-        assert _is_ip_address("AGK") is False
-        assert _is_ip_address("Some_User_Name") is False
-
-    def test_partial_ip_like_strings(self):
-        assert _is_ip_address("192.168") is False
-        assert _is_ip_address("192.168.1") is False
-        assert _is_ip_address("1.2.3.4.5") is False
-
-
-class TestExtractArticleLinks:
-    """Tests for article link extraction from wikitext."""
-
-    def test_extract_article_links(self):
-        content = "See [[Climate change]] and [[Global warming]]."
-        articles = extract_article_links(content)
-
-        assert "Climate change" in articles
-        assert "Global warming" in articles
-
-    def test_skip_namespace_prefixes(self):
-        content = """
-        [[User:Example]]
-        [[Wikipedia:Policy]]
-        [[Talk:Article]]
-        [[Template:Example]]
-        [[Category:Test]]
-        [[File:Image.jpg]]
-        [[Article name]]
-        """
-        articles = extract_article_links(content)
-
-        # Only "Article name" should be extracted
-        assert "Article name" in articles
-        assert len(articles) == 1
-
-    def test_handle_fragments(self):
-        content = "[[Article#Section]] and [[Another article]]"
-        articles = extract_article_links(content)
-
-        assert "Article" in articles
-        assert "Another article" in articles
-
-    def test_empty_content(self):
-        articles = extract_article_links("")
-        assert len(articles) == 0
-
-    def test_skip_relative_paths(self):
-        """Relative paths like ../Workshop should be filtered out."""
-        content = "[[../Workshop]] [[../Evidence]] [[Valid Article]]"
-        articles = extract_article_links(content)
-
-        assert "Valid Article" in articles
-        assert "../Workshop" not in articles
-        assert "../Evidence" not in articles
-
-    def test_skip_interwiki_links(self):
-        """Interwiki links like m:, wikt:, etc. should be filtered out."""
-        content = """
-        [[m:Main Page]]
-        [[meta:Help]]
-        [[wikt:word]]
-        [[wiktionary:definition]]
-        [[wmuk:Main_Page]]
-        [[Valid Article]]
-        """
-        articles = extract_article_links(content)
-
-        assert "Valid Article" in articles
-        assert len(articles) == 1
-
-    def test_skip_leading_colons(self):
-        """Leading colon links should be filtered out."""
-        content = "[[:Image:Photo.jpg]] [[:m:Privacy policy]] [[Valid Article]]"
-        articles = extract_article_links(content)
-
-        assert "Valid Article" in articles
-        # Interwiki and file links with leading colon should be filtered
-        assert ":Image:Photo.jpg" not in articles
-        assert ":m:Privacy policy" not in articles
-
-    def test_skip_magic_words(self):
-        """Magic words/templates should be filtered out."""
-        content = "[[{{TALKPAGENAME}}]] [[{{PAGENAME}}]] [[Valid Article]]"
-        articles = extract_article_links(content)
-
-        assert "Valid Article" in articles
-        assert "{{TALKPAGENAME}}" not in articles
-        assert "{{PAGENAME}}" not in articles
-
-
-class TestFindCasePath:
-    """Tests for case path resolution."""
-
-    def test_full_path_provided(self):
-        mock_client = MagicMock()
-        mock_page = MagicMock()
-        mock_page.exists.return_value = True
-        mock_client.get_page.return_value = mock_page
-
-        prefix, pattern = find_case_path(
-            mock_client, "Wikipedia:Arbitration/Requests/Case/Test"
+from src.outcome import DecisionOutcome
+
+
+# ---------------------------------------------------------------------------
+# Fixtures
+# ---------------------------------------------------------------------------
+
+MINIMAL_CASE = {
+    "case_name": "Test Case",
+    "case_prefix": "Wikipedia:Arbitration/Requests/Case/Test Case",
+    "fetched_at": "2026-01-31T00:00:00",
+    "case_pages": [
+        {
+            "title": "Wikipedia:Arbitration/Requests/Case/Test Case",
+            "url": "https://en.wikipedia.org/wiki/Test",
+            "subpage": "(main)",
+            "exists": True,
+            "revisions": [
+                {
+                    "revid": 1,
+                    "parentid": None,
+                    "timestamp": "2024-01-01T00:00:00Z",
+                    "user": "Alice",
+                    "comment": "Initial filing",
+                    "size": 1000,
+                },
+                {
+                    "revid": 2,
+                    "parentid": 1,
+                    "timestamp": "2024-01-02T00:00:00Z",
+                    "user": "Bob",
+                    "comment": "Reverted edits by Alice",
+                    "size": 950,
+                },
+                {
+                    "revid": 3,
+                    "parentid": 2,
+                    "timestamp": "2024-01-03T00:00:00Z",
+                    "user": "Alice",
+                    "comment": "/* Proposed remedies */ updated",
+                    "size": 1100,
+                },
+            ],
+        },
+        {
+            "title": "Wikipedia:Arbitration/Requests/Case/Test Case/Evidence",
+            "url": "https://en.wikipedia.org/wiki/Test/Evidence",
+            "subpage": "/Evidence",
+            "exists": True,
+            "revisions": [
+                {
+                    "revid": 10,
+                    "parentid": None,
+                    "timestamp": "2024-01-05T00:00:00Z",
+                    "user": "Charlie",
+                    "comment": "Adding evidence",
+                    "size": 2000,
+                },
+            ],
+        },
+    ],
+    "case_talk_pages": [],
+    "linked_articles": [],
+    "article_talk_pages": [],
+    "summary": {"total_linked_articles": 5},
+}
+
+
+@pytest.fixture
+def minimal_case():
+    return ArbitrationCaseSummary.from_dict(MINIMAL_CASE)
+
+
+@pytest.fixture
+def minimal_case_json(tmp_path):
+    path = tmp_path / "arb_dfs_Test_Case_20260101_000000.json"
+    path.write_text(json.dumps(MINIMAL_CASE))
+    return path
+
+
+# ---------------------------------------------------------------------------
+# Revision tests
+# ---------------------------------------------------------------------------
+
+
+class TestRevision:
+    def test_from_dict(self):
+        r = Revision.from_dict(
+            {
+                "revid": 42,
+                "parentid": 41,
+                "timestamp": "2024-06-15T12:00:00Z",
+                "user": "Editor1",
+                "comment": "fixed typo",
+                "size": 500,
+            }
         )
+        assert r.revid == 42
+        assert r.user == "Editor1"
+        assert not r.is_revert
 
-        assert prefix == "Wikipedia:Arbitration/Requests/Case/Test"
-        assert pattern == "provided"
+    def test_detects_revert(self):
+        r = Revision.from_dict(
+            {
+                "revid": 1,
+                "timestamp": "2024-01-01T00:00:00Z",
+                "user": "A",
+                "comment": "Reverted edits by B",
+            }
+        )
+        assert r.is_revert
 
-    def test_short_name_modern_format(self):
-        mock_client = MagicMock()
-        mock_page = MagicMock()
-        mock_page.exists.return_value = True
-        mock_client.get_page.return_value = mock_page
-
-        prefix, pattern = find_case_path(mock_client, "Test Case")
-
-        assert "Test Case" in prefix
-        assert pattern in ARB_PATH_PATTERNS
-
-    def test_case_not_found(self):
-        mock_client = MagicMock()
-        mock_page = MagicMock()
-        mock_page.exists.return_value = False
-        mock_client.get_page.return_value = mock_page
-
-        prefix, pattern = find_case_path(mock_client, "Nonexistent")
-
-        assert prefix is None
-        assert pattern == "not_found"
-
-
-class TestArbSubpages:
-    """Tests for arbitration subpage constants."""
-
-    def test_subpages_defined(self):
-        assert "main" in ARB_SUBPAGES
-        assert "evidence" in ARB_SUBPAGES
-        assert "workshop" in ARB_SUBPAGES
-        assert "proposed_decision" in ARB_SUBPAGES
-        assert "remedies" in ARB_SUBPAGES
-
-    def test_main_is_empty_suffix(self):
-        assert ARB_SUBPAGES["main"] == ""
-
-    def test_evidence_suffix(self):
-        assert ARB_SUBPAGES["evidence"] == "/Evidence"
+    def test_extracts_section(self):
+        r = Revision.from_dict(
+            {
+                "revid": 1,
+                "timestamp": "2024-01-01T00:00:00Z",
+                "user": "A",
+                "comment": "/* Climate data */ added source",
+            }
+        )
+        assert r.section == "Climate data"
 
 
-class TestSearchDrnMentions:
-    """Tests for DRN mention searching."""
+# ---------------------------------------------------------------------------
+# PageSummary tests
+# ---------------------------------------------------------------------------
 
-    def test_finds_mentions_in_current_drn(self):
-        mock_client = MagicMock()
-        mock_page = MagicMock()
-        mock_page.exists.return_value = True
-        mock_page.text = "This mentions Climate change dispute"
-        mock_page.full_url.return_value = "https://en.wikipedia.org/wiki/WP:DRN"
-        mock_client.get_page.return_value = mock_page
 
-        with patch("arbitration.time.sleep"):
-            results = search_drn_mentions(
-                mock_client, ["Climate change"], archive_limit=1
+class TestPageSummary:
+    def test_from_dict_populates_editors(self):
+        p = PageSummary.from_dict(MINIMAL_CASE["case_pages"][0])
+        assert "Alice" in p.editors
+        assert "Bob" in p.editors
+        assert p.revision_count == 3
+
+    def test_first_last_edit(self):
+        p = PageSummary.from_dict(MINIMAL_CASE["case_pages"][0])
+        assert p.first_edit == "2024-01-01T00:00:00Z"
+        assert p.last_edit == "2024-01-03T00:00:00Z"
+
+
+# ---------------------------------------------------------------------------
+# ArbitrationCaseSummary tests
+# ---------------------------------------------------------------------------
+
+
+class TestArbitrationCaseSummary:
+    def test_from_dict(self, minimal_case):
+        assert minimal_case.case_name == "Test Case"
+        assert minimal_case.total_case_pages == 2
+        assert minimal_case.total_revisions == 4  # 3 + 1
+
+    def test_total_editors(self, minimal_case):
+        assert minimal_case.total_editors == 3  # Alice, Bob, Charlie
+
+    def test_editor_profiles(self, minimal_case):
+        assert "Alice" in minimal_case.editor_profiles
+        assert minimal_case.editor_profiles["Alice"].total_edits == 2
+        assert minimal_case.editor_profiles["Bob"].total_reverts == 1
+
+    def test_top_editors(self, minimal_case):
+        top = minimal_case.top_editors(2)
+        assert len(top) == 2
+        assert top[0].username == "Alice"  # 2 edits
+        assert top[0].total_edits >= top[1].total_edits
+
+    def test_conflict_edges(self, minimal_case):
+        # Bob reverted Alice (revid 2 is a revert, previous edit is Alice's revid 1)
+        assert len(minimal_case.conflict_edges) >= 1
+        edge = minimal_case.conflict_edges[0]
+        assert isinstance(edge, ConflictEdge)
+        assert edge.count >= 1
+
+    def test_consensus_signals(self, minimal_case):
+        cs = minimal_case.consensus_signals()
+        assert "evidence_edits" in cs
+        assert cs["evidence_edits"] == 1
+        assert "case_duration_days" in cs
+
+    def test_subpage_edit_counts(self, minimal_case):
+        counts = minimal_case.subpage_edit_counts()
+        assert counts["(main)"] == 3
+        assert counts["/Evidence"] == 1
+
+    def test_revision_timeline(self, minimal_case):
+        tl = minimal_case.revision_timeline()
+        assert len(tl) == 4
+        # Should be sorted chronologically
+        for i in range(len(tl) - 1):
+            assert tl[i].timestamp <= tl[i + 1].timestamp
+
+    def test_revision_timeline_filtered(self, minimal_case):
+        tl = minimal_case.revision_timeline(subpage="/Evidence")
+        assert len(tl) == 1
+        assert tl[0].user == "Charlie"
+
+    def test_monthly_activity(self, minimal_case):
+        ma = minimal_case.monthly_activity()
+        assert "2024-01" in ma
+        assert ma["2024-01"] == 4
+
+    def test_to_summary_dict(self, minimal_case):
+        d = minimal_case.to_summary_dict()
+        assert d["case_name"] == "Test Case"
+        assert d["total_revisions"] == 4
+        assert "consensus_evidence_edits" in d
+
+    def test_from_json_path(self, minimal_case_json):
+        cs = ArbitrationCaseSummary.from_json_path(minimal_case_json)
+        assert cs.case_name == "Test Case"
+
+    def test_editor_overlap(self, minimal_case):
+        overlap = minimal_case.editor_overlap("(main)", "/Evidence")
+        # Charlie only on Evidence, Alice and Bob only on main
+        assert len(overlap) == 0
+
+    def test_editors_on_subpage(self, minimal_case):
+        editors = minimal_case.editors_on_subpage("(main)")
+        names = {e.username for e in editors}
+        assert "Alice" in names
+        assert "Bob" in names
+        assert "Charlie" not in names
+
+    def test_case_duration_days(self, minimal_case):
+        # 2024-01-01 to 2024-01-05 = 4 days
+        assert minimal_case.case_duration_days == 4
+
+
+# ---------------------------------------------------------------------------
+# Batch loader tests
+# ---------------------------------------------------------------------------
+
+
+class TestBatchLoader:
+    def test_load_all_cases(self, tmp_path):
+        # Write two case files
+        for name in ["CaseA", "CaseB"]:
+            d = {**MINIMAL_CASE, "case_name": name}
+            (tmp_path / f"arb_dfs_{name}_20260101_000000.json").write_text(
+                json.dumps(d)
             )
 
-        assert len(results) >= 1
-        assert any(r["type"] == "current_drn" for r in results)
+        cases = load_all_cases(tmp_path, "arb_dfs_*.json")
+        assert len(cases) == 2
 
-    def test_no_mentions_returns_empty(self):
-        mock_client = MagicMock()
-        mock_page = MagicMock()
-        mock_page.exists.return_value = True
-        mock_page.text = "No relevant content here"
-        mock_page.full_url.return_value = "https://en.wikipedia.org/wiki/WP:DRN"
-        mock_client.get_page.return_value = mock_page
-
-        with patch("arbitration.time.sleep"):
-            results = search_drn_mentions(
-                mock_client, ["Nonexistent topic"], archive_limit=1
+    def test_cases_to_dataframe(self, tmp_path):
+        for name in ["CaseA", "CaseB"]:
+            d = {**MINIMAL_CASE, "case_name": name}
+            (tmp_path / f"arb_dfs_{name}_20260101_000000.json").write_text(
+                json.dumps(d)
             )
 
-        # May have archive results, but not matching our search term
-        matching = [r for r in results if r.get("found")]
-        assert len(matching) == 0
+        cases = load_all_cases(tmp_path, "arb_dfs_*.json")
+        df = cases_to_dataframe(cases)
+        assert len(df) == 2
+        assert "case_name" in df.columns
+        assert "total_revisions" in df.columns
 
 
-class TestFetchFullArbitrationCase:
-    """Tests for full arbitration case fetching."""
+# ---------------------------------------------------------------------------
+# Decision outcome integration tests
+# ---------------------------------------------------------------------------
 
-    @pytest.fixture
-    def mock_client(self):
-        client = MagicMock()
+# Wikitext for a /Proposed decision page with votes
+SAMPLE_PROPOSED_DECISION_WIKITEXT = """\
+==Proposed findings of fact==
+===Test finding===
+1) This is a test finding about the dispute.
 
-        # Mock page that exists
-        page = MagicMock()
-        page.exists.return_value = True
-        page.title.return_value = "Wikipedia:Arbitration/Requests/Case/Test"
-        page.full_url.return_value = "https://en.wikipedia.org/wiki/Test"
-        page.text = """
-        This case involves [[User:Editor1]] and [[User:Editor2]].
-        Articles: [[Climate change]] and [[Global warming]].
-        """
+:Support:
+:# [[User:Arb1|Arb1]] 01:00, 1 Jan 2024 (UTC)
+:# [[User:Arb2|Arb2]] 02:00, 1 Jan 2024 (UTC)
+:# [[User:Arb3|Arb3]] 03:00, 1 Jan 2024 (UTC)
+:# [[User:Arb4|Arb4]] 04:00, 1 Jan 2024 (UTC)
+:# [[User:Arb5|Arb5]] 05:00, 1 Jan 2024 (UTC)
 
-        client.get_page.return_value = page
-        client.get_revisions.return_value = [
-            {"revid": 1, "timestamp": "2024-01-01T00:00:00Z", "user": "Editor1"}
-        ]
-        client.get_users_info.return_value = {
-            "Editor1": {"edit_count": 1000, "registration": "2020-01-01"}
+:Oppose:
+:#
+
+:Abstain:
+:#
+
+==Proposed remedies==
+===Editor topic-banned===
+2) [[User:Troublemaker]] is topic-banned.
+
+:Support:
+:# [[User:Arb1|Arb1]] 01:00, 2 Jan 2024 (UTC)
+:# [[User:Arb2|Arb2]] 02:00, 2 Jan 2024 (UTC)
+:# [[User:Arb3|Arb3]] 03:00, 2 Jan 2024 (UTC)
+:# [[User:Arb4|Arb4]] 04:00, 2 Jan 2024 (UTC)
+
+:Oppose:
+:#
+
+:Abstain:
+:# [[User:Arb5|Arb5]] 05:00, 2 Jan 2024 (UTC)
+
+===Editor banned===
+3) [[User:Troublemaker]] is site-banned.
+
+:Support:
+:#
+
+:Oppose:
+:# [[User:Arb1|Arb1]] 01:00, 3 Jan 2024 (UTC)
+:# [[User:Arb2|Arb2]] 02:00, 3 Jan 2024 (UTC)
+:# [[User:Arb3|Arb3]] 03:00, 3 Jan 2024 (UTC)
+:# [[User:Arb4|Arb4]] 04:00, 3 Jan 2024 (UTC)
+
+:Abstain:
+:# [[User:Arb5|Arb5]] 05:00, 3 Jan 2024 (UTC)
+"""
+
+CASE_WITH_WIKITEXT = {
+    "case_name": "Wikitext Case",
+    "case_prefix": "Wikipedia:Arbitration/Requests/Case/Wikitext Case",
+    "fetched_at": "2026-01-31T00:00:00",
+    "case_pages": [
+        {
+            "title": "Wikipedia:Arbitration/Requests/Case/Wikitext Case",
+            "url": "https://en.wikipedia.org/wiki/Test",
+            "subpage": "(main)",
+            "exists": True,
+            "revisions": [
+                {
+                    "revid": 1,
+                    "parentid": None,
+                    "timestamp": "2024-01-01T00:00:00Z",
+                    "user": "Alice",
+                    "comment": "Initial filing",
+                    "size": 1000,
+                },
+            ],
+        },
+        {
+            "title": "Wikipedia:Arbitration/Requests/Case/Wikitext Case/Proposed decision",
+            "url": "https://en.wikipedia.org/wiki/Test/Proposed_decision",
+            "subpage": "/Proposed decision",
+            "exists": True,
+            "content": SAMPLE_PROPOSED_DECISION_WIKITEXT,
+            "revisions": [
+                {
+                    "revid": 100,
+                    "parentid": None,
+                    "timestamp": "2024-01-10T00:00:00Z",
+                    "user": "Arb1",
+                    "comment": "Draft proposed decision",
+                    "size": 5000,
+                },
+            ],
+        },
+    ],
+    "case_talk_pages": [],
+    "linked_articles": [],
+    "article_talk_pages": [],
+    "summary": {},
+}
+
+
+@pytest.fixture
+def case_with_wikitext():
+    return ArbitrationCaseSummary.from_dict(CASE_WITH_WIKITEXT)
+
+
+class TestDecisionOutcomeIntegration:
+    """Tests that ArbitrationCaseSummary correctly parses decision outcomes."""
+
+    def test_decision_outcome_parsed(self, case_with_wikitext):
+        assert case_with_wikitext.decision_outcome is not None
+        assert isinstance(case_with_wikitext.decision_outcome, DecisionOutcome)
+
+    def test_findings_extracted(self, case_with_wikitext):
+        outcome = case_with_wikitext.decision_outcome
+        assert len(outcome.findings) == 1
+        assert outcome.findings[0].votes.support == 5
+        assert outcome.findings[0].passed is True
+
+    def test_remedies_extracted(self, case_with_wikitext):
+        outcome = case_with_wikitext.decision_outcome
+        assert len(outcome.remedies) == 2
+        # First remedy passes (4 support, 0 oppose)
+        passed = [r for r in outcome.remedies if r.passed]
+        assert len(passed) == 1
+        # Second remedy fails (0 support, 4 oppose)
+        failed = [r for r in outcome.remedies if not r.passed]
+        assert len(failed) == 1
+
+    def test_outcome_in_summary_dict(self, case_with_wikitext):
+        d = case_with_wikitext.to_summary_dict()
+        assert "outcome_total_items" in d
+        assert d["outcome_total_items"] == 3
+        assert d["outcome_passed"] == 2  # finding + topic-ban
+        assert d["outcome_failed"] == 1  # site-ban
+        assert d["outcome_findings_passed"] == 1
+        assert d["outcome_remedies_passed"] == 1
+
+    def test_no_wikitext_no_outcome(self, minimal_case):
+        """Cases without wikitext content should have no outcome."""
+        assert minimal_case.decision_outcome is None
+
+    def test_no_outcome_fields_in_summary_without_wikitext(self, minimal_case):
+        d = minimal_case.to_summary_dict()
+        assert "outcome_total_items" not in d
+
+    def test_from_json_with_wikitext(self, tmp_path):
+        path = tmp_path / "arb_dfs_WikitextCase_20260101_000000.json"
+        path.write_text(json.dumps(CASE_WITH_WIKITEXT))
+        case = ArbitrationCaseSummary.from_json_path(path)
+        assert case.decision_outcome is not None
+        assert case.decision_outcome.total_items == 3
+
+
+# ---------------------------------------------------------------------------
+# Error handling and edge case tests
+# ---------------------------------------------------------------------------
+
+
+class TestArbitrationErrorHandling:
+    """Tests for error handling and edge cases in arbitration module."""
+
+    def test_empty_case_data(self):
+        """Empty dict should create valid but empty summary."""
+        case = ArbitrationCaseSummary.from_dict({})
+        assert case.case_name == ""
+        assert case.total_revisions == 0
+        assert case.total_editors == 0
+
+    def test_missing_revisions(self):
+        """Pages without revisions should be handled gracefully."""
+        data = {
+            "case_name": "No Revisions",
+            "case_pages": [
+                {
+                    "title": "Test",
+                    "url": "https://example.com",
+                    "subpage": "(main)",
+                    "revisions": [],
+                }
+            ],
         }
-        client.get_user_blocks.return_value = []
-        client.get_user_abuse_hits.return_value = {"total_hits": 0}
-        client.get_page_assessments.return_value = {
-            "highest_quality": "B",
-            "highest_importance": "High",
-            "assessments": {},
+        case = ArbitrationCaseSummary.from_dict(data)
+        assert case.total_revisions == 0
+
+    def test_malformed_revision_data(self):
+        """Revisions with missing fields should use defaults."""
+        data = {
+            "case_name": "Malformed",
+            "case_pages": [
+                {
+                    "title": "Test",
+                    "url": "",
+                    "subpage": "(main)",
+                    "revisions": [
+                        {},  # Empty revision
+                        {"revid": 1},  # Missing most fields
+                        {"user": "Alice", "timestamp": "2024-01-01T00:00:00Z"},
+                    ],
+                }
+            ],
         }
-        client.get_page_protection.return_value = {}
-        client.get_protection_log.return_value = []
-        client.get_revisions_with_tags.return_value = []
+        case = ArbitrationCaseSummary.from_dict(data)
+        assert case.total_revisions == 3
 
-        return client
+    def test_none_user_in_revision(self):
+        """Revisions with None/empty user should be skipped in profiles."""
+        data = {
+            "case_name": "None User",
+            "case_pages": [
+                {
+                    "title": "Test",
+                    "url": "",
+                    "subpage": "(main)",
+                    "revisions": [
+                        {"user": "", "timestamp": "2024-01-01T00:00:00Z"},
+                        {"user": None, "timestamp": "2024-01-02T00:00:00Z"},
+                        {"user": "ValidUser", "timestamp": "2024-01-03T00:00:00Z"},
+                    ],
+                }
+            ],
+        }
+        case = ArbitrationCaseSummary.from_dict(data)
+        assert case.total_editors == 1
+        assert "ValidUser" in case.editor_profiles
 
-    def test_returns_expected_structure(self, mock_client):
-        with patch("arbitration.search_ani_mentions", return_value=[]):
-            with patch("arbitration.time.sleep"):
-                result = fetch_full_arbitration_case(
-                    mock_client,
-                    "Test",
-                    enrich_participants=False,
-                    enrich_articles=False,
-                    include_ani=False,
-                    include_drn=False,
-                )
+    def test_lifecycle_format_detection(self):
+        """Should correctly detect and parse lifecycle format."""
+        lifecycle_data = {
+            "case_name": "Lifecycle Case",
+            "case_prefix": "Wikipedia:Arbitration/Requests/Case/Test",
+            "fetched_at": "2026-01-01T00:00:00",
+            "lifecycle_stages": {
+                "stage_5_arbcom": {
+                    "pages": [
+                        {
+                            "title": "Test",
+                            "url": "",
+                            "subpage": "(main)",
+                            "revisions": [
+                                {
+                                    "revid": 1,
+                                    "user": "Editor",
+                                    "timestamp": "2024-01-01T00:00:00Z",
+                                    "comment": "Edit",
+                                }
+                            ],
+                        }
+                    ],
+                    "talk_pages": [],
+                },
+                "stage_4_ani": {"reports": []},
+                "stage_3_drn": {"mentions": []},
+                "stage_1_2_talk": {"pages": []},
+            },
+            "participants": ["Editor"],
+            "disputed_articles": ["Article1"],
+            "summary": {},
+        }
+        case = ArbitrationCaseSummary.from_dict(lifecycle_data)
+        assert case.case_name == "Lifecycle Case"
+        assert case.total_revisions == 1
 
-        # Check structure
-        assert "case_name" in result
-        assert "pages" in result
-        assert "participants" in result
-        assert "articles" in result
-        assert "outcome" in result
-        assert "summary" in result
+    def test_load_all_cases_skips_invalid(self, tmp_path):
+        """load_all_cases should skip files that fail to parse."""
+        # Valid file
+        valid = {**MINIMAL_CASE, "case_name": "Valid"}
+        (tmp_path / "arb_dfs_Valid_20260101_000000.json").write_text(json.dumps(valid))
 
-    def test_extracts_participants(self, mock_client):
-        with patch("arbitration.search_ani_mentions", return_value=[]):
-            with patch("arbitration.time.sleep"):
-                result = fetch_full_arbitration_case(
-                    mock_client,
-                    "Test",
-                    enrich_participants=False,
-                    enrich_articles=False,
-                    include_ani=False,
-                    include_drn=False,
-                )
+        # Invalid JSON
+        (tmp_path / "arb_dfs_Invalid_20260101_000000.json").write_text("not json")
 
-        assert "Editor1" in result["all_participants"]
-        assert "Editor2" in result["all_participants"]
+        cases = load_all_cases(tmp_path, "arb_dfs_*.json")
+        assert len(cases) == 1
+        assert cases[0].case_name == "Valid"
 
-    def test_extracts_articles(self, mock_client):
-        with patch("arbitration.search_ani_mentions", return_value=[]):
-            with patch("arbitration.time.sleep"):
-                result = fetch_full_arbitration_case(
-                    mock_client,
-                    "Test",
-                    enrich_participants=False,
-                    enrich_articles=False,
-                    include_ani=False,
-                    include_drn=False,
-                )
 
-        assert "Climate change" in result["all_articles"]
-        assert "Global warming" in result["all_articles"]
+class TestRevisionEdgeCases:
+    """Edge case tests for Revision class."""
 
-    def test_enriches_participants_when_enabled(self, mock_client):
-        with patch("arbitration.search_ani_mentions", return_value=[]):
-            with patch("arbitration.time.sleep"):
-                result = fetch_full_arbitration_case(
-                    mock_client,
-                    "Test",
-                    enrich_participants=True,
-                    enrich_articles=False,
-                    include_ani=False,
-                    include_drn=False,
-                )
+    def test_revert_keywords(self):
+        """Test all revert keyword variations."""
+        keywords = ["revert", "rv ", "undo", "undid", "rollback"]
+        for kw in keywords:
+            r = Revision.from_dict(
+                {"revid": 1, "timestamp": "", "user": "A", "comment": f"{kw} something"}
+            )
+            assert r.is_revert, f"Should detect '{kw}' as revert"
 
-        # Should have called get_users_info
-        mock_client.get_users_info.assert_called()
-        assert len(result["participants"]) > 0
+    def test_no_false_positive_reverts(self):
+        """Words containing revert keywords shouldn't trigger."""
+        r = Revision.from_dict(
+            {
+                "revid": 1,
+                "timestamp": "",
+                "user": "A",
+                "comment": "converted to new format",
+            }
+        )
+        assert not r.is_revert
 
-    def test_enriches_articles_when_enabled(self, mock_client):
-        with patch("arbitration.search_ani_mentions", return_value=[]):
-            with patch("arbitration.time.sleep"):
-                result = fetch_full_arbitration_case(
-                    mock_client,
-                    "Test",
-                    enrich_participants=False,
-                    enrich_articles=True,
-                    max_articles=5,
-                    include_ani=False,
-                    include_drn=False,
-                )
+    def test_section_extraction_edge_cases(self):
+        """Test section extraction from various comment formats."""
+        # Multiple sections
+        r = Revision.from_dict(
+            {
+                "revid": 1,
+                "timestamp": "",
+                "user": "A",
+                "comment": "/* First */ text /* Second */",
+            }
+        )
+        assert r.section == "First"  # Should get first match
 
-        # Should have called get_page_assessments
-        mock_client.get_page_assessments.assert_called()
+        # Empty section
+        r = Revision.from_dict(
+            {"revid": 1, "timestamp": "", "user": "A", "comment": "/*  */ empty"}
+        )
+        assert r.section == ""
 
-    def test_summary_contains_counts(self, mock_client):
-        with patch("arbitration.search_ani_mentions", return_value=[]):
-            with patch("arbitration.time.sleep"):
-                result = fetch_full_arbitration_case(
-                    mock_client,
-                    "Test",
-                    enrich_participants=False,
-                    enrich_articles=False,
-                    include_ani=False,
-                    include_drn=False,
-                )
+    def test_timestamp_parsing(self):
+        """Test timestamp parsing with various formats."""
+        r = Revision.from_dict(
+            {
+                "revid": 1,
+                "timestamp": "2024-06-15T12:30:45Z",
+                "user": "A",
+                "comment": "",
+            }
+        )
+        ts = r.ts
+        assert ts.year == 2024
+        assert ts.month == 6
+        assert ts.day == 15
 
-        summary = result["summary"]
-        assert "case_pages_found" in summary
-        assert "participants_extracted" in summary
-        assert "articles_extracted" in summary
+
+class TestEditorProfile:
+    """Tests for EditorProfile class."""
+
+    def test_revert_ratio_zero_edits(self):
+        """Revert ratio should handle zero edits."""
+        from src.arbitration import EditorProfile
+
+        p = EditorProfile(username="Test")
+        assert p.revert_ratio == 0.0
+
+    def test_active_days_calculation(self):
+        """Test active days with various date ranges."""
+        from src.arbitration import EditorProfile
+
+        p = EditorProfile(
+            username="Test",
+            first_seen="2024-01-01T00:00:00Z",
+            last_seen="2024-01-10T00:00:00Z",
+        )
+        assert p.active_days == 9
+
+    def test_active_days_same_day(self):
+        """Same day activity should return 0 days."""
+        from src.arbitration import EditorProfile
+
+        p = EditorProfile(
+            username="Test",
+            first_seen="2024-01-01T10:00:00Z",
+            last_seen="2024-01-01T20:00:00Z",
+        )
+        assert p.active_days == 0
+
+    def test_active_days_no_timestamps(self):
+        """No timestamps should return 0."""
+        from src.arbitration import EditorProfile
+
+        p = EditorProfile(username="Test")
+        assert p.active_days == 0

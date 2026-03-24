@@ -1,467 +1,384 @@
-"""Arbitration case outcome parsing.
+"""
+Outcome parser for Wikipedia ArbCom proposed-decision pages.
 
-This module extracts case outcomes, remedies, and sanctions from
-arbitration case wikitext.
+Extracts structured data from raw wikitext of /Proposed decision (or
+/Final decision) pages, including:
+  - Principles, findings of fact, and remedies
+  - Per-item vote tallies (Support / Oppose / Abstain)
+  - Per-item voter lists
+  - Case-level outcome status (passed / failed)
+
+The wikitext conventions used by the Arbitration Committee are
+semi-structured:
+
+    ==Proposed findings of fact==
+    ===Locus of dispute===
+    1) Descriptive text …
+
+    :Support:
+    :# Comment [[User:Alice|Alice]] …
+    :# [[User:Bob|Bob]] …
+
+    :Oppose:
+    :#
+
+    :Abstain:
+    :#
+
+This parser operates on raw section text using regex heuristics.
+It does NOT require mwparserfromhell (keeping dependencies light),
+though it could be extended to use it for richer template parsing.
 """
 
 from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-from typing import Optional
 
-import mwparserfromhell
+
+# ---------------------------------------------------------------------------
+# Constants
+# ---------------------------------------------------------------------------
+
+#: Top-level sections we recognise (case-insensitive matching)
+_SECTION_KINDS = {
+    "proposed principles": "principle",
+    "principles": "principle",
+    "proposed findings of fact": "finding",
+    "findings of fact": "finding",
+    "proposed remedies": "remedy",
+    "remedies": "remedy",
+    "proposed enforcement": "enforcement",
+    "enforcement": "enforcement",
+}
+
+#: Regex to extract usernames from vote lines
+#: Matches [[User:Name|…]] or [[User talk:Name|…]]
+_VOTER_RE = re.compile(r"\[\[User(?:\s+talk)?:([^\]|/]+)", re.IGNORECASE)
+
+#: Section heading regex (levels 2–4)
+_HEADING_RE = re.compile(r"^(={2,4})\s*(.+?)\s*\1\s*$", re.MULTILINE)
+
+#: Vote-category labels on ArbCom pages
+_VOTE_LABELS = {"support", "oppose", "abstain"}
+
+
+# ---------------------------------------------------------------------------
+# Data classes
+# ---------------------------------------------------------------------------
 
 
 @dataclass
-class Sanction:
-    """A sanction or remedy from an arbitration case."""
+class VoteTally:
+    """Vote counts and voter lists for a single proposal item."""
 
-    sanction_type: str  # topic_ban, interaction_ban, block, warning, etc.
-    target_user: str
-    description: str
-    duration: Optional[str] = None
-    scope: Optional[str] = None  # Topic area if topic ban
-    is_indefinite: bool = False
-    raw_text: str = ""
+    support: int = 0
+    oppose: int = 0
+    abstain: int = 0
+    support_voters: list[str] = field(default_factory=list)
+    oppose_voters: list[str] = field(default_factory=list)
+    abstain_voters: list[str] = field(default_factory=list)
+
+    @property
+    def net_support(self) -> int:
+        """Support minus oppose (ArbCom's passing metric)."""
+        return self.support - self.oppose
+
+    @property
+    def passed(self) -> bool:
+        """
+        An item passes with ≥ 4 net support votes.
+        (Standard ArbCom threshold.)
+        """
+        return self.net_support >= 4
+
+    @property
+    def total_votes(self) -> int:
+        return self.support + self.oppose + self.abstain
 
 
 @dataclass
-class CaseOutcome:
-    """Parsed outcome of an arbitration case."""
+class ProposalItem:
+    """A single principle, finding, remedy, or enforcement provision."""
 
-    status: str  # open, pending, closed, appealed
-    decision_date: Optional[str] = None
-    remedies: list[Sanction] = field(default_factory=list)
-    findings: list[str] = field(default_factory=list)
-    principles: list[str] = field(default_factory=list)
-    case_closed: bool = False
-    has_active_remedies: bool = False
+    kind: str  # "principle" | "finding" | "remedy" | "enforcement"
+    number: str  # e.g. "1", "6.1", "14.3"
+    title: str  # section heading text
+    body: str  # raw wikitext of the proposal body (before votes)
+    votes: VoteTally = field(default_factory=VoteTally)
 
-
-# Templates indicating case status
-STATUS_TEMPLATES = {
-    "open": [
-        "arbcom open tasks",
-        "arbcom-open",
-        "arbitration case open",
-        "ac open",
-    ],
-    "closed": [
-        "arbcom closed tasks",
-        "arbcom-closed",
-        "arbitration case closed",
-        "ac closed",
-        "arbcom case closed",
-    ],
-    "pending": [
-        "arbcom pending",
-        "arbitration case pending",
-        "ac pending",
-    ],
-}
-
-# Text patterns for case status (used when templates not found)
-# These match actual Wikipedia formatting like '''Case Closed'''
-STATUS_TEXT_PATTERNS = {
-    "closed": [
-        r"'''Case Closed'''",
-        r"<big>'''Case Closed'''",
-        r"Case Closed on",
-        r"case closed on",
-        r"\|status\s*=\s*closed",
-        r"status\s*=\s*closed",
-    ],
-    "open": [
-        r"'''Case Opened'''",
-        r"<big>'''Case Opened'''",
-        r"Case Opened on",
-        r"case opened on",
-        r"\|status\s*=\s*open",
-        r"status\s*=\s*open",
-    ],
-}
-
-# Sanction template patterns
-SANCTION_PATTERNS = {
-    "topic_ban": [
-        r"\{\{topic\s*ban\|([^}]+)\}\}",
-        r"\{\{tban\|([^}]+)\}\}",
-        r"\{\{TBAN\|([^}]+)\}\}",
-    ],
-    "interaction_ban": [
-        r"\{\{interaction\s*ban\|([^}]+)\}\}",
-        r"\{\{iban\|([^}]+)\}\}",
-        r"\{\{IBAN\|([^}]+)\}\}",
-    ],
-    "community_ban": [
-        r"\{\{community\s*ban\|([^}]+)\}\}",
-        r"\{\{cban\|([^}]+)\}\}",
-        r"\{\{banned\s*user\|([^}]+)\}\}",
-    ],
-    "block": [
-        r"\{\{blocked\|([^}]+)\}\}",
-        r"\{\{checkuserblock\|([^}]+)\}\}",
-    ],
-    "restriction": [
-        r"\{\{editing\s*restriction\|([^}]+)\}\}",
-        r"\{\{1rr\|([^}]+)\}\}",
-        r"\{\{0rr\|([^}]+)\}\}",
-    ],
-    "warning": [
-        r"\{\{final\s*warning\|([^}]+)\}\}",
-        r"\{\{arb\s*warning\|([^}]+)\}\}",
-    ],
-}
+    @property
+    def passed(self) -> bool:
+        return self.votes.passed
 
 
-def parse_case_status(content: str) -> str:
+@dataclass
+class DecisionOutcome:
     """
-    Determine case status from main case page content.
-
-    Args:
-        content: Raw wikitext of case main page
-
-    Returns:
-        Status string: "open", "closed", "pending", or "unknown"
+    Structured summary of an entire proposed / final decision page.
     """
-    content_lower = content.lower()
 
-    # Check for status templates
-    for status, templates in STATUS_TEMPLATES.items():
-        for template in templates:
-            if template in content_lower:
-                return status
+    items: list[ProposalItem] = field(default_factory=list)
 
-    # Check text patterns (e.g., '''Case Closed''' in bold)
-    for status, patterns in STATUS_TEXT_PATTERNS.items():
-        for pattern in patterns:
-            if re.search(pattern, content, re.IGNORECASE):
-                return status
+    # --- Convenience accessors ---
 
-    # Fallback: look for status indicators in text
-    if "this case is closed" in content_lower:
-        return "closed"
-    if "this case is open" in content_lower:
-        return "open"
-    if "case closed" in content_lower:
-        return "closed"
-    if "case opened" in content_lower:
-        return "open"
-    if "awaiting" in content_lower and "decision" in content_lower:
-        return "pending"
+    @property
+    def principles(self) -> list[ProposalItem]:
+        return [i for i in self.items if i.kind == "principle"]
 
-    return "unknown"
+    @property
+    def findings(self) -> list[ProposalItem]:
+        return [i for i in self.items if i.kind == "finding"]
+
+    @property
+    def remedies(self) -> list[ProposalItem]:
+        return [i for i in self.items if i.kind == "remedy"]
+
+    @property
+    def enforcement(self) -> list[ProposalItem]:
+        return [i for i in self.items if i.kind == "enforcement"]
+
+    @property
+    def passed_items(self) -> list[ProposalItem]:
+        return [i for i in self.items if i.passed]
+
+    @property
+    def failed_items(self) -> list[ProposalItem]:
+        return [i for i in self.items if not i.passed]
+
+    # --- Aggregate metrics ---
+
+    @property
+    def total_items(self) -> int:
+        return len(self.items)
+
+    @property
+    def total_passed(self) -> int:
+        return len(self.passed_items)
+
+    @property
+    def total_failed(self) -> int:
+        return len(self.failed_items)
+
+    @property
+    def pass_rate(self) -> float:
+        return self.total_passed / self.total_items if self.total_items else 0.0
+
+    @property
+    def all_voters(self) -> set[str]:
+        """Unique set of all editors who voted on any item."""
+        voters: set[str] = set()
+        for item in self.items:
+            voters.update(item.votes.support_voters)
+            voters.update(item.votes.oppose_voters)
+            voters.update(item.votes.abstain_voters)
+        return voters
+
+    @property
+    def arbitrator_count(self) -> int:
+        return len(self.all_voters)
+
+    def to_summary_dict(self) -> dict:
+        """Flat dict for merging into a case-level DataFrame row."""
+        return {
+            "outcome_total_items": self.total_items,
+            "outcome_principles": len(self.principles),
+            "outcome_findings": len(self.findings),
+            "outcome_remedies": len(self.remedies),
+            "outcome_enforcement": len(self.enforcement),
+            "outcome_passed": self.total_passed,
+            "outcome_failed": self.total_failed,
+            "outcome_pass_rate": round(self.pass_rate, 3),
+            "outcome_arbitrator_count": self.arbitrator_count,
+            "outcome_remedies_passed": len([r for r in self.remedies if r.passed]),
+            "outcome_findings_passed": len([f for f in self.findings if f.passed]),
+        }
 
 
-def extract_sanctions_from_text(content: str) -> list[Sanction]:
+# ---------------------------------------------------------------------------
+# Parser
+# ---------------------------------------------------------------------------
+
+
+def _extract_voters(text: str) -> list[str]:
     """
-    Extract sanctions from wikitext using template patterns.
+    Pull unique usernames from a block of vote lines.
 
-    Args:
-        content: Raw wikitext containing sanction templates
-
-    Returns:
-        List of Sanction objects
+    Each vote line starts with ``:#`` and may contain a
+    ``[[User:Name|…]]`` link.  Empty ``:#`` lines are ignored.
     """
-    sanctions = []
-
-    for sanction_type, patterns in SANCTION_PATTERNS.items():
-        for pattern in patterns:
-            matches = re.finditer(pattern, content, re.IGNORECASE)
-            for match in matches:
-                raw_params = match.group(1)
-                params = [p.strip() for p in raw_params.split("|")]
-
-                sanction = Sanction(
-                    sanction_type=sanction_type,
-                    target_user=params[0] if params else "",
-                    description=f"{sanction_type}: {raw_params}",
-                    raw_text=match.group(0),
-                )
-
-                # Parse duration if present
-                for param in params[1:]:
-                    if "=" in param:
-                        key, value = param.split("=", 1)
-                        if key.lower() in ("duration", "time", "length"):
-                            sanction.duration = value
-                        elif key.lower() in ("scope", "topic", "area"):
-                            sanction.scope = value
-                    elif param.lower() in ("indef", "indefinite", "permanent"):
-                        sanction.is_indefinite = True
-
-                sanctions.append(sanction)
-
-    return sanctions
+    voters: list[str] = []
+    seen: set[str] = set()
+    for line in text.splitlines():
+        stripped = line.strip()
+        # Vote lines start with :# (with possible leading colons)
+        if not re.match(r":+#", stripped):
+            continue
+        # Skip empty vote slots like ":#\n" or ":#  "
+        content_after_hash = re.sub(r"^:+#\s*", "", stripped)
+        if not content_after_hash:
+            continue
+        # Extract usernames from this line
+        for match in _VOTER_RE.finditer(stripped):
+            username = match.group(1).strip()
+            if username and username not in seen:
+                voters.append(username)
+                seen.add(username)
+    return voters
 
 
-def parse_remedies_page(content: str) -> list[Sanction]:
+def _split_headings(wikitext: str) -> list[tuple[int, str, int, int]]:
     """
-    Parse the /Remedies subpage for formal sanctions.
+    Find all section headings and return (level, title, start, end) tuples.
 
-    Args:
-        content: Raw wikitext of /Remedies subpage
-
-    Returns:
-        List of Sanction objects
+    level: 2 for ==, 3 for ===, 4 for ====
+    start: char offset of the heading line
+    end:   char offset of the next heading (or end of string)
     """
-    # First, try to extract sanctions directly from templates
-    sanctions = extract_sanctions_from_text(content)
+    matches = list(_HEADING_RE.finditer(wikitext))
+    result = []
+    for i, m in enumerate(matches):
+        level = len(m.group(1))
+        title = m.group(2).strip()
+        start = m.start()
+        end = matches[i + 1].start() if i + 1 < len(matches) else len(wikitext)
+        result.append((level, title, start, end))
+    return result
 
-    # If found, return them
-    if sanctions:
-        return sanctions
 
-    # Otherwise, try section-based parsing
-    try:
-        wikicode = mwparserfromhell.parse(content)
+def _detect_item_kind(title: str, active_kind: str) -> str:
+    """Map a heading title to an item kind, or inherit from parent."""
+    lower = title.lower().strip()
+    return _SECTION_KINDS.get(lower, active_kind)
 
-        # Look for sections that typically contain remedies
-        remedy_sections = []
-        current_section = None
-        current_content = []
 
-        for node in wikicode.nodes:
-            if isinstance(node, mwparserfromhell.nodes.Heading):
-                if current_section and current_content:
-                    remedy_sections.append(
-                        {
-                            "title": current_section,
-                            "content": "".join(str(n) for n in current_content),
-                        }
-                    )
-                current_section = str(node.title).strip()
-                current_content = []
-            elif current_section is not None:
-                current_content.append(node)
+def _extract_number(title: str, body: str) -> str:
+    """
+    Try to extract the proposal number from the body text.
 
-        # Don't forget the last section
-        if current_section and current_content:
-            remedy_sections.append(
-                {
-                    "title": current_section,
-                    "content": "".join(str(n) for n in current_content),
-                }
-            )
+    ArbCom items typically start with e.g. "1) …" or "6.1) …".
+    Falls back to the title itself.
+    """
+    # Look for "N)" or "N.M)" at start of body
+    m = re.search(r"^\s*(\d+(?:\.\d+)?)\)", body)
+    if m:
+        return m.group(1)
+    # Look for number in the heading title  e.g. "====Finding 6.1===="
+    m = re.search(r"(\d+(?:\.\d+)?)", title)
+    if m:
+        return m.group(1)
+    return title
 
-        # Extract sanctions from each section
-        for section in remedy_sections:
-            section_title = section["title"].lower()
 
-            # Skip non-remedy sections
+def _parse_votes_from_section(section_text: str) -> VoteTally:
+    """
+    Given the text of a single proposal item section, find the
+    Support / Oppose / Abstain blocks and tally votes.
+    """
+    tally = VoteTally()
+
+    # Split on the vote-category labels
+    # Pattern:  :Support:  or  :Oppose:  or  :Abstain:  (at line start)
+    vote_block_re = re.compile(
+        r"^:+(Support|Oppose|Abstain)\s*:", re.IGNORECASE | re.MULTILINE
+    )
+    splits = list(vote_block_re.finditer(section_text))
+
+    for i, m in enumerate(splits):
+        category = m.group(1).lower()
+        block_start = m.end()
+        block_end = splits[i + 1].start() if i + 1 < len(splits) else len(section_text)
+        block_text = section_text[block_start:block_end]
+        voters = _extract_voters(block_text)
+
+        if category == "support":
+            tally.support = len(voters)
+            tally.support_voters = voters
+        elif category == "oppose":
+            tally.oppose = len(voters)
+            tally.oppose_voters = voters
+        elif category == "abstain":
+            tally.abstain = len(voters)
+            tally.abstain_voters = voters
+
+    return tally
+
+
+def parse_decision(wikitext: str) -> DecisionOutcome:
+    """
+    Parse the raw wikitext of a /Proposed decision or /Final decision
+    page into a :class:`DecisionOutcome`.
+
+    Parameters
+    ----------
+    wikitext : str
+        Full raw wikitext of the page.
+
+    Returns
+    -------
+    DecisionOutcome
+        Structured summary with all proposal items and votes.
+    """
+    outcome = DecisionOutcome()
+    headings = _split_headings(wikitext)
+
+    if not headings:
+        return outcome
+
+    # Track the current "kind" (principle/finding/remedy/enforcement)
+    # as we descend through headings.
+    active_kind = ""
+
+    for level, title, start, end in headings:
+        section_text = wikitext[start:end]
+
+        # Level-2 headings define the top-level grouping
+        if level == 2:
+            active_kind = _detect_item_kind(title, active_kind)
+            continue
+
+        # Level 3-4 headings are individual proposal items
+        if level in (3, 4) and active_kind:
+            # Skip certain meta-sections
+            lower_title = title.lower()
             if any(
-                skip in section_title
-                for skip in ["discussion", "comment", "note", "archive"]
+                skip in lower_title
+                for skip in (
+                    "discussion by arbitrators",
+                    "motion to close",
+                    "implementation notes",
+                    "template",
+                    "proposed motions",
+                    "proposed temporary injunctions",
+                    "general",
+                )
             ):
                 continue
 
-            # Extract sanctions from section content
-            section_sanctions = extract_sanctions_from_text(section["content"])
+            # The body is from the heading to the first :Support: / :Oppose:
+            vote_marker = re.search(
+                r"^:+(?:Support|Oppose|Abstain)\s*:",
+                section_text,
+                re.IGNORECASE | re.MULTILINE,
+            )
+            body_end = vote_marker.start() if vote_marker else len(section_text)
+            # Skip the heading line itself
+            heading_end = section_text.index("\n") + 1 if "\n" in section_text else 0
+            body = section_text[heading_end:body_end].strip()
 
-            # If no template-based sanctions, try to extract from numbered lists
-            if not section_sanctions:
-                section_sanctions = _extract_list_sanctions(
-                    section["title"], section["content"]
+            number = _extract_number(title, body)
+            votes = _parse_votes_from_section(section_text)
+
+            # Only include items that actually have votes
+            if votes.total_votes > 0:
+                outcome.items.append(
+                    ProposalItem(
+                        kind=active_kind,
+                        number=number,
+                        title=title,
+                        body=body[:500],  # truncate for storage
+                        votes=votes,
+                    )
                 )
 
-            sanctions.extend(section_sanctions)
-
-    except Exception:
-        # Fall back to simple pattern matching
-        sanctions = extract_sanctions_from_text(content)
-
-    return sanctions
-
-
-def _extract_list_sanctions(section_title: str, content: str) -> list[Sanction]:
-    """
-    Extract sanctions from numbered or bulleted lists.
-
-    Many remedies pages use prose or lists rather than templates.
-    """
-    sanctions = []
-
-    # Look for user mentions in list items
-    list_pattern = r"(?:^|\n)\s*(?:\*|\#|\d+\.)\s*(.+?)(?=\n|$)"
-    matches = re.findall(list_pattern, content)
-
-    for item in matches:
-        # Check if this looks like a sanction (mentions a user and action)
-        user_match = re.search(r"\[\[User:([^\]|]+)", item, re.IGNORECASE)
-        if not user_match:
-            continue
-
-        username = user_match.group(1).strip()
-
-        # Determine sanction type from keywords
-        item_lower = item.lower()
-        sanction_type = "other"
-
-        if "topic ban" in item_lower or "tban" in item_lower:
-            sanction_type = "topic_ban"
-        elif "interaction ban" in item_lower or "iban" in item_lower:
-            sanction_type = "interaction_ban"
-        elif "block" in item_lower:
-            sanction_type = "block"
-        elif "warning" in item_lower:
-            sanction_type = "warning"
-        elif "restriction" in item_lower or "1rr" in item_lower or "0rr" in item_lower:
-            sanction_type = "restriction"
-        elif "ban" in item_lower:
-            sanction_type = "community_ban"
-
-        # Only add if it looks like a sanction
-        if sanction_type != "other" or any(
-            kw in item_lower
-            for kw in ["sanction", "remedy", "prohibited", "required", "must"]
-        ):
-            sanction = Sanction(
-                sanction_type=sanction_type,
-                target_user=username,
-                description=item.strip()[:200],
-                raw_text=item.strip(),
-                is_indefinite="indefinite" in item_lower or "indef" in item_lower,
-            )
-            sanctions.append(sanction)
-
-    return sanctions
-
-
-def parse_findings(content: str) -> list[str]:
-    """
-    Extract findings of fact from case content.
-
-    Args:
-        content: Raw wikitext (typically from main page or /Proposed decision)
-
-    Returns:
-        List of finding summaries
-    """
-    findings = []
-
-    try:
-        wikicode = mwparserfromhell.parse(content)
-
-        in_findings = False
-        for node in wikicode.nodes:
-            if isinstance(node, mwparserfromhell.nodes.Heading):
-                title = str(node.title).strip().lower()
-                in_findings = "finding" in title or "fact" in title
-
-            elif in_findings and isinstance(node, mwparserfromhell.nodes.Text):
-                text = str(node).strip()
-                # Look for numbered findings
-                if re.match(r"^\d+\.", text):
-                    findings.append(text[:500])
-
-    except Exception:
-        pass
-
-    return findings
-
-
-def parse_principles(content: str) -> list[str]:
-    """
-    Extract principles from case content.
-
-    Args:
-        content: Raw wikitext (typically from main page or /Proposed decision)
-
-    Returns:
-        List of principle summaries
-    """
-    principles = []
-
-    try:
-        wikicode = mwparserfromhell.parse(content)
-
-        in_principles = False
-        for node in wikicode.nodes:
-            if isinstance(node, mwparserfromhell.nodes.Heading):
-                title = str(node.title).strip().lower()
-                in_principles = "principle" in title
-
-            elif in_principles and isinstance(node, mwparserfromhell.nodes.Text):
-                text = str(node).strip()
-                if re.match(r"^\d+\.", text):
-                    principles.append(text[:500])
-
-    except Exception:
-        pass
-
-    return principles
-
-
-def parse_case_outcome(case_pages: dict) -> CaseOutcome:
-    """
-    Parse complete case outcome from all case pages.
-
-    Args:
-        case_pages: Dictionary with page contents keyed by subpage name
-            Expected keys: "main", "evidence", "workshop",
-                          "proposed_decision", "remedies"
-
-    Returns:
-        CaseOutcome with status, remedies, findings, principles
-    """
-    outcome = CaseOutcome(status="unknown")
-
-    # Parse status from main page
-    main_content = case_pages.get("main", {}).get("content", "")
-    if main_content:
-        outcome.status = parse_case_status(main_content)
-        outcome.case_closed = outcome.status == "closed"
-
-    # Parse remedies
-    remedies_content = case_pages.get("remedies", {}).get("content", "")
-    if remedies_content:
-        outcome.remedies = parse_remedies_page(remedies_content)
-        outcome.has_active_remedies = len(outcome.remedies) > 0
-
-    # Also check proposed decision for sanctions
-    proposed_content = case_pages.get("proposed_decision", {}).get("content", "")
-    if proposed_content and not outcome.remedies:
-        outcome.remedies = parse_remedies_page(proposed_content)
-
-    # Parse findings and principles
-    for page_key in ["main", "proposed_decision"]:
-        content = case_pages.get(page_key, {}).get("content", "")
-        if content:
-            if not outcome.findings:
-                outcome.findings = parse_findings(content)
-            if not outcome.principles:
-                outcome.principles = parse_principles(content)
-
     return outcome
-
-
-def sanctions_to_dict(sanctions: list[Sanction]) -> list[dict]:
-    """Convert list of Sanction objects to serializable dicts."""
-    return [
-        {
-            "sanction_type": s.sanction_type,
-            "target_user": s.target_user,
-            "description": s.description,
-            "duration": s.duration,
-            "scope": s.scope,
-            "is_indefinite": s.is_indefinite,
-        }
-        for s in sanctions
-    ]
-
-
-def outcome_to_dict(outcome: CaseOutcome) -> dict:
-    """Convert CaseOutcome to serializable dict."""
-    return {
-        "status": outcome.status,
-        "decision_date": outcome.decision_date,
-        "case_closed": outcome.case_closed,
-        "has_active_remedies": outcome.has_active_remedies,
-        "remedies": sanctions_to_dict(outcome.remedies),
-        "findings": outcome.findings,
-        "principles": outcome.principles,
-        "remedy_count": len(outcome.remedies),
-        "finding_count": len(outcome.findings),
-        "principle_count": len(outcome.principles),
-    }

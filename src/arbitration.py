@@ -1,753 +1,626 @@
-"""Enhanced arbitration case data collection.
+"""
+Arbitration case data model and extraction utilities.
 
-This module provides comprehensive arbitration case fetching with:
-- Full case page collection (main + all subpages)
-- Participant enrichment (user info, blocks, abuse filter)
-- Article enrichment (assessments, protection)
-- Case outcome parsing
-- ANI/DRN venue integration
+Maps ALL data available from a Wikipedia arbitration case file, including:
+- Case metadata and structure (subpages, timing)
+- Editors / participants across every role
+- Revision history per subpage and talk page
+- Evidence diffs and workshop proposals
+- Proposed decisions, remedies, findings of fact
+- Cross-references to disputed articles and their talk pages
+- Editor co-occurrence and conflict networks
 
-Excludes ORES and Pageviews (lower rate limits - separate enrichment pass).
+Data sources (per case JSON produced by fetch_dispute_lifecycle.py):
+    case_pages          – Main, /Evidence, /Workshop, /Proposed decision
+    case_talk_pages     – Talk counterparts for each case page
+    linked_articles     – Wikipedia articles named in the case
+    article_talk_pages  – Talk pages for disputed articles
+    summary             – Aggregate counts from the fetcher
+
+The classes here are intentionally *read-only summaries* over the raw JSON.
+They do not duplicate the data; they index and cross-reference it so that
+notebooks and downstream analysis can ask questions without re-parsing.
 """
 
 from __future__ import annotations
 
-import logging
+import json
 import re
-import time
+from collections import Counter, defaultdict
+from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional
+from pathlib import Path
 
-import mwparserfromhell
+from src.outcome import DecisionOutcome, parse_decision
 
-from wiki import WikiClient
-from outcome import parse_case_outcome, outcome_to_dict
-from fetchers import search_ani_mentions
+# ---------------------------------------------------------------------------
+# Constants
+# ---------------------------------------------------------------------------
 
-logger = logging.getLogger(__name__)
-
-
-# Arbitration case subpages to fetch
-ARB_SUBPAGES = {
-    "main": "",
-    "evidence": "/Evidence",
-    "workshop": "/Workshop",
-    "proposed_decision": "/Proposed decision",
-    "remedies": "/Remedies",
-}
-
-# Path patterns for arbitration cases (Wikipedia changed format over time)
-ARB_PATH_PATTERNS = [
-    "Wikipedia:Arbitration/Requests/Case/{name}",  # Current format (post-2010)
-    "Wikipedia:Requests for arbitration/{name}",  # Older format
-    "Wikipedia:Arbitration/{name}",  # Very old format
+#: Recognised ArbCom subpage suffixes (order = procedural order)
+SUBPAGE_ORDER = [
+    "(main)",
+    "/Evidence",
+    "/Workshop",
+    "/Proposed decision",
+    "/Final decision",
+    "/Remedies",
+    "/Clarification requests",
 ]
 
-
-def find_case_path(client: WikiClient, case_name: str) -> tuple[str | None, str]:
-    """
-    Find the correct Wikipedia path for an arbitration case.
-
-    Tries multiple path patterns since Wikipedia changed formats over time.
-
-    Returns:
-        Tuple of (working_prefix, pattern_used) or (None, "not_found")
-    """
-    # Already a full path
-    if case_name.startswith("Wikipedia:"):
-        page = client.get_page(case_name)
-        if page.exists():
-            return case_name, "provided"
-        return None, "not_found"
-
-    for pattern in ARB_PATH_PATTERNS:
-        prefix = pattern.format(name=case_name)
-        try:
-            page = client.get_page(prefix)
-            if page.exists():
-                return prefix, pattern
-        except Exception:
-            pass
-
-    return None, "not_found"
-
-
-def _is_ip_address(text: str) -> bool:
-    """
-    Check if text looks like an IP address.
-
-    Args:
-        text: String to check
-
-    Returns:
-        True if text appears to be an IPv4 or IPv6 address
-    """
-    # IPv4 pattern
-    ipv4_pattern = r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$"
-    if re.match(ipv4_pattern, text):
-        return True
-
-    # IPv6 pattern (simplified - contains colons and hex digits)
-    if ":" in text and re.match(r"^[0-9A-Fa-f:]+$", text):
-        return True
-
-    return False
-
-
-def _is_valid_username(user: str) -> bool:
-    """
-    Check if a string is a valid Wikipedia username.
-
-    Filters out:
-    - IP addresses
-    - Fragment anchors
-    - Subpages
-    - Magic words/templates
-    - Usernames that are too long (likely extraction errors)
-    - Usernames with invalid characters
-
-    Args:
-        user: Potential username to validate
-
-    Returns:
-        True if user appears to be a valid username
-    """
-    if not user:
-        return False
-
-    # Skip fragments and subpages starting with # or /
-    if user.startswith(("#", "/")):
-        return False
-
-    # Skip if contains fragment anchor (e.g., "AGK#top")
-    if "#" in user:
-        return False
-
-    # Skip subpages (e.g., "ArtifexMayhem/ArbAbort2011")
-    if "/" in user:
-        return False
-
-    # Skip namespace prefixes
-    if ":" in user:
-        return False
-
-    # Skip magic words and templates
-    if user.startswith("{{") or "{{" in user:
-        return False
-    if user.startswith("{{{"):
-        return False
-
-    # Skip IP addresses
-    if _is_ip_address(user):
-        return False
-
-    # Wikipedia usernames have a max length of 255 bytes
-    # But most real usernames are under 50 chars
-    # Long strings are likely extraction errors (paragraphs of text)
-    if len(user) > 100:
-        return False
-
-    # Skip if contains newlines (definitely extraction error)
-    if "\n" in user or "\r" in user:
-        return False
-
-    # Skip if contains certain patterns that indicate extraction errors
-    # (quotes, brackets in the middle, etc.)
-    if user.count('"') > 1:
-        return False
-    if "[[" in user or "]]" in user:
-        return False
-    if user.count("{") > 0 or user.count("}") > 0:
-        return False
-
-    return True
-
-
-def extract_participants(content: str) -> set[str]:
-    """
-    Extract user mentions from page content.
-
-    Filters out:
-    - IP addresses (can't query user info for IPs)
-    - Fragment anchors (e.g., "User#top")
-    - Subpages (e.g., "User/sandbox")
-    - Invalid username patterns
-    - Magic words/templates
-    - Long text strings (extraction errors)
-
-    Args:
-        content: Raw wikitext
-
-    Returns:
-        Set of unique valid usernames
-    """
-    users = set()
-
-    # User: and User talk: links
-    user_links = re.findall(r"\[\[User:([^\]|]+)", content, re.IGNORECASE)
-    user_talk_links = re.findall(r"\[\[User talk:([^\]|]+)", content, re.IGNORECASE)
-
-    for user in user_links + user_talk_links:
-        user = user.strip()
-
-        if _is_valid_username(user):
-            users.add(user)
-
-    return users
-
-
-def _is_valid_article_title(title: str) -> bool:
-    """
-    Check if a title is a valid Wikipedia article title.
-
-    Filters out:
-    - Relative paths (../Workshop)
-    - Interwiki prefixes (m:, meta:, wikt:, wmuk:, mail:, foundation:, etc.)
-    - Leading colons (:Image:, :m:)
-    - Magic words/templates ({{PAGENAME}})
-    - URLs and external links
-    - Titles that are too long (likely extraction errors)
-
-    Args:
-        title: Article title to validate
-
-    Returns:
-        True if title appears to be a valid local article
-    """
-    if not title:
-        return False
-
-    # Skip relative paths
-    if title.startswith("..") or title.startswith("./"):
-        return False
-
-    # Skip leading colons (interwiki or file links)
-    if title.startswith(":"):
-        return False
-
-    # Skip magic words and templates
-    if title.startswith("{{") or title.startswith("{{{"):
-        return False
-    if "{{" in title:
-        return False
-
-    # Skip interwiki prefixes (lowercase prefix followed by colon)
-    # These are links to other wikis like meta:, wikt:, m:, etc.
-    interwiki_prefixes = (
-        "m:",
-        "meta:",
-        "wikt:",
-        "wiktionary:",
-        "wmuk:",
-        "mail:",
-        "foundation:",
-        "commons:",
-        "s:",
-        "wikisource:",
-        "b:",
-        "wikibooks:",
-        "n:",
-        "wikinews:",
-        "q:",
-        "wikiquote:",
-        "v:",
-        "wikiversity:",
-        "wikidata:",
-        "d:",
-        "species:",
-        "mw:",
-        "mediawiki:",
-        "phab:",
-        "phabricator:",
-        "bugzilla:",
-        "gerrit:",
-        "testwiki:",
-        "oldwikisource:",
-    )
-    title_lower = title.lower()
-    if title_lower.startswith(interwiki_prefixes):
-        return False
-
-    # Skip URLs
-    if title.startswith(("http://", "https://", "//", "ftp://")):
-        return False
-
-    # Skip titles that are too long (likely extraction errors)
-    # Wikipedia title limit is 256 bytes, but most real titles are under 100 chars
-    if len(title) > 200:
-        return False
-
-    return True
-
-
-def extract_article_links(content: str) -> set[str]:
-    """
-    Extract article wikilinks from page content, filtering out non-articles.
-
-    Args:
-        content: Raw wikitext
-
-    Returns:
-        Set of unique article titles
-    """
-    articles = set()
-
-    try:
-        wikicode = mwparserfromhell.parse(content)
-
-        for link in wikicode.filter_wikilinks():
-            title = str(link.title).strip()
-
-            # Skip non-article namespaces
-            skip_prefixes = (
-                "User:",
-                "User talk:",
-                "Wikipedia:",
-                "Wikipedia talk:",
-                "Talk:",
-                "Template:",
-                "Template talk:",
-                "Category:",
-                "File:",
-                "Image:",
-                "WP:",
-                "Special:",
-                "Help:",
-                "Portal:",
-                "Draft:",
-                "Module:",
-            )
-            if title.startswith(skip_prefixes):
-                continue
-
-            # Skip fragments and empty
-            if title.startswith("#") or not title:
-                continue
-
-            # Remove fragment
-            if "#" in title:
-                title = title.split("#")[0]
-
-            # Apply additional validation
-            if not _is_valid_article_title(title):
-                continue
-
-            if title:
-                articles.add(title)
-
-    except Exception:
-        pass
-
-    return articles
-
-
-def search_drn_mentions(
-    client: WikiClient,
-    search_terms: list[str],
-    archive_limit: int = 20,
-) -> list[dict]:
-    """
-    Search DRN current page and archives for mentions.
-
-    Args:
-        client: WikiClient instance
-        search_terms: Terms to search for
-        archive_limit: Max archives to search
-
-    Returns:
-        List of DRN mention records
-    """
-    results = []
-    consecutive_misses = 0
-
-    # Current DRN page
-    try:
-        drn_page = client.get_page("Wikipedia:Dispute resolution noticeboard")
-        if drn_page.exists():
-            content = drn_page.text
-            for term in search_terms:
-                if term.lower() in content.lower():
-                    results.append(
-                        {
-                            "type": "current_drn",
-                            "search_term": term,
-                            "url": drn_page.full_url(),
-                            "found": True,
-                        }
-                    )
-    except Exception:
-        pass
-
-    # Search archives
-    for i in range(1, archive_limit + 1):
-        found_archive = False
-
-        for pattern in [
-            f"Wikipedia:Dispute resolution noticeboard/Archive {i}",
-            f"Wikipedia:Dispute resolution noticeboard/Archive_{i}",
-        ]:
-            try:
-                archive = client.get_page(pattern)
-                if archive.exists():
-                    found_archive = True
-                    content = archive.text
-                    for term in search_terms:
-                        if term.lower() in content.lower():
-                            results.append(
-                                {
-                                    "type": f"drn_archive_{i}",
-                                    "search_term": term,
-                                    "url": archive.full_url(),
-                                    "found": True,
-                                }
-                            )
-                    break
-            except Exception:
-                pass
-
-        if not found_archive:
-            consecutive_misses += 1
-            if consecutive_misses >= 3:
-                break
-        else:
-            consecutive_misses = 0
-
-    return results
-
-
-def fetch_full_arbitration_case(
-    client: WikiClient,
-    case_name: str,
-    revision_limit: int = 100,
-    max_articles: int = 20,
-    enrich_participants: bool = True,
-    enrich_articles: bool = True,
-    include_ani: bool = True,
-    include_drn: bool = True,
-    ani_limit: int = 20,
-    drn_archive_limit: int = 20,
-    delay: float = 0.3,
-) -> dict:
-    """
-    Fetch comprehensive arbitration case data.
-
-    Collects:
-    - All case subpages (main, evidence, workshop, proposed decision, remedies)
-    - Case talk pages
-    - Participant enrichment (user info, blocks, abuse hits)
-    - Article enrichment (assessments, protection)
-    - Case outcome parsing
-    - ANI/DRN venue mentions
-
-    Does NOT include (separate enrichment pass):
-    - ORES scores (lower rate limit)
-    - Pageview data (lower rate limit)
-
-    Args:
-        client: WikiClient instance
-        case_name: Arbitration case name (e.g., "Climate change")
-        revision_limit: Max revisions per page (None = all)
-        max_articles: Max articles to enrich
-        enrich_participants: Fetch user info/blocks for participants
-        enrich_articles: Fetch assessments/protection for articles
-        include_ani: Search ANI for mentions
-        include_drn: Search DRN for mentions
-        ani_limit: Max ANI results
-        drn_archive_limit: Max DRN archives to search
-        delay: Seconds between API calls
-
-    Returns:
-        Comprehensive case data dictionary
-    """
-    logger.info(f"Fetching full arbitration case: {case_name}")
-
-    # Find case path
-    case_prefix, path_pattern = find_case_path(client, case_name)
-
-    if case_prefix is None:
-        case_prefix = f"Wikipedia:Arbitration/Requests/Case/{case_name}"
-        path_pattern = "not_found"
-        logger.warning(f"Could not find case page, using default path: {case_prefix}")
-
-    result = {
-        "case_name": case_name,
-        "case_prefix": case_prefix,
-        "path_pattern": path_pattern,
-        "fetched_at": datetime.now().isoformat(),
-        # Case pages
-        "pages": {},
-        "talk_pages": [],
-        # Entities
-        "all_participants": [],
-        "all_articles": [],
-        # Participant enrichment
-        "participants": {},
-        "participant_blocks": {},
-        "participant_abuse_hits": {},
-        # Article enrichment
-        "articles": {},
-        "article_revisions": {},
-        # Outcome
-        "outcome": {},
-        # Venues
-        "ani_mentions": [],
-        "drn_mentions": [],
-        # Summary
-        "summary": {},
-    }
-
-    all_participants: set[str] = set()
-    all_articles: set[str] = set()
-
-    # =========================================================================
-    # FETCH CASE PAGES
-    # =========================================================================
-    logger.info("Fetching case subpages...")
-
-    for key, suffix in ARB_SUBPAGES.items():
-        page_title = f"{case_prefix}{suffix}"
-        try:
-            page = client.get_page(page_title)
-            if page.exists():
-                content = page.text
-                revisions = client.get_revisions(page_title, limit=revision_limit)
-
-                result["pages"][key] = {
-                    "title": page.title(),
-                    "url": page.full_url(),
-                    "content": content,
-                    "content_length": len(content),
-                    "revisions": revisions,
-                    "revision_count": len(revisions),
-                }
-
-                # Extract entities
-                all_participants.update(extract_participants(content))
-                all_articles.update(extract_article_links(content))
-
-                logger.debug(f"  Fetched: {page_title}")
-            else:
-                logger.debug(f"  Not found: {page_title}")
-
-        except Exception as e:
-            logger.warning(f"Error fetching {page_title}: {e}")
-
-    # =========================================================================
-    # FETCH CASE TALK PAGES
-    # =========================================================================
-    logger.info("Fetching case talk pages...")
-
-    # Convert Wikipedia: to Wikipedia talk:
-    if case_prefix.startswith("Wikipedia:"):
-        talk_prefix = "Wikipedia talk:" + case_prefix[len("Wikipedia:") :]
-    else:
-        talk_prefix = f"Talk:{case_prefix}"
-
-    for key, suffix in ARB_SUBPAGES.items():
-        talk_title = f"{talk_prefix}{suffix}"
-        try:
-            talk_page = client.get_page(talk_title)
-            if talk_page.exists():
-                revisions = client.get_revisions(talk_title, limit=revision_limit)
-                result["talk_pages"].append(
-                    {
-                        "title": talk_page.title(),
-                        "url": talk_page.full_url(),
-                        "subpage": key,
-                        "revisions": revisions,
-                        "revision_count": len(revisions),
-                    }
-                )
-                logger.debug(f"  Fetched: {talk_title}")
-        except Exception:
-            pass
-
-    # Store entities
-    result["all_participants"] = sorted(all_participants)
-    result["all_articles"] = sorted(all_articles)[:50]  # Limit for manageability
-
-    # =========================================================================
-    # PARSE CASE OUTCOME
-    # =========================================================================
-    logger.info("Parsing case outcome...")
-
-    try:
-        outcome = parse_case_outcome(result["pages"])
-        result["outcome"] = outcome_to_dict(outcome)
-    except Exception as e:
-        logger.warning(f"Error parsing outcome: {e}")
-        result["outcome"] = {"status": "unknown", "error": str(e)}
-
-    # =========================================================================
-    # PARTICIPANT ENRICHMENT
-    # =========================================================================
-    if enrich_participants and all_participants:
-        # Filter to valid users only (already done in extract_participants,
-        # but log for visibility)
-        valid_users = [u for u in all_participants if not _is_ip_address(u)]
-        logger.info(
-            f"Enriching {len(valid_users)} valid participants "
-            f"(filtered from {len(all_participants)} total mentions)"
+#: Regex for extracting User: / User talk: links from wikitext
+_USER_RE = re.compile(r"\[\[User(?:\s+talk)?:([^\]|]+)", re.IGNORECASE)
+
+#: Regex for edit-summary section anchors like /* Section Title */
+_SECTION_RE = re.compile(r"/\*\s*(.+?)\s*\*/")
+
+
+# ---------------------------------------------------------------------------
+# Lightweight value objects
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class Revision:
+    """A single page revision (edit)."""
+
+    revid: int
+    parentid: int | None
+    timestamp: str  # ISO-8601
+    user: str
+    comment: str
+    size: int | None
+
+    # Computed fields
+    is_revert: bool = False
+    section: str = ""  # extracted from /* … */ in comment
+
+    def __post_init__(self):
+        comment_lower = (self.comment or "").lower()
+        self.is_revert = any(
+            kw in comment_lower for kw in ("revert", "rv ", "undo", "undid", "rollback")
+        )
+        match = _SECTION_RE.search(self.comment or "")
+        if match:
+            self.section = match.group(1).strip()
+
+    @property
+    def ts(self) -> datetime:
+        """Parse timestamp to datetime."""
+        return datetime.fromisoformat(self.timestamp.replace("Z", "+00:00"))
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "Revision":
+        return cls(
+            revid=d.get("revid", 0),
+            parentid=d.get("parentid"),
+            timestamp=d.get("timestamp", ""),
+            user=d.get("user", ""),
+            comment=d.get("comment", ""),
+            size=d.get("size"),
         )
 
-        # Batch fetch user info (50 at a time)
-        if valid_users:
-            try:
-                user_info = client.get_users_info(valid_users)
-                result["participants"] = user_info
-                logger.info(f"Got user info for {len(user_info)} of {len(valid_users)} users")
-            except Exception as e:
-                logger.warning(f"Error fetching user info: {e}")
-        else:
-            logger.warning("No valid users to enrich after filtering")
 
-        # Fetch block history for each participant
-        for username in list(all_participants)[:30]:  # Limit to avoid too many calls
-            try:
-                blocks = client.get_user_blocks(username, limit=20)
-                if blocks:
-                    result["participant_blocks"][username] = blocks
-            except Exception as e:
-                logger.debug(f"Error fetching blocks for {username}: {e}")
+@dataclass
+class PageSummary:
+    """Summary of a single wiki page within a case."""
 
-        # Fetch abuse filter hits (limited - can be slow)
-        for username in list(all_participants)[:20]:
-            try:
-                abuse = client.get_user_abuse_hits(username, limit=20)
-                if abuse.get("total_hits", 0) > 0:
-                    result["participant_abuse_hits"][username] = abuse
-            except Exception as e:
-                logger.debug(f"Error fetching abuse hits for {username}: {e}")
+    title: str
+    url: str
+    subpage: str  # e.g. "(main)", "/Evidence"
+    exists: bool
+    revision_count: int
+    revisions: list[Revision] = field(default_factory=list, repr=False)
 
-    # =========================================================================
-    # ARTICLE ENRICHMENT
-    # =========================================================================
-    articles_to_enrich = list(all_articles)[:max_articles]
+    # Derived
+    editors: list[str] = field(default_factory=list)
+    first_edit: str | None = None
+    last_edit: str | None = None
 
-    if enrich_articles and articles_to_enrich:
-        logger.info(f"Enriching {len(articles_to_enrich)} articles...")
+    def __post_init__(self):
+        if self.revisions:
+            users = [r.user for r in self.revisions if r.user]
+            self.editors = list(dict.fromkeys(users))  # unique, order-preserving
+            timestamps = sorted(r.timestamp for r in self.revisions if r.timestamp)
+            if timestamps:
+                self.first_edit = timestamps[0]
+                self.last_edit = timestamps[-1]
 
-        for article in articles_to_enrich:
-            try:
-                # Get page assessments
-                assessments = client.get_page_assessments(article)
-
-                # Get protection status
-                protection = client.get_page_protection(article)
-
-                # Get protection history
-                protection_log = client.get_protection_log(article, limit=10)
-
-                result["articles"][article] = {
-                    "title": article,
-                    "quality_class": assessments.get("highest_quality"),
-                    "importance": assessments.get("highest_importance"),
-                    "assessments": assessments.get("assessments", {}),
-                    "protection_level": _get_protection_level(protection),
-                    "protection": protection,
-                    "protection_history": protection_log,
-                    "protection_count": len(protection_log),
-                }
-
-            except Exception as e:
-                logger.debug(f"Error enriching article {article}: {e}")
-
-        # Fetch article revisions with tags
-        logger.info("Fetching article revision histories...")
-        for article in articles_to_enrich[:10]:  # Limit to top 10
-            try:
-                revisions = client.get_revisions_with_tags(article, limit=revision_limit)
-                result["article_revisions"][article] = revisions
-            except Exception as e:
-                logger.debug(f"Error fetching revisions for {article}: {e}")
-
-    # =========================================================================
-    # ANI/DRN VENUE SEARCH
-    # =========================================================================
-    if include_ani:
-        logger.info("Searching ANI for case mentions...")
-        try:
-            # Search for case name and top participants
-            top_participants = list(all_participants)[:5]
-            ani_searches = [case_name] + top_participants
-
-            for search_term in ani_searches:
-                limit = ani_limit if search_term == case_name else 10
-                mentions = search_ani_mentions(
-                    client, search_term, limit=limit, max_archives=50
-                )
-                for m in mentions:
-                    m["search_term"] = search_term
-                    m["search_type"] = (
-                        "case_name" if search_term == case_name else "participant"
-                    )
-                result["ani_mentions"].extend(mentions)
-
-            # Deduplicate
-            seen = set()
-            unique = []
-            for m in result["ani_mentions"]:
-                key = (m.get("title", ""), m.get("source", ""))
-                if key not in seen:
-                    seen.add(key)
-                    unique.append(m)
-            result["ani_mentions"] = unique
-
-            logger.debug(f"  Found {len(result['ani_mentions'])} ANI mentions")
-
-        except Exception as e:
-            logger.warning(f"Error searching ANI: {e}")
-
-    if include_drn:
-        logger.info("Searching DRN for case mentions...")
-        try:
-            drn_terms = [case_name] + list(all_participants)[:3]
-            result["drn_mentions"] = search_drn_mentions(
-                client, drn_terms, archive_limit=drn_archive_limit
-            )
-            logger.debug(f"  Found {len(result['drn_mentions'])} DRN mentions")
-        except Exception as e:
-            logger.warning(f"Error searching DRN: {e}")
-
-    # =========================================================================
-    # SUMMARY
-    # =========================================================================
-    result["summary"] = {
-        "case_pages_found": len(result["pages"]),
-        "talk_pages_found": len(result["talk_pages"]),
-        "participants_extracted": len(all_participants),
-        "participants_enriched": len(result["participants"]),
-        "participants_with_blocks": len(result["participant_blocks"]),
-        "participants_with_abuse_hits": len(result["participant_abuse_hits"]),
-        "articles_extracted": len(all_articles),
-        "articles_enriched": len(result["articles"]),
-        "articles_with_revisions": len(result["article_revisions"]),
-        "ani_mentions": len(result["ani_mentions"]),
-        "drn_mentions": len(result["drn_mentions"]),
-        "outcome_status": result["outcome"].get("status", "unknown"),
-        "remedy_count": result["outcome"].get("remedy_count", 0),
-        "total_revisions": sum(
-            p.get("revision_count", 0) for p in result["pages"].values()
+    @classmethod
+    def from_dict(cls, d: dict) -> "PageSummary":
+        revisions = [Revision.from_dict(r) for r in d.get("revisions", [])]
+        return cls(
+            title=d.get("title", ""),
+            url=d.get("url", ""),
+            subpage=d.get("subpage", ""),
+            exists=d.get("exists", True),
+            revision_count=len(revisions),
+            revisions=revisions,
         )
-        + sum(p.get("revision_count", 0) for p in result["talk_pages"]),
-    }
-
-    logger.info(f"Completed: {result['summary']}")
-
-    return result
 
 
-def _get_protection_level(protection: dict) -> Optional[str]:
-    """Extract the highest protection level from protection dict."""
-    levels = {"sysop": 3, "autoconfirmed": 2, "": 1}
-    highest = None
-    highest_level = 0
+@dataclass
+class EditorProfile:
+    """
+    Aggregated view of a single editor across an arbitration case.
 
-    for ptype, info in protection.items():
-        if isinstance(info, dict):
-            level = info.get("level", "")
-            if levels.get(level, 0) > highest_level:
-                highest = level
-                highest_level = levels[level]
+    Tracks every subpage they touched, how many edits, reverts,
+    and which roles they played (filer, witness, arbitrator, etc.).
+    """
 
-    return highest
+    username: str
+
+    # Per-subpage edit counts  {subpage_label: count}
+    edits_by_subpage: dict[str, int] = field(default_factory=dict)
+
+    total_edits: int = 0
+    total_reverts: int = 0
+
+    # Timestamps of first / last activity anywhere in the case
+    first_seen: str | None = None
+    last_seen: str | None = None
+
+    # Which case pages this editor touched
+    pages_touched: list[str] = field(default_factory=list)
+
+    # Sections they edited (from /* … */ comments)
+    sections_edited: list[str] = field(default_factory=list)
+
+    @property
+    def revert_ratio(self) -> float:
+        return self.total_reverts / self.total_edits if self.total_edits else 0.0
+
+    @property
+    def active_days(self) -> int:
+        """Calendar days between first and last activity."""
+        if not self.first_seen or not self.last_seen:
+            return 0
+        t0 = datetime.fromisoformat(self.first_seen.replace("Z", "+00:00"))
+        t1 = datetime.fromisoformat(self.last_seen.replace("Z", "+00:00"))
+        return max((t1 - t0).days, 0)
+
+
+@dataclass
+class ConflictEdge:
+    """A directed revert relationship between two editors."""
+
+    reverter: str
+    reverted: str
+    count: int = 0
+    pages: list[str] = field(default_factory=list)
+
+
+# ---------------------------------------------------------------------------
+# Main case-level summary
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class ArbitrationCaseSummary:
+    """
+    Comprehensive read-only summary of everything available from one
+    arbitration case JSON file.
+
+    Attributes expose every dimension of data that downstream analysis
+    or modelling might need:
+      - case identity and timing
+      - subpage inventory (main, evidence, workshop, proposed decision)
+      - talk-page inventory
+      - all participant/editor profiles
+      - disputed articles and their revision data
+      - editor co-occurrence / conflict network
+      - revision-level statistics and distributions
+    """
+
+    # --- Identity ---
+    case_name: str
+    case_prefix: str
+    fetched_at: str
+
+    # --- Subpage inventories ---
+    case_pages: list[PageSummary] = field(default_factory=list)
+    case_talk_pages: list[PageSummary] = field(default_factory=list)
+
+    # --- Disputed articles ---
+    linked_article_titles: list[str] = field(default_factory=list)
+    linked_articles: list[PageSummary] = field(default_factory=list)
+    article_talk_pages: list[PageSummary] = field(default_factory=list)
+
+    # --- Editor profiles (built from all revision streams) ---
+    editor_profiles: dict[str, EditorProfile] = field(default_factory=dict)
+
+    # --- Conflict / co-occurrence network ---
+    conflict_edges: list[ConflictEdge] = field(default_factory=list)
+
+    # --- Aggregate metrics ---
+    total_revisions: int = 0
+    total_editors: int = 0
+    total_case_pages: int = 0
+    total_talk_pages: int = 0
+    total_linked_articles: int = 0
+
+    # Timing
+    earliest_activity: str | None = None
+    latest_activity: str | None = None
+    case_duration_days: int = 0
+
+    # Raw summary dict from fetcher (passthrough)
+    raw_summary: dict = field(default_factory=dict)
+
+    # Parsed decision outcome (if wikitext was available)
+    decision_outcome: DecisionOutcome | None = None
+
+    # ------------------------------------------------------------------
+    # Construction
+    # ------------------------------------------------------------------
+
+    @classmethod
+    def from_json_path(cls, path: str | Path) -> "ArbitrationCaseSummary":
+        """Load a case JSON file and build the full summary."""
+        path = Path(path)
+        with open(path, encoding="utf-8") as fh:
+            data = json.load(fh)
+        return cls.from_dict(data)
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "ArbitrationCaseSummary":
+        """Build summary from an already-loaded dict (either format)."""
+        # Detect which format: old fetcher vs lifecycle fetcher
+        if "lifecycle_stages" in data:
+            return cls._from_lifecycle_dict(data)
+        return cls._from_legacy_dict(data)
+
+    # ---- legacy format (fetch_dispute_lifecycle.py old output) ----
+
+    @classmethod
+    def _from_legacy_dict(cls, data: dict) -> "ArbitrationCaseSummary":
+        case_pages = [PageSummary.from_dict(p) for p in data.get("case_pages", [])]
+        case_talk_pages = [
+            PageSummary.from_dict(p) for p in data.get("case_talk_pages", [])
+        ]
+        linked_articles = [
+            PageSummary.from_dict(a) for a in data.get("linked_articles", [])
+        ]
+        article_talk_pages = [
+            PageSummary.from_dict(a) for a in data.get("article_talk_pages", [])
+        ]
+
+        summary = cls(
+            case_name=data.get("case_name", ""),
+            case_prefix=data.get("case_prefix", ""),
+            fetched_at=data.get("fetched_at", ""),
+            case_pages=case_pages,
+            case_talk_pages=case_talk_pages,
+            linked_article_titles=[a.title for a in linked_articles],
+            linked_articles=linked_articles,
+            article_talk_pages=article_talk_pages,
+            total_case_pages=len(case_pages),
+            total_talk_pages=len(case_talk_pages),
+            total_linked_articles=data.get("summary", {}).get(
+                "total_linked_articles", len(linked_articles)
+            ),
+            raw_summary=data.get("summary", {}),
+        )
+        summary._compute_derived()
+        summary._parse_decision_from_pages(data.get("case_pages", []))
+        return summary
+
+    # ---- lifecycle format (fetch_dispute_lifecycle.py new output) ----
+
+    @classmethod
+    def _from_lifecycle_dict(cls, data: dict) -> "ArbitrationCaseSummary":
+        stages = data.get("lifecycle_stages", {})
+
+        arbcom = stages.get("stage_5_arbcom", {})
+        case_pages = [PageSummary.from_dict(p) for p in arbcom.get("pages", [])]
+        case_talk_pages = [
+            PageSummary.from_dict(p) for p in arbcom.get("talk_pages", [])
+        ]
+
+        talk_stage = stages.get("stage_1_2_talk", {})
+        article_talk_pages = [
+            PageSummary.from_dict(p) for p in talk_stage.get("pages", [])
+        ]
+
+        summary = cls(
+            case_name=data.get("case_name", ""),
+            case_prefix=data.get("case_prefix", ""),
+            fetched_at=data.get("fetched_at", ""),
+            case_pages=case_pages,
+            case_talk_pages=case_talk_pages,
+            linked_article_titles=data.get("disputed_articles", []),
+            article_talk_pages=article_talk_pages,
+            total_case_pages=len(case_pages),
+            total_talk_pages=len(case_talk_pages),
+            total_linked_articles=len(data.get("disputed_articles", [])),
+            raw_summary=data.get("summary", {}),
+        )
+        summary._compute_derived()
+        summary._parse_decision_from_pages(arbcom.get("pages", []))
+        return summary
+
+    # ---- decision outcome extraction ----
+
+    def _parse_decision_from_pages(self, raw_pages: list[dict]):
+        """
+        Look for wikitext content in /Proposed decision or /Final decision
+        page dicts and parse structured outcomes.
+        """
+        # Priority: /Final decision > /Proposed decision > (main)
+        for suffix in ("/Final decision", "/Proposed decision", ""):
+            subpage_label = suffix or "(main)"
+            for page_dict in raw_pages:
+                page_sub = page_dict.get("subpage", "")
+                if page_sub == subpage_label and page_dict.get("content"):
+                    self.decision_outcome = parse_decision(page_dict["content"])
+                    return
+
+    # ---- shared post-construction ----
+
+    def _compute_derived(self):
+        """Populate editor profiles, conflict edges, and aggregate metrics."""
+        all_revisions: list[tuple[str, Revision]] = []  # (page_label, rev)
+
+        # Collect every revision across all page inventories
+        for page in self.case_pages + self.case_talk_pages:
+            label = page.subpage or page.title
+            for rev in page.revisions:
+                all_revisions.append((label, rev))
+
+        for page in self.linked_articles + self.article_talk_pages:
+            label = f"article:{page.title}"
+            for rev in page.revisions:
+                all_revisions.append((label, rev))
+
+        self.total_revisions = len(all_revisions)
+
+        # Build editor profiles
+        profiles: dict[str, EditorProfile] = {}
+        all_timestamps: list[str] = []
+
+        for label, rev in all_revisions:
+            user = rev.user
+            if not user:
+                continue
+
+            if user not in profiles:
+                profiles[user] = EditorProfile(username=user)
+            p = profiles[user]
+
+            p.total_edits += 1
+            p.edits_by_subpage[label] = p.edits_by_subpage.get(label, 0) + 1
+            if rev.is_revert:
+                p.total_reverts += 1
+            if label not in p.pages_touched:
+                p.pages_touched.append(label)
+            if rev.section and rev.section not in p.sections_edited:
+                p.sections_edited.append(rev.section)
+
+            ts = rev.timestamp
+            if ts:
+                all_timestamps.append(ts)
+                if p.first_seen is None or ts < p.first_seen:
+                    p.first_seen = ts
+                if p.last_seen is None or ts > p.last_seen:
+                    p.last_seen = ts
+
+        self.editor_profiles = profiles
+        self.total_editors = len(profiles)
+
+        # Global timing
+        if all_timestamps:
+            all_timestamps.sort()
+            self.earliest_activity = all_timestamps[0]
+            self.latest_activity = all_timestamps[-1]
+            t0 = datetime.fromisoformat(all_timestamps[0].replace("Z", "+00:00"))
+            t1 = datetime.fromisoformat(all_timestamps[-1].replace("Z", "+00:00"))
+            self.case_duration_days = max((t1 - t0).days, 0)
+
+        # Conflict network (consecutive-revert heuristic across each page)
+        self._build_conflict_edges()
+
+    def _build_conflict_edges(self):
+        """Detect revert-based conflict edges across all pages."""
+        edge_counts: Counter[tuple[str, str]] = Counter()
+        edge_pages: dict[tuple[str, str], set] = defaultdict(set)
+
+        for page in self.case_pages + self.case_talk_pages:
+            revs = sorted(page.revisions, key=lambda r: r.timestamp)
+            for i, rev in enumerate(revs):
+                if rev.is_revert and i + 1 < len(revs):
+                    reverted_user = revs[i + 1].user
+                    if reverted_user and rev.user and rev.user != reverted_user:
+                        pair = (rev.user, reverted_user)
+                        edge_counts[pair] += 1
+                        edge_pages[pair].add(page.subpage or page.title)
+
+        self.conflict_edges = [
+            ConflictEdge(
+                reverter=pair[0],
+                reverted=pair[1],
+                count=count,
+                pages=list(edge_pages[pair]),
+            )
+            for pair, count in edge_counts.most_common()
+        ]
+
+    # ------------------------------------------------------------------
+    # Query helpers (used by notebooks / analysis)
+    # ------------------------------------------------------------------
+
+    def top_editors(self, n: int = 20) -> list[EditorProfile]:
+        """Return editors sorted by total edits (descending)."""
+        return sorted(
+            self.editor_profiles.values(), key=lambda e: e.total_edits, reverse=True
+        )[:n]
+
+    def editors_on_subpage(self, subpage: str) -> list[EditorProfile]:
+        """Return editors who touched a specific subpage."""
+        return [
+            p for p in self.editor_profiles.values() if subpage in p.edits_by_subpage
+        ]
+
+    def editor_overlap(self, page_a: str, page_b: str) -> set[str]:
+        """Editors who edited both page_a and page_b labels."""
+        a = {p.username for p in self.editors_on_subpage(page_a)}
+        b = {p.username for p in self.editors_on_subpage(page_b)}
+        return a & b
+
+    def subpage_edit_counts(self) -> dict[str, int]:
+        """Total edits per subpage label."""
+        counts: Counter[str] = Counter()
+        for p in self.editor_profiles.values():
+            for label, c in p.edits_by_subpage.items():
+                counts[label] += c
+        return dict(counts.most_common())
+
+    def revision_timeline(self, subpage: str | None = None) -> list[Revision]:
+        """
+        All revisions in chronological order, optionally filtered to
+        a single subpage label.
+        """
+        sources = self.case_pages + self.case_talk_pages
+        if subpage:
+            sources = [p for p in sources if (p.subpage or p.title) == subpage]
+        all_revs = [r for page in sources for r in page.revisions]
+        all_revs.sort(key=lambda r: r.timestamp)
+        return all_revs
+
+    def monthly_activity(self) -> dict[str, int]:
+        """Revision counts bucketed by YYYY-MM."""
+        buckets: Counter[str] = Counter()
+        for rev in self.revision_timeline():
+            month = rev.timestamp[:7]  # "YYYY-MM"
+            buckets[month] += 1
+        return dict(sorted(buckets.items()))
+
+    def consensus_signals(self) -> dict:
+        """
+        Heuristic indicators of consensus (or lack thereof).
+
+        Looks at:
+        - Workshop vs Evidence edit ratio (high workshop = more proposals)
+        - Revert ratio on proposed-decision page
+        - Number of unique editors on /Proposed decision
+        - Duration from first evidence to proposed decision
+        """
+        ws_edits = sum(
+            1
+            for p in self.case_pages
+            if "Workshop" in (p.subpage or "")
+            for _ in p.revisions
+        )
+        ev_edits = sum(
+            1
+            for p in self.case_pages
+            if "Evidence" in (p.subpage or "")
+            for _ in p.revisions
+        )
+        pd_pages = [
+            p for p in self.case_pages if "Proposed decision" in (p.subpage or "")
+        ]
+        pd_reverts = sum(1 for p in pd_pages for r in p.revisions if r.is_revert)
+        pd_total = sum(len(p.revisions) for p in pd_pages)
+        pd_editors = set()
+        for p in pd_pages:
+            pd_editors.update(r.user for r in p.revisions if r.user)
+
+        return {
+            "workshop_edits": ws_edits,
+            "evidence_edits": ev_edits,
+            "workshop_to_evidence_ratio": (
+                ws_edits / ev_edits if ev_edits else float("inf")
+            ),
+            "proposed_decision_edits": pd_total,
+            "proposed_decision_reverts": pd_reverts,
+            "proposed_decision_revert_ratio": (
+                pd_reverts / pd_total if pd_total else 0.0
+            ),
+            "proposed_decision_unique_editors": len(pd_editors),
+            "case_duration_days": self.case_duration_days,
+        }
+
+    def to_summary_dict(self) -> dict:
+        """
+        Flat dictionary suitable for a DataFrame row (one row per case).
+        """
+        cs = self.consensus_signals()
+        top = self.top_editors(5)
+        return {
+            "case_name": self.case_name,
+            "fetched_at": self.fetched_at,
+            "total_revisions": self.total_revisions,
+            "total_editors": self.total_editors,
+            "total_case_pages": self.total_case_pages,
+            "total_talk_pages": self.total_talk_pages,
+            "total_linked_articles": self.total_linked_articles,
+            "case_duration_days": self.case_duration_days,
+            "earliest_activity": self.earliest_activity,
+            "latest_activity": self.latest_activity,
+            # Subpage breakdowns
+            **{
+                f"edits_{k.replace('/', '_').replace(' ', '_').strip('_')}": v
+                for k, v in self.subpage_edit_counts().items()
+            },
+            # Consensus signals
+            **{f"consensus_{k}": v for k, v in cs.items()},
+            # Conflict
+            "conflict_edge_count": len(self.conflict_edges),
+            "max_conflict_reverts": (
+                self.conflict_edges[0].count if self.conflict_edges else 0
+            ),
+            # Top editors
+            "top_editor_1": top[0].username if len(top) > 0 else "",
+            "top_editor_1_edits": top[0].total_edits if len(top) > 0 else 0,
+            "top_editor_2": top[1].username if len(top) > 1 else "",
+            "top_editor_2_edits": top[1].total_edits if len(top) > 1 else 0,
+            # Decision outcome (from parsed wikitext, if available)
+            **(
+                self.decision_outcome.to_summary_dict() if self.decision_outcome else {}
+            ),
+        }
+
+
+# ---------------------------------------------------------------------------
+# Batch loader (scan a directory of case JSONs)
+# ---------------------------------------------------------------------------
+
+
+def load_all_cases(
+    data_dir: str | Path = "data/raw/arbitration",
+    glob_pattern: str = "arb_dfs_*.json",
+) -> list[ArbitrationCaseSummary]:
+    """
+    Load every case JSON in a directory and return ArbitrationCaseSummary
+    objects. Skips files that fail to parse (with a warning).
+    """
+    import logging
+
+    logger = logging.getLogger(__name__)
+    data_dir = Path(data_dir)
+    summaries = []
+
+    for path in sorted(data_dir.glob(glob_pattern)):
+        try:
+            summaries.append(ArbitrationCaseSummary.from_json_path(path))
+        except Exception as exc:
+            logger.warning(f"Skipping {path.name}: {exc}")
+
+    return summaries
+
+
+def cases_to_dataframe(cases: list[ArbitrationCaseSummary]):
+    """
+    Convert a list of ArbitrationCaseSummary objects into a pandas
+    DataFrame with one row per case.
+    """
+    import pandas as pd
+
+    rows = [c.to_summary_dict() for c in cases]
+    df = pd.DataFrame(rows)
+
+    # Sort by case name
+    if "case_name" in df.columns:
+        df = df.sort_values("case_name").reset_index(drop=True)
+
+    return df
