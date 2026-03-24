@@ -324,8 +324,8 @@ class WikiClient:
                     "level": prot[1],
                     "expiry": str(prot[2]) if len(prot) > 2 else None,
                 }
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(f"Failed to get protection status for '{title}': {e}")
         return protection
 
     def get_talk_page(self, title: str) -> pywikibot.Page | None:
