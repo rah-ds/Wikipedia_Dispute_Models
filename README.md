@@ -74,6 +74,20 @@ See [`docs/wikimedia_api.md`](docs/wikimedia_api.md) for full API documentation.
 
 ---
 
+## Core Analysis Modules
+
+| Module | Description |
+| ------ | ----------- |
+| `src/arbitration.py` | Data models for arbitration cases. Parses case JSON into `ArbitrationCaseSummary` objects with editor profiles, conflict networks, and revision timelines. |
+| `src/outcome.py` | Parses ArbCom proposed/final decision wikitext to extract structured votes, findings, and remedies with pass/fail status. |
+| `src/lifecycle.py` | Traces disputes through all resolution stages (Talk → DRN → ANI → ArbCom). Extracts participants and disputed articles. |
+| `src/analysis.py` | Edit war detection, revert analysis, and 3RR violation detection from revision histories. |
+| `src/timeline.py` | Constructs chronological dispute timelines with escalation features for modeling. |
+| `src/wiki.py` | Wikipedia API client wrapper with rate limiting, retry logic, and OAuth support. |
+| `src/cli_utils.py` | CLI utilities for graceful shutdown handling and memory monitoring in data fetch scripts. |
+
+---
+
 ## Dispute Resolution Lifecycle
 
 Wikipedia employs graduated intervention for conflicts:

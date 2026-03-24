@@ -1,26 +1,54 @@
-.PHONY: install install-dev clean data-dirs help lint fetch-all fetch-full fetch-arb fetch-drn fetch-small test test-unit test-cov fetch-venues fetch-ani fetch-talk fetch-arb-dfs fetch-arb-dfs-sample fetch-arb-dfs-sample-full fetch-arb-dfs-all fetch-arb-dfs-all-full update-arb-cases-list fetch-lifecycle fetch-lifecycle-dry fetch-lifecycle-sample fetch-lifecycle-all
+.PHONY: install install-dev clean data-dirs help lint fetch-all fetch-full fetch-arb fetch-drn fetch-small test test-unit test-cov fetch-venues fetch-ani fetch-talk fetch-arb-dfs fetch-arb-dfs-sample fetch-arb-dfs-sample-full fetch-arb-dfs-all fetch-arb-dfs-all-full update-arb-cases-list fetch-lifecycle fetch-lifecycle-dry fetch-lifecycle-sample fetch-lifecycle-all setup pull pull-status pull-reset validate archive clear-results pull-full-arb pull-full-arb-estimate pull-full-arb-force
+
+# =============================================================================
+# QUICK START - Three simple commands to get started
+# =============================================================================
+# make setup  - Install dependencies and validate environment
+# make test   - Run tests
+# make pull   - Fetch data (resumable, uses sample config by default)
+# =============================================================================
 
 # Default target
 help:
 	@echo "Wikipedia Dispute Models"
 	@echo "========================"
 	@echo ""
-	@echo "Usage: make [target]"
+	@echo "Quick Start (recommended):"
+	@echo "  make setup       Set up environment (install + validate)"
+	@echo "  make test        Run all tests"
+	@echo "  make pull        Fetch data (resumable, sample config)"
 	@echo ""
-	@echo "Targets:"
-	@echo "  install      Install base dependencies"
-	@echo "  install-dev  Install with dev dependencies + pre-commit hooks"
-	@echo "  lint         Run ruff linter and formatter"
-	@echo "  test         Run all tests"
-	@echo "  test-unit    Run unit tests only (no network)"
-	@echo "  test-cov     Run tests with coverage"
-	@echo "  data-dirs    Create data directory structure"
-	@echo "  clean        Remove generated files"
+	@echo "Pull Commands:"
+	@echo "  make pull                     Fetch with sample config (5 cases)"
+	@echo "  make pull CONFIG=full         Fetch all data (hours)"
+	@echo "  make pull CONFIG=dev          Minimal fetch for testing"
+	@echo "  make pull-status              Show current pull progress"
+	@echo "  make pull-reset               Reset state for fresh start"
+	@echo "  make validate                 Check environment is ready"
 	@echo ""
-	@echo "Data Collection:"
+	@echo "Full Arbitration Pull (COMPREHENSIVE):"
+	@echo "  make pull-full-arb            Pull ALL arb cases with full enrichment"
+	@echo "                                (shows estimate first, resumable)"
+	@echo "  make pull-full-arb-estimate   Show time/storage estimate only"
+	@echo "  make pull-full-arb-force      Pull without storage check"
+	@echo ""
+	@echo "Data Management:"
+	@echo "  make archive         Archive results to timestamped zip file"
+	@echo "  make clear-results   Clear all results (data/raw, data/processed)"
+	@echo ""
+	@echo "Development:"
+	@echo "  make install     Install base dependencies"
+	@echo "  make install-dev Install with dev dependencies + pre-commit hooks"
+	@echo "  make lint        Run ruff linter and formatter"
+	@echo "  make test-unit   Run unit tests only (no network)"
+	@echo "  make test-cov    Run tests with coverage"
+	@echo "  make data-dirs   Create data directory structure"
+	@echo "  make clean       Remove generated files (cache, pycache)
+	@echo ""
+	@echo "Legacy Data Collection (still supported):"
 	@echo "  fetch-small     Fetch sample dataset (10 articles, 5 arb cases)"
 	@echo "  fetch-small-dry Preview what fetch-small would fetch"
-	@echo "  fetch-full      Fetch full dataset (51 articles, 50 arb cases, 2-4 hrs)"
+	@echo "  fetch-full      Fetch full dataset (51 articles, 50 arb cases)"
 	@echo "  fetch-full-dry  Preview what fetch-full would fetch"
 	@echo "  fetch-all       Run arb + drn collectors only (no articles)"
 	@echo "  fetch-arb       Fetch arbitration cases only"
@@ -46,6 +74,49 @@ help:
 	@echo "  fetch-lifecycle-sample        Fetch 5 sample cases with full lifecycle"
 	@echo "  fetch-lifecycle-all           Fetch ALL cases with full lifecycle"
 	@echo ""
+
+# =============================================================================
+# QUICK START COMMANDS
+# =============================================================================
+
+# Setup: Install dependencies, create directories, validate environment
+setup: install-dev data-dirs
+	@echo ""
+	@echo "Environment setup complete!"
+	@echo ""
+	@echo "Next steps:"
+	@echo "  1. Copy .env.example to .env and add your Wikipedia access token"
+	@echo "  2. Run 'make validate' to check your environment"
+	@echo "  3. Run 'make pull' to fetch sample data"
+	@echo ""
+
+# Validate environment (credentials, directories, API connectivity)
+validate:
+	uv run python scripts/pull.py --validate
+
+# Unified data pull with config
+# Usage: make pull                  (uses sample config)
+#        make pull CONFIG=full      (uses full config)
+#        make pull CONFIG=dev       (minimal for testing)
+#        make pull CONFIG=path.yaml (custom config)
+pull: data-dirs
+	uv run python scripts/pull.py --config $(or $(CONFIG),sample)
+
+# Show current pull status
+pull-status:
+	uv run python scripts/pull.py --config $(or $(CONFIG),sample) --status
+
+# Reset pull state for fresh start
+pull-reset:
+	uv run python scripts/pull.py --config $(or $(CONFIG),sample) --reset
+
+# Dry run - show what would be fetched
+pull-dry:
+	uv run python scripts/pull.py --config $(or $(CONFIG),sample) --dry-run
+
+# =============================================================================
+# END QUICK START
+# =============================================================================
 
 # Installation
 install:
@@ -255,13 +326,51 @@ fetch-arb-dfs-all-full: data-dirs
 	@echo ""
 	@echo "✓ FULL arbitration cases fetched to data/raw/arbitration/"
 
-# Clean generated files
+# Clean generated files (cache, pycache, logs)
 clean:
-	rm -rf data/raw/*
-	rm -rf data/processed/*
 	rm -rf artifacts/logs/*
 	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 	find . -type f -name "*.pyc" -delete 2>/dev/null || true
+	@echo "✓ Cleaned cache and log files"
+
+# Archive results to timestamped zip file
+# Archives are stored in artifacts/archives/ and gitignored
+archive:
+	@mkdir -p artifacts/archives
+	@TIMESTAMP=$$(date +%Y%m%d_%H%M%S); \
+	ARCHIVE_NAME="results_$$TIMESTAMP.zip"; \
+	echo "Creating archive: artifacts/archives/$$ARCHIVE_NAME"; \
+	if [ -d "data/raw" ] && [ "$$(ls -A data/raw 2>/dev/null)" ]; then \
+		zip -r "artifacts/archives/$$ARCHIVE_NAME" data/raw data/processed artifacts/results 2>/dev/null || \
+		zip -r "artifacts/archives/$$ARCHIVE_NAME" data/raw data/processed 2>/dev/null || \
+		zip -r "artifacts/archives/$$ARCHIVE_NAME" data/raw 2>/dev/null; \
+		echo "✓ Archive created: artifacts/archives/$$ARCHIVE_NAME"; \
+		ls -lh "artifacts/archives/$$ARCHIVE_NAME"; \
+	else \
+		echo "⚠️  No data to archive (data/raw is empty)"; \
+	fi
+
+# Clear all results (data/raw, data/processed)
+# WARNING: This permanently deletes fetched data. Use 'make archive' first to backup.
+clear-results:
+	@echo "⚠️  This will permanently delete all fetched data!"
+	@echo "    - data/raw/*"
+	@echo "    - data/processed/*"
+	@echo ""
+	@read -p "Are you sure? [y/N] " confirm; \
+	if [ "$$confirm" = "y" ] || [ "$$confirm" = "Y" ]; then \
+		rm -rf data/raw/*; \
+		rm -rf data/processed/*; \
+		echo "✓ All results cleared"; \
+	else \
+		echo "Cancelled"; \
+	fi
+
+# Force clear results without confirmation (for scripts)
+clear-results-force:
+	rm -rf data/raw/*
+	rm -rf data/processed/*
+	@echo "✓ All results cleared"
 # =============================================================================
 # FULL DISPUTE LIFECYCLE FETCHER (RECOMMENDED)
 # =============================================================================
@@ -323,3 +432,64 @@ fetch-lifecycle-all: data-dirs
 	done < $(ARB_CASES_FILE)
 	@echo ""
 	@echo "✓ All lifecycle data saved to data/raw/dispute_venues/"
+
+# =============================================================================
+# FULL ARBITRATION PULL - COMPREHENSIVE DATA COLLECTION
+# =============================================================================
+# Pulls ALL arbitration cases with FULL enrichment:
+# - All case pages (main, evidence, workshop, proposed decision, remedies)
+# - Full revision history for all pages
+# - Participant profiles (edit count, registration, groups, admin status)
+# - Participant block history and abuse filter hits
+# - Article assessments (WikiProject quality/importance)
+# - Article protection status and history
+# - Article revision history with edit tags
+# - ANI and DRN venue mentions
+# - Case outcome (status, remedies, sanctions)
+#
+# Features:
+# - Checkpointing: resumes from where it left off if interrupted
+# - Storage check: warns if disk space would drop below 10GB
+# - Progress tracking: tqdm progress bars, timing stats, rate limit monitoring
+
+# Show estimate only
+pull-full-arb-estimate:
+	@if [ ! -f $(ARB_CASES_FILE) ]; then \
+		echo "Case list not found. Fetching from Wikipedia..."; \
+		uv run python scripts/fetch_arb_cases_list.py --output $(ARB_CASES_FILE); \
+	fi
+	@uv run python scripts/estimate_pull.py --case-file $(ARB_CASES_FILE)
+
+# Full pull with estimate and storage check
+pull-full-arb: data-dirs
+	@if [ ! -f $(ARB_CASES_FILE) ]; then \
+		echo "Case list not found. Fetching from Wikipedia..."; \
+		uv run python scripts/fetch_arb_cases_list.py --output $(ARB_CASES_FILE); \
+	fi
+	@echo ""
+	@uv run python scripts/estimate_pull.py --case-file $(ARB_CASES_FILE) || exit 1
+	@echo ""
+	@read -p "Proceed with full arbitration pull? [y/N] " confirm; \
+	if [ "$$confirm" = "y" ] || [ "$$confirm" = "Y" ]; then \
+		echo ""; \
+		echo "Starting full arbitration pull..."; \
+		echo "Use Ctrl+C to interrupt (progress is saved, resume with same command)"; \
+		echo ""; \
+		uv run python scripts/pull.py --config full; \
+	else \
+		echo "Cancelled"; \
+	fi
+
+# Full pull without storage check (force mode)
+pull-full-arb-force: data-dirs
+	@if [ ! -f $(ARB_CASES_FILE) ]; then \
+		echo "Case list not found. Fetching from Wikipedia..."; \
+		uv run python scripts/fetch_arb_cases_list.py --output $(ARB_CASES_FILE); \
+	fi
+	@echo ""
+	@uv run python scripts/estimate_pull.py --case-file $(ARB_CASES_FILE) --force
+	@echo ""
+	@echo "Starting full arbitration pull (force mode)..."
+	@echo "Use Ctrl+C to interrupt (progress is saved, resume with same command)"
+	@echo ""
+	uv run python scripts/pull.py --config full
