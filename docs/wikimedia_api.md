@@ -227,6 +227,133 @@ Register at <https://meta.wikimedia.org/wiki/Special:OAuthConsumerRegistration>
 
 ---
 
+## Extended API Coverage (WikiClient Methods)
+
+Our `WikiClient` class in `src/wiki.py` wraps the MediaWiki API with additional methods for dispute research:
+
+### Revision Methods
+
+| Method | Description | API Endpoint |
+| ------ | ----------- | ------------ |
+| `get_revisions()` | Fetch revision history with optional edit tags | `action=query&prop=revisions&rvprop=tags` |
+| `get_revisions_with_tags()` | Direct API call ensuring tag retrieval | `action=query&prop=revisions&rvprop=tags` |
+| `compare_revisions()` | Get diff between two revisions | `action=compare` |
+| `get_revision_content()` | Get full content of specific revision | `action=query&prop=revisions&rvslots=main` |
+
+**Edit Tags** (from `rvprop=tags`):
+- `mw-revert` — MediaWiki detected this as a revert
+- `mw-undo` — Editor used the undo feature
+- `mw-rollback` — Admin/rollbacker used rollback
+- `mw-reverted` — This edit was later reverted
+- `mw-manual-revert` — Manual revert detected
+
+### User Methods
+
+| Method | Description | API Endpoint |
+| ------ | ----------- | ------------ |
+| `get_user_info()` | User groups, registration, edit count | `list=users&usprop=groups\|editcount\|registration` |
+| `get_users_info()` | Batch user info (max 50 per request) | `list=users` |
+| `get_user_blocks()` | Block history for a user | `list=blocks&bkusers=Username` |
+| `get_block_log()` | Block/unblock log entries | `list=logevents&letype=block` |
+| `get_user_abuse_hits()` | Abuse filter statistics for user | `list=abuselog&afluser=Username` |
+
+### Log Events
+
+| Method | Description | API Endpoint |
+| ------ | ----------- | ------------ |
+| `get_log_events()` | Generic log event fetching | `list=logevents&letype={type}` |
+| `get_protection_log()` | Page protection history | `list=logevents&letype=protect` |
+| `get_abuse_log()` | Abuse filter log entries | `list=abuselog` |
+
+### Page Metadata
+
+| Method | Description | API Endpoint |
+| ------ | ----------- | ------------ |
+| `get_page_assessments()` | WikiProject quality ratings | `prop=pageassessments` |
+| `get_page_protection()` | Current protection status | `prop=info&inprop=protection` |
+
+---
+
+## External APIs
+
+In addition to the MediaWiki Action API, we integrate with external services:
+
+### ORES/Lift Wing (ML Scores)
+
+**Module**: `src/ores.py`
+
+ORES provides ML predictions for revision quality:
+- **damaging**: Probability edit harms article quality (0-1)
+- **goodfaith**: Probability edit was well-intentioned (0-1)
+
+```python
+from src.ores import OresClient
+
+client = OresClient(wiki="enwiki")
+scores = client.get_scores([123456, 789012])  # revision IDs
+```
+
+**Endpoint**: `https://api.wikimedia.org/service/lw/inference/v1/models`
+
+**Rate limit**: 100 requests/second (batches of 50 revisions)
+
+### Pageviews API
+
+**Module**: `src/pageviews.py`
+
+Article traffic data for visibility analysis:
+
+```python
+from src.pageviews import PageviewsClient
+
+client = PageviewsClient()
+data = client.get_views_last_n_days("Climate change", days=30)
+print(f"Avg daily views: {data.avg_daily_views}")
+```
+
+**Endpoint**: `https://wikimedia.org/api/rest_v1/metrics/pageviews`
+
+**Rate limit**: 100 requests/second
+
+### XTools API
+
+**Module**: `src/xtools.py`
+
+Pre-aggregated user statistics:
+
+```python
+from src.xtools import XToolsClient
+
+client = XToolsClient()
+stats = client.get_user_stats("ExampleUser")
+print(f"Total edits: {stats.total_edit_count}")
+```
+
+**Endpoint**: `https://xtools.wmcloud.org/api`
+
+**Rate limit**: Unknown, use conservative delays
+
+---
+
+## Sockpuppet Investigations
+
+**Module**: `src/fetchers.py` (functions `fetch_spi_case`, `parse_spi_outcome`)
+
+SPI cases are wiki pages that require wikitext parsing:
+
+```python
+from src.fetchers import fetch_spi_case, check_user_spi_status
+
+# Check if user has SPI case
+status = check_user_spi_status(client, "Username")
+if status["has_spi_case"]:
+    print(f"Confirmed sockpuppet: {status['is_confirmed_sockpuppet']}")
+```
+
+**Page format**: `Wikipedia:Sockpuppet investigations/{username}`
+
+---
+
 ## Sources
 
 1. MediaWiki. "API:Main page." <https://www.mediawiki.org/wiki/API:Main_page>
@@ -234,3 +361,6 @@ Register at <https://meta.wikimedia.org/wiki/Special:OAuthConsumerRegistration>
 3. Wikimedia. "API:Etiquette." <https://www.mediawiki.org/wiki/API:Etiquette>
 4. Wikipedia. "Wikipedia:Database download." <https://en.wikipedia.org/wiki/Wikipedia:Database_download>
 5. Wikimedia. "Rate limits." <https://api.wikimedia.org/wiki/Rate_limits>
+6. Wikimedia. "Lift Wing API." <https://api.wikimedia.org/wiki/Lift_Wing_API>
+7. Wikimedia. "Pageviews API." <https://wikitech.wikimedia.org/wiki/Analytics/AQS/Pageviews>
+8. XTools. "API Documentation." <https://xtools.wmcloud.org/api>

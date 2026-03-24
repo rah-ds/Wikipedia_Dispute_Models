@@ -55,9 +55,122 @@ def fetch_arbitration_cases(
             case_data["error"] = str(e)
 
         cases.append(case_data)
-        time.sleep(delay)  # Rate limiting
 
     return cases
+
+
+# Path patterns for arbitration cases (Wikipedia changed format over time)
+ARB_PATH_PATTERNS = [
+    "Wikipedia:Arbitration/Requests/Case/{name}",  # Current format (post-2010)
+    "Wikipedia:Requests for arbitration/{name}",  # Older format
+    "Wikipedia:Arbitration/{name}",  # Very old format
+]
+
+
+def _resolve_arb_case_title(client: WikiClient, case_name: str) -> str:
+    """
+    Resolve a short arbitration case name to its full Wikipedia page title.
+
+    Tries multiple path patterns since Wikipedia changed formats over time.
+
+    Args:
+        client: WikiClient instance
+        case_name: Short case name (e.g. "Climate change") or full title
+
+    Returns:
+        The full page title that exists on Wikipedia
+
+    Raises:
+        ValueError: If no matching page is found under any pattern
+    """
+    # Already a full path
+    if case_name.startswith("Wikipedia:"):
+        page = client.get_page(case_name)
+        if page.exists():
+            return case_name
+        raise ValueError(f"Arbitration case page not found: {case_name}")
+
+    for pattern in ARB_PATH_PATTERNS:
+        full_title = pattern.format(name=case_name)
+        try:
+            page = client.get_page(full_title)
+            if page.exists():
+                return full_title
+        except Exception:
+            continue
+
+    raise ValueError(
+        f"Arbitration case page not found for '{case_name}' "
+        f"(tried {len(ARB_PATH_PATTERNS)} path patterns)"
+    )
+
+
+def fetch_arbitration_case(
+    client: WikiClient,
+    case_name: str,
+    revision_limit: int | None = 100,
+    max_talk_pages: int | None = 10,
+) -> dict:
+    """
+    Fetch a single arbitration case by name.
+
+    Args:
+        client: WikiClient instance
+        case_name: Short case name (e.g. "Climate change") or full page title
+        revision_limit: Maximum number of revisions to fetch (None = all)
+        max_talk_pages: Maximum number of related talk pages to fetch (None = all)
+
+    Returns:
+        Dictionary with case title, content, revisions, and talk page data
+    """
+    full_title = _resolve_arb_case_title(client, case_name)
+    page = client.get_page(full_title)
+
+    case_data: dict = {
+        "title": page.title(),
+        "url": page.full_url(),
+        "fetched_at": datetime.now().isoformat(),
+        "last_edit": None,
+        "revisions": [],
+        "content": None,
+        "talk_pages": [],
+    }
+
+    # Fetch revisions
+    try:
+        case_data["revisions"] = client.get_revisions(
+            page.title(), limit=revision_limit
+        )
+        if case_data["revisions"]:
+            case_data["last_edit"] = case_data["revisions"][0]["timestamp"]
+    except Exception as e:
+        logger.warning("Error fetching revisions for %s: %s", case_name, e)
+        case_data["revision_error"] = str(e)
+
+    # Fetch content
+    try:
+        case_data["content"] = page.text
+    except Exception as e:
+        logger.warning("Error fetching content for %s: %s", case_name, e)
+        case_data["content_error"] = str(e)
+
+    # Fetch related talk page
+    try:
+        talk_page = client.get_talk_page(page.title())
+        if talk_page and talk_page.exists():
+            talk_data = {
+                "title": talk_page.title(),
+                "content": talk_page.text,
+                "revisions": client.get_revisions(
+                    talk_page.title(), limit=revision_limit
+                ),
+            }
+            case_data["talk_pages"].append(talk_data)
+    except Exception as e:
+        logger.warning("Error fetching talk page for %s: %s", case_name, e)
+        case_data["talk_error"] = str(e)
+
+    return case_data
 
 
 def fetch_drn_page(client: WikiClient) -> dict:
@@ -330,7 +443,6 @@ def search_ani_mentions(
                     results.append(section)
 
             archive_count += 1
-            time.sleep(0.3)  # Rate limit
         except Exception as e:
             logger.warning(f"Error fetching {archive_title}: {e}")
             consecutive_misses += 1
@@ -618,5 +730,167 @@ def fetch_dispute_venues_for_article(
     }
 
     tqdm.write(f"  Summary: {result['summary']}")
+
+    return result
+
+
+# =============================================================================
+# Sockpuppet Investigation (SPI) Scraping
+# =============================================================================
+
+
+def fetch_spi_case(client: WikiClient, username: str) -> dict | None:
+    """
+    Fetch sockpuppet investigation for a user if it exists.
+
+    SPI cases are at: Wikipedia:Sockpuppet investigations/{username}
+
+    Args:
+        client: WikiClient instance
+        username: Wikipedia username
+
+    Returns:
+        Dictionary with SPI data or None if no case exists
+    """
+    page_title = f"Wikipedia:Sockpuppet investigations/{username}"
+
+    try:
+        page = client.get_page(page_title)
+        if not page.exists():
+            return None
+
+        content = page.text
+        result = {
+            "username": username,
+            "spi_page": page_title,
+            "url": page.full_url(),
+            "exists": True,
+            "content": content,
+            "outcome": parse_spi_outcome(content),
+            "revisions": client.get_revisions(page_title, limit=50),
+        }
+
+        return result
+
+    except Exception as e:
+        logger.warning(f"Error fetching SPI for {username}: {e}")
+        return None
+
+
+def parse_spi_outcome(wikitext: str) -> dict:
+    """
+    Parse SPI case outcome from wikitext.
+
+    Looks for common SPI outcome templates and status indicators.
+
+    Args:
+        wikitext: Raw wikitext of SPI page
+
+    Returns:
+        Dictionary with parsed outcome data
+    """
+    outcome = {
+        "status": "unknown",
+        "confirmed": False,
+        "declined": False,
+        "stale": False,
+        "sockpuppets": [],
+        "checkuser_used": False,
+    }
+
+    wikitext_lower = wikitext.lower()
+
+    # Check for outcome templates
+    if "{{spi archive notice" in wikitext_lower:
+        outcome["status"] = "archived"
+
+    if "{{checkuser" in wikitext_lower or "{{cu" in wikitext_lower:
+        outcome["checkuser_used"] = True
+
+    # Check for confirmed/declined status
+    confirmed_patterns = [
+        "{{confirmed}}",
+        "{{confirmed-sock}}",
+        "{{spi confirmed}}",
+        "confirmed sock",
+        "sockpuppet confirmed",
+    ]
+    for pattern in confirmed_patterns:
+        if pattern in wikitext_lower:
+            outcome["confirmed"] = True
+            outcome["status"] = "confirmed"
+            break
+
+    declined_patterns = [
+        "{{declined}}",
+        "{{unlikely}}",
+        "{{endorsed}}",  # means main account endorsed
+        "no evidence",
+        "insufficient evidence",
+    ]
+    for pattern in declined_patterns:
+        if pattern in wikitext_lower:
+            outcome["declined"] = True
+            if outcome["status"] == "unknown":
+                outcome["status"] = "declined"
+            break
+
+    stale_patterns = [
+        "{{stale}}",
+        "{{spi stale}}",
+        "stale case",
+    ]
+    for pattern in stale_patterns:
+        if pattern in wikitext_lower:
+            outcome["stale"] = True
+            if outcome["status"] == "unknown":
+                outcome["status"] = "stale"
+            break
+
+    # Try to extract sockpuppet usernames
+    try:
+        wikicode = mwparserfromhell.parse(wikitext)
+        for template in wikicode.filter_templates():
+            template_name = str(template.name).strip().lower()
+            if "sockpuppet" in template_name or "sock" in template_name:
+                for param in template.params:
+                    param_value = str(param.value).strip()
+                    if param_value and not param_value.startswith("{"):
+                        outcome["sockpuppets"].append(param_value)
+    except Exception:
+        pass
+
+    return outcome
+
+
+def check_user_spi_status(client: WikiClient, username: str) -> dict:
+    """
+    Check if a user has any sockpuppet investigation history.
+
+    Args:
+        client: WikiClient instance
+        username: Wikipedia username
+
+    Returns:
+        Dictionary with SPI status summary
+    """
+    result = {
+        "username": username,
+        "has_spi_case": False,
+        "is_suspected_sockpuppet": False,
+        "is_confirmed_sockpuppet": False,
+        "spi_details": None,
+    }
+
+    # Check if user is the subject of an SPI
+    spi_case = fetch_spi_case(client, username)
+    if spi_case:
+        result["has_spi_case"] = True
+        result["is_suspected_sockpuppet"] = True
+        result["is_confirmed_sockpuppet"] = spi_case["outcome"]["confirmed"]
+        result["spi_details"] = {
+            "url": spi_case["url"],
+            "outcome": spi_case["outcome"],
+        }
 
     return result
