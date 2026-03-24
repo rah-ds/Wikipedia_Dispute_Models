@@ -90,13 +90,19 @@ class BpmnXmlBuilder:
         self._x += 130
         return eid
 
+    def add_user_task(self, name: str) -> str:
+        eid = self._uid("UserTask")
+        self.elements.append(
+            BpmnElement(eid, name, "userTask", self._x, self._y - 22, 100, 80)
+        )
+        self._x += 130
+        return eid
+
     def add_gateway(self, name: str = "", gw_type: str = "exclusive") -> str:
         eid = self._uid("Gateway")
+        elem_type = f"{gw_type}Gateway"
         self.elements.append(
-            BpmnElement(eid, name, f"{gw_type}Gateway", self._x, self._y - 7, 50, 50)
-        )
-        self._x += 80
-        return eid
+            BpmnElement(eid, name, elem_type, self._x, self._y - 7, 50, 50)
 
     def add_flow(self, source: str, target: str, name: str = "") -> str:
         fid = self._uid("Flow")
