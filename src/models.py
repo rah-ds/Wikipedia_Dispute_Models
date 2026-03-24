@@ -414,3 +414,195 @@ def is_escalation(from_stage: DisputeStage, to_stage: DisputeStage) -> bool:
     }
 
     return stage_order.get(to_stage, 0) > stage_order.get(from_stage, 0)
+
+
+# ============================================================================
+# Enhanced Data Models for API Expansion
+# ============================================================================
+
+
+@dataclass
+class EditorProfile:
+    """
+    Enhanced editor profile with API-sourced enrichment data.
+
+    Combines case-specific activity with global account metadata.
+    """
+
+    # === Core identification ===
+    username: str
+
+    # === Case-specific metrics (computed from revision data) ===
+    edits_by_subpage: dict[str, int] = field(default_factory=dict)
+    total_edits: int = 0
+    total_reverts: int = 0
+    first_seen: Optional[str] = None
+    last_seen: Optional[str] = None
+    pages_touched: list[str] = field(default_factory=list)
+    sections_edited: list[str] = field(default_factory=list)
+
+    # === Account metadata (from API:Users) ===
+    user_id: Optional[int] = None
+    user_groups: list[str] = field(default_factory=list)
+    is_admin: bool = False
+    is_bot: bool = False
+    registration_date: Optional[str] = None
+    global_edit_count: Optional[int] = None
+    gender: Optional[str] = None
+
+    # === Sanction history (from API:Blocks + logevents) ===
+    block_history: list[dict] = field(default_factory=list)
+    total_blocks: int = 0
+    was_blocked_during_case: bool = False
+    current_block: Optional[dict] = None
+
+    # === Behavioral signals (from ORES) ===
+    avg_damaging_score: Optional[float] = None
+    avg_goodfaith_score: Optional[float] = None
+    pct_edits_reverted: Optional[float] = None
+
+    # === External enrichment (from XTools) ===
+    xtools_stats: Optional[dict] = None
+
+    # === Derived features ===
+    account_age_days: Optional[int] = None
+    edits_per_day: Optional[float] = None
+    is_experienced: bool = False  # 500+ edits, 30+ days
+
+    def __hash__(self):
+        return hash(self.username)
+
+    def __eq__(self, other):
+        if isinstance(other, EditorProfile):
+            return self.username == other.username
+        return False
+
+    def compute_derived_features(self) -> None:
+        """Compute derived features from base data."""
+        # Account age
+        if self.registration_date:
+            from datetime import datetime
+
+            try:
+                reg_date = datetime.fromisoformat(
+                    self.registration_date.replace("Z", "+00:00")
+                )
+                self.account_age_days = (datetime.now(reg_date.tzinfo) - reg_date).days
+            except (ValueError, TypeError):
+                pass
+
+        # Edits per day
+        if (
+            self.account_age_days
+            and self.account_age_days > 0
+            and self.global_edit_count
+        ):
+            self.edits_per_day = self.global_edit_count / self.account_age_days
+
+        # Experienced editor
+        self.is_experienced = (self.global_edit_count or 0) >= 500 and (
+            self.account_age_days or 0
+        ) >= 30
+
+
+@dataclass
+class PageMetadata:
+    """
+    Rich metadata for a Wikipedia page.
+
+    Combines assessment data, protection status, and traffic.
+    """
+
+    title: str
+
+    # === Quality assessment (from PageAssessments API) ===
+    quality_class: Optional[str] = None  # Stub, Start, C, B, GA, FA
+    importance: Optional[str] = None  # Low, Mid, High, Top
+    assessments: dict[str, dict] = field(default_factory=dict)  # by WikiProject
+
+    # === Protection status (from API:Info + protection log) ===
+    protection_level: Optional[str] = None  # None, autoconfirmed, sysop
+    protection_expiry: Optional[str] = None
+    protection_history: list[dict] = field(default_factory=list)
+    protection_count: int = 0
+
+    # === Traffic (from Pageviews API) ===
+    avg_daily_views: Optional[float] = None
+    total_views_30d: Optional[int] = None
+    view_trend: Optional[str] = None  # increasing, stable, decreasing
+    had_traffic_spike: bool = False
+
+    # === Edit statistics ===
+    total_revisions: Optional[int] = None
+    unique_editors: Optional[int] = None
+    revert_rate: Optional[float] = None
+
+    # === Topic categorization ===
+    categories: list[str] = field(default_factory=list)
+    wikiproject_count: int = 0
+
+    def is_high_profile(self) -> bool:
+        """Determine if page is high-profile based on metrics."""
+        return (
+            self.importance in ("Top", "High")
+            or self.quality_class in ("FA", "GA")
+            or (self.avg_daily_views is not None and self.avg_daily_views > 1000)
+            or self.protection_level == "sysop"
+        )
+
+    def is_contentious(self) -> bool:
+        """Determine if page shows signs of contentiousness."""
+        return (
+            self.protection_count > 2
+            or self.protection_level is not None
+            or (self.revert_rate is not None and self.revert_rate > 0.1)
+        )
+
+
+@dataclass
+class Revision:
+    """
+    Enhanced revision with ORES scores and edit tags.
+
+    Represents a single edit with quality metrics.
+    """
+
+    revid: int
+    parentid: Optional[int] = None
+    timestamp: Optional[str] = None
+    user: Optional[str] = None
+    comment: str = ""
+    size: Optional[int] = None
+
+    # === Edit tags (from rvprop=tags) ===
+    tags: list[str] = field(default_factory=list)
+
+    # === ORES scores (from Lift Wing API) ===
+    ores_damaging: Optional[float] = None
+    ores_goodfaith: Optional[float] = None
+
+    # === Derived flags ===
+    is_revert: bool = False
+    is_minor: bool = False
+    is_bot: bool = False
+
+    def compute_flags(self) -> None:
+        """Set derived flags from tags and data."""
+        revert_tags = {"mw-revert", "mw-undo", "mw-rollback", "mw-manual-revert"}
+        self.is_revert = bool(set(self.tags) & revert_tags)
+        self.is_bot = "bot" in self.tags
+
+    @property
+    def was_reverted(self) -> bool:
+        """Check if this edit was later reverted."""
+        return "mw-reverted" in self.tags
+
+    @property
+    def is_likely_damaging(self) -> bool:
+        """Check if ORES predicts this edit as likely damaging."""
+        return self.ores_damaging is not None and self.ores_damaging > 0.5
+
+    @property
+    def is_likely_bad_faith(self) -> bool:
+        """Check if ORES predicts this edit as likely bad faith."""
+        return self.ores_goodfaith is not None and self.ores_goodfaith < 0.5

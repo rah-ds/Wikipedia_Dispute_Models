@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recurring Editor Disputes — ArbCom Timeline</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #0d1117;
+      color: #c9d1d9;
+      display: flex;
+      justify-content: center;
+      padding: 30px 0;
+    }
+
+    .container { width: 1060px; padding: 36px 30px 30px; }
+
+    h1 { font-size: 22px; font-weight: 600; color: #e6edf3; margin-bottom: 6px; }
+
+    .subtitle {
+      font-size: 13px; color: #8b949e; margin-bottom: 32px; line-height: 1.6;
+    }
+
+    svg { overflow: visible; }
+
+    .axis path, .axis line { stroke: #30363d; }
+    .axis text { fill: #8b949e; font-size: 11px; }
+
+    .tooltip {
+      position: absolute; pointer-events: none;
+      background: #161b22; border: 1px solid #30363d; border-radius: 6px;
+      padding: 10px 14px; font-size: 13px; line-height: 1.5; color: #c9d1d9;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4); opacity: 0;
+      transition: opacity 0.15s ease; max-width: 340px;
+    }
+    .tooltip .case-name { font-weight: 600; color: #e6edf3; margin-bottom: 2px; }
+    .tooltip .editor-name { font-size: 11px; margin-bottom: 6px; }
+    .tooltip .detail { color: #8b949e; }
+    .tooltip .detail span { color: #c9d1d9; }
+    .tooltip .badge {
+      display: inline-block; background: #21262d; border-radius: 10px;
+      padding: 1px 8px; font-size: 11px; margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Recurring Editor Disputes — ArbCom Timeline</h1>
+  <p class="subtitle">
+    Editors who were the subject of multiple arbitration cases. Each bar shows the span
+    of case page activity. Participant counts and dates extracted from case revision data.
+  </p>
+  <div id="chart"></div>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+const groups = [
+  {
+    editor: "Betacommand",
+    color: "#f47067",
+    cases: [
+      { name: "Betacommand",   start: "2007-03-29", end: "2023-06-10", participants: 116 },
+      { name: "Betacommand 3", start: "2011-11-03", end: "2023-02-04", participants: 81 },
+    ]
+  },
+  {
+    editor: "Cantus",
+    color: "#d2a8ff",
+    cases: [
+      { name: "Cantus",            start: "2004-04-27", end: "2024-10-16", participants: 18 },
+      { name: "Cantus vs. Guanaco",start: "2004-09-11", end: "2023-02-10", participants: 14 },
+      { name: "Cantus 3",          start: "2005-05-31", end: "2019-09-02", participants: 15 },
+    ]
+  },
+  {
+    editor: "CheeseDreams",
+    color: "#ffa657",
+    cases: [
+      { name: "CheeseDreams",   start: "2004-12-03", end: "2023-02-10", participants: 35 },
+      { name: "CheeseDreams 2", start: "2005-02-12", end: "2022-03-27", participants: 54 },
+    ]
+  },
+  {
+    editor: "Asgardian",
+    color: "#79c0ff",
+    cases: [
+      { name: "Asgardian-Tenebrae", start: "2007-11-08", end: "2023-02-10", participants: 28 },
+      { name: "Asgardian",          start: "2010-02-19", end: "2025-10-10", participants: 34 },
+    ]
+  },
+];
+
+const parseDate = d3.timeParse("%Y-%m-%d");
+
+const rows = [];
+groups.forEach(g => {
+  g.cases.forEach(c => {
+    rows.push({
+      editor: g.editor, color: g.color,
+      name: c.name, participants: c.participants,
+      startDate: parseDate(c.start), endDate: parseDate(c.end),
+    });
+  });
+});
+
+// ── Dimensions ──────────────────────────────────────────────────────────────
+const margin = { top: 20, right: 40, bottom: 50, left: 220 };
+const rowH = 44;
+const groupGap = 26;
+
+let totalH = 0;
+groups.forEach((g, i) => {
+  totalH += g.cases.length * rowH;
+  if (i < groups.length - 1) totalH += groupGap;
+});
+
+const width  = 1060 - margin.left - margin.right;
+const height = totalH;
+
+const svg = d3.select("#chart")
+  .append("svg")
+    .attr("width",  width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+// ── Scales ──────────────────────────────────────────────────────────────────
+const xMin = d3.min(rows, d => d.startDate);
+const xMax = d3.max(rows, d => d.endDate);
+
+const x = d3.scaleTime()
+  .domain([d3.timeYear.offset(xMin, -1), d3.timeYear.offset(xMax, 1)])
+  .range([0, width]);
+
+// Participant count -> bar thickness
+const rScale = d3.scaleLinear()
+  .domain([d3.min(rows, d => d.participants), d3.max(rows, d => d.participants)])
+  .range([6, 16]);
+
+// ── Y positions ─────────────────────────────────────────────────────────────
+let yOffset = 0;
+const groupPos = [];
+let ri = 0;
+groups.forEach((g, gi) => {
+  const yStart = yOffset;
+  g.cases.forEach((c, ci) => {
+    rows[ri]._y = yOffset + ci * rowH + rowH / 2;
+    ri++;
+  });
+  groupPos.push({ editor: g.editor, color: g.color, yStart, yEnd: yOffset + g.cases.length * rowH, yMid: yOffset + (g.cases.length * rowH) / 2 });
+  yOffset += g.cases.length * rowH + groupGap;
+});
+
+// ── Axes & Grid ─────────────────────────────────────────────────────────────
+svg.append("g").attr("class", "axis")
+  .attr("transform", `translate(0,${height})`)
+  .call(d3.axisBottom(x).ticks(d3.timeYear.every(3)).tickFormat(d3.timeFormat("%Y")))
+  .selectAll("text").attr("dy", "1em");
+
+svg.append("g").selectAll("line").data(x.ticks(d3.timeYear.every(3)))
+  .join("line")
+    .attr("x1", d => x(d)).attr("x2", d => x(d))
+    .attr("y1", 0).attr("y2", height)
+    .attr("stroke", "#21262d").attr("stroke-dasharray", "3,3");
+
+// ── Group labels & dividers ─────────────────────────────────────────────────
+groupPos.forEach((g, i) => {
+  if (i > 0) {
+    svg.append("line")
+      .attr("x1", -margin.left + 10).attr("x2", width)
+      .attr("y1", g.yStart - groupGap / 2).attr("y2", g.yStart - groupGap / 2)
+      .attr("stroke", "#21262d");
+  }
+  svg.append("text")
+    .attr("x", -margin.left + 12).attr("y", g.yMid).attr("dy", "0.35em")
+    .attr("fill", g.color).attr("font-size", "14px").attr("font-weight", "600")
+    .text(g.editor);
+});
+
+// ── Tooltip ─────────────────────────────────────────────────────────────────
+const tooltip = d3.select("#tooltip");
+const dateFmt = d3.timeFormat("%b %d, %Y");
+
+function dur(s, e) {
+  const days = Math.round((e - s) / 86400000);
+  if (days < 60) return days + " days";
+  const months = Math.round(days / 30.44);
+  if (months < 24) return months + " months";
+  const y = Math.floor(months / 12), m = months % 12;
+  return m > 0 ? y + "y " + m + "m" : y + " years";
+}
+
+function showTip(event, d) {
+  tooltip.html(`
+    <div class="editor-name" style="color:${d.color}">${d.editor}</div>
+    <div class="case-name">${d.name}</div>
+    <div class="detail">Start: <span>${dateFmt(d.startDate)}</span></div>
+    <div class="detail">End: <span>${dateFmt(d.endDate)}</span></div>
+    <div class="detail">Duration: <span>${dur(d.startDate, d.endDate)}</span></div>
+    <div class="badge">${d.participants} participants</div>
+  `)
+  .style("left", (event.pageX + 14) + "px")
+  .style("top",  (event.pageY - 28) + "px")
+  .style("opacity", 1);
+}
+function hideTip() { tooltip.style("opacity", 0); }
+
+// ── Case labels ─────────────────────────────────────────────────────────────
+const barG = svg.selectAll(".row").data(rows).join("g").attr("class", "row");
+
+barG.append("text")
+  .attr("x", -12).attr("y", d => d._y).attr("dy", "0.35em")
+  .attr("text-anchor", "end").attr("fill", "#8b949e").attr("font-size", "12px")
+  .text(d => {
+    let short = d.name.replace(d.editor, "").replace(/^\s*[-:]\s*/, "").trim();
+    if (!short) short = "(original)";
+    else if (short.match(/^\d+$/)) short = "#" + short;
+    else if (short.startsWith("vs.")) short = "vs. " + short.slice(4);
+    return short;
+  });
+
+// ── Bars (thickness = participant count) ────────────────────────────────────
+barG.append("rect")
+  .attr("x", d => x(d.startDate))
+  .attr("y", d => d._y - rScale(d.participants) / 2)
+  .attr("height", d => rScale(d.participants))
+  .attr("rx", d => rScale(d.participants) / 2)
+  .attr("ry", d => rScale(d.participants) / 2)
+  .attr("fill", d => d.color).attr("opacity", 0.3)
+  .attr("width", 0)
+  .on("mouseover", showTip).on("mousemove", showTip).on("mouseout", hideTip)
+  .transition().duration(800).delay((d, i) => i * 100).ease(d3.easeCubicOut)
+    .attr("width", d => Math.max(x(d.endDate) - x(d.startDate), 3));
+
+// ── Start/End dots ──────────────────────────────────────────────────────────
+barG.append("circle")
+  .attr("cx", d => x(d.startDate)).attr("cy", d => d._y)
+  .attr("fill", d => d.color).attr("stroke", "#0d1117").attr("stroke-width", 2)
+  .attr("r", 0)
+  .on("mouseover", showTip).on("mousemove", showTip).on("mouseout", hideTip)
+  .transition().duration(400).delay((d, i) => i * 100 + 300).ease(d3.easeBackOut)
+    .attr("r", 6);
+
+barG.append("circle")
+  .attr("cx", d => x(d.endDate)).attr("cy", d => d._y)
+  .attr("fill", d => d.color).attr("stroke", "#0d1117").attr("stroke-width", 2)
+  .attr("r", 0)
+  .on("mouseover", showTip).on("mousemove", showTip).on("mouseout", hideTip)
+  .transition().duration(400).delay((d, i) => i * 100 + 600).ease(d3.easeBackOut)
+    .attr("r", 6);
+
+// ── Year span labels ────────────────────────────────────────────────────────
+barG.append("text")
+  .attr("x", d => x(d.startDate) + (x(d.endDate) - x(d.startDate)) / 2)
+  .attr("y", d => d._y - rScale(d.participants) / 2 - 6)
+  .attr("text-anchor", "middle").attr("fill", d => d.color).attr("font-size", "10px")
+  .attr("opacity", 0)
+  .text(d => {
+    const span = x(d.endDate) - x(d.startDate);
+    if (span > 60) return d.startDate.getFullYear() + "\u2013" + d.endDate.getFullYear();
+    return "";
+  })
+  .transition().duration(500).delay((d, i) => i * 100 + 800).attr("opacity", 0.7);
+
+// ── Participant count size legend ───────────────────────────────────────────
+const legend = svg.append("g").attr("transform", `translate(${width - 140}, -10)`);
+legend.append("text").attr("x", 0).attr("y", 0).text("Bar thickness = participants")
+  .attr("fill", "#484f58").attr("font-size", "11px");
+
+</script>
+</body>
+</html>

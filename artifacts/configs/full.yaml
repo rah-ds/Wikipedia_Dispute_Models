@@ -1,0 +1,79 @@
+# Full Pull Configuration
+# Complete data collection (all cases, all revisions)
+# WARNING: This takes many hours to complete
+# Run with: make pull CONFIG=artifacts/configs/full.yaml
+
+name: full
+description: Full data collection (all cases, all revisions)
+
+# Output settings
+output_dir: data/raw
+log_dir: artifacts/logs/data_pull
+
+# State management for resume support
+state_file: artifacts/pull_state_full.json
+resume_enabled: true
+checkpoint_interval: 10
+
+# Rate limiting
+rate_limit:
+  requests_per_second: 5.0
+  burst_size: 10
+  min_delay_between_requests: 0.1
+
+# Retry behavior
+retry:
+  max_retries: 10
+  base_delay: 2.0
+  max_delay: 300.0
+  exponential_base: 2.0
+
+# Cases to fetch (from file)
+case_file: artifacts/arb_cases.txt
+case_list: []  # Empty - using file instead
+
+# Data sources configuration
+arbitration:
+  enabled: true
+  limit: null  # No limit
+  include_revisions: true
+  revision_limit: null  # All revisions
+  include_talk_pages: true
+  max_talk_pages: null  # All talk pages
+  # Enrichment options
+  enrich_participants: true
+  enrich_articles: true
+  max_articles: 30
+  include_ani: true
+  include_drn: true
+
+drn:
+  enabled: true
+  limit: null
+  include_revisions: true
+  revision_limit: null
+  include_talk_pages: true
+
+ani:
+  enabled: true
+  limit: null
+  revision_limit: null
+
+talk_pages:
+  enabled: true
+  limit: null
+  revision_limit: null
+
+lifecycle:
+  enabled: true
+  limit: null
+  revision_limit: null
+
+# Feature flags (enable all new API features)
+fetch_user_info: true
+fetch_block_history: true
+fetch_edit_tags: true
+
+# Debug options
+dry_run: false
+verbose: false

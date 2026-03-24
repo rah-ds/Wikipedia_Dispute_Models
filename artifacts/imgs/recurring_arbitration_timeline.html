@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recurring Wikipedia Arbitration Cases — Timeline</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #0d1117;
+      color: #c9d1d9;
+      display: flex;
+      justify-content: center;
+      padding: 30px 0;
+    }
+
+    .container {
+      width: 1060px;
+      padding: 36px 30px 30px;
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 600;
+      color: #e6edf3;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: #8b949e;
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+
+    svg { overflow: visible; }
+
+    .axis path, .axis line { stroke: #30363d; }
+    .axis text { fill: #8b949e; font-size: 11px; }
+
+    .group-label {
+      font-size: 14px;
+      font-weight: 600;
+      fill: #e6edf3;
+    }
+
+    .case-label {
+      font-size: 12px;
+      fill: #8b949e;
+    }
+
+    .divider {
+      stroke: #21262d;
+      stroke-width: 1;
+    }
+
+    /* Tooltip */
+    .tooltip {
+      position: absolute;
+      pointer-events: none;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: #c9d1d9;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      opacity: 0;
+      transition: opacity 0.15s ease;
+      max-width: 320px;
+    }
+
+    .tooltip .case-name { font-weight: 600; color: #e6edf3; margin-bottom: 4px; }
+    .tooltip .group-name { font-size: 11px; color: #8b949e; margin-bottom: 6px; }
+    .tooltip .detail { color: #8b949e; }
+    .tooltip .detail span { color: #c9d1d9; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Recurring Wikipedia Arbitration Disputes</h1>
+  <p class="subtitle">
+    Some topics generate multiple ArbCom cases over the years. Each row is a separate case filing;
+    rows are grouped by topic. Bar spans show the period of case page activity (earliest to latest revision).
+  </p>
+  <div id="chart"></div>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+// ── Data ────────────────────────────────────────────────────────────────────
+// Grouped by recurring topic, ordered chronologically within each group
+const groups = [
+  {
+    topic: "Israel-Palestine",
+    color: "#f47067",
+    cases: [
+      { name: "Palestine-Israel articles 3", start: "2008-12-30", end: "2009-05-15", note: "Filed during Gaza War; 15+ editors sanctioned" },
+      { name: "Palestine-Israel articles 4", start: "2013-10-07", end: "2014-03-22", note: "Persistent NPOV violations on West Bank articles" },
+      { name: "Palestine-Israel articles 5", start: "2022-03-01", end: "2022-09-10", note: "Topic-banned editors returning under new accounts" },
+    ]
+  },
+  {
+    topic: "Climate Change",
+    color: "#f78166",
+    cases: [
+      { name: "Climate change dispute",   start: "2005-03-22", end: "2022-03-27", note: "Original dispute over article neutrality" },
+      { name: "Climate change dispute 2",  start: "2005-11-28", end: "2021-08-08", note: "Continued editorial conflicts, scope expanded" },
+      { name: "Climate change",            start: "2010-07-13", end: "2026-02-25", note: "Broadest case — covers all climate-related articles" },
+    ]
+  },
+  {
+    topic: "Armenia-Azerbaijan",
+    color: "#d2a8ff",
+    cases: [
+      { name: "Armenia-Azerbaijan 2", start: "2007-06-26", end: "2023-07-07", note: "Ethnic conflict editing wars, mutual reverts" },
+      { name: "Armenia-Azerbaijan 3", start: "2023-01-27", end: "2025-10-29", note: "Re-escalated after 2020 Nagorno-Karabakh war edits" },
+    ]
+  },
+  {
+    topic: "American Politics",
+    color: "#79c0ff",
+    cases: [
+      { name: "American politics",   start: "2014-04-20", end: "2023-02-04", note: "Partisan POV-pushing on political biography articles" },
+      { name: "American politics 2", start: "2015-03-24", end: "2025-09-23", note: "Returned after 2016/2020 election edit wars" },
+    ]
+  },
+  {
+    topic: "Arbitration Enforcement",
+    color: "#7ee787",
+    cases: [
+      { name: "Arb enforcement: sanction handling", start: "2011-03-12", end: "2025-10-10", note: "Clarified how AE sanctions are applied" },
+      { name: "Arbitration enforcement",            start: "2015-06-29", end: "2025-09-24", note: "Admins overstepping ArbCom remedies" },
+      { name: "Arbitration enforcement 2",          start: "2015-10-29", end: "2026-01-23", note: "Continued disputes over sanction scope" },
+    ]
+  },
+];
+
+const parseDate = d3.timeParse("%Y-%m-%d");
+
+// Flatten into rows with group info
+const rows = [];
+groups.forEach(g => {
+  g.cases.forEach(c => {
+    rows.push({
+      topic: g.topic,
+      color: g.color,
+      name: c.name,
+      note: c.note,
+      startDate: parseDate(c.start),
+      endDate:   parseDate(c.end),
+      startStr:  c.start,
+      endStr:    c.end,
+    });
+  });
+});
+
+// ── Dimensions ──────────────────────────────────────────────────────────────
+const margin = { top: 20, right: 40, bottom: 50, left: 260 };
+const rowH   = 38;
+const groupGap = 22;
+
+// Total height accounting for group gaps
+let totalH = 0;
+groups.forEach((g, i) => {
+  totalH += g.cases.length * rowH;
+  if (i < groups.length - 1) totalH += groupGap;
+});
+
+const width  = 1060 - margin.left - margin.right;
+const height = totalH;
+
+const svg = d3.select("#chart")
+  .append("svg")
+    .attr("width",  width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+// ── X Scale ─────────────────────────────────────────────────────────────────
+const xMin = d3.min(rows, d => d.startDate);
+const xMax = d3.max(rows, d => d.endDate);
+
+const x = d3.scaleTime()
+  .domain([d3.timeYear.offset(xMin, -1), d3.timeYear.offset(xMax, 1)])
+  .range([0, width]);
+
+// ── Compute Y positions ─────────────────────────────────────────────────────
+let yOffset = 0;
+const rowPositions = [];
+const groupPositions = [];
+
+groups.forEach((g, gi) => {
+  const groupStart = yOffset;
+  g.cases.forEach((c, ci) => {
+    rowPositions.push({ y: yOffset + ci * rowH, topic: g.topic, color: g.color, ...c });
+  });
+  groupPositions.push({
+    topic: g.topic,
+    color: g.color,
+    yStart: groupStart,
+    yEnd:   groupStart + g.cases.length * rowH,
+    yMid:   groupStart + (g.cases.length * rowH) / 2,
+  });
+  yOffset += g.cases.length * rowH + groupGap;
+});
+
+// ── X Axis ──────────────────────────────────────────────────────────────────
+svg.append("g")
+  .attr("class", "axis")
+  .attr("transform", `translate(0,${height})`)
+  .call(d3.axisBottom(x).ticks(d3.timeYear.every(2)).tickFormat(d3.timeFormat("%Y")))
+  .selectAll("text").attr("dy", "1em");
+
+// ── Grid lines ──────────────────────────────────────────────────────────────
+svg.append("g")
+  .selectAll("line")
+  .data(x.ticks(d3.timeYear.every(2)))
+  .join("line")
+    .attr("x1", d => x(d)).attr("x2", d => x(d))
+    .attr("y1", 0).attr("y2", height)
+    .attr("stroke", "#21262d").attr("stroke-dasharray", "3,3");
+
+// ── Group dividers & labels ─────────────────────────────────────────────────
+groupPositions.forEach((g, i) => {
+  // Divider line between groups
+  if (i > 0) {
+    svg.append("line")
+      .attr("class", "divider")
+      .attr("x1", -margin.left + 10).attr("x2", width)
+      .attr("y1", g.yStart - groupGap / 2).attr("y2", g.yStart - groupGap / 2);
+  }
+
+  // Group topic label (left side, vertical center of group)
+  svg.append("text")
+    .attr("class", "group-label")
+    .attr("x", -margin.left + 12)
+    .attr("y", g.yMid)
+    .attr("dy", "0.35em")
+    .attr("fill", g.color)
+    .text(g.topic);
+});
+
+// ── Tooltip ─────────────────────────────────────────────────────────────────
+const tooltip = d3.select("#tooltip");
+const dateFmt = d3.timeFormat("%b %d, %Y");
+
+function dur(s, e) {
+  const ms = e - s;
+  const days = Math.round(ms / 86400000);
+  if (days < 60) return `${days} days`;
+  const months = Math.round(days / 30.44);
+  if (months < 24) return `${months} months`;
+  const y = Math.floor(months / 12);
+  const m = months % 12;
+  return m > 0 ? `${y}y ${m}m` : `${y} years`;
+}
+
+function showTip(event, d) {
+  tooltip.html(`
+    <div class="group-name">${d.topic}</div>
+    <div class="case-name">${d.name}</div>
+    <div class="detail">Start: <span>${dateFmt(d.startDate)}</span></div>
+    <div class="detail">End: <span>${dateFmt(d.endDate)}</span></div>
+    <div class="detail">Duration: <span>${dur(d.startDate, d.endDate)}</span></div>
+    ${d.note ? `<div class="detail" style="margin-top:4px;font-style:italic;">${d.note}</div>` : ""}
+  `)
+  .style("left", (event.pageX + 14) + "px")
+  .style("top",  (event.pageY - 28) + "px")
+  .style("opacity", 1);
+}
+function hideTip() { tooltip.style("opacity", 0); }
+
+// ── Bars ────────────────────────────────────────────────────────────────────
+const barG = svg.selectAll(".row")
+  .data(rows)
+  .join("g")
+    .attr("class", "row");
+
+// Compute row y from positions
+rows.forEach((d, i) => { d._y = rowPositions[i].y + rowH / 2; });
+
+// Case label (right of group label area)
+barG.append("text")
+  .attr("class", "case-label")
+  .attr("x", -12)
+  .attr("y", d => d._y)
+  .attr("dy", "0.35em")
+  .attr("text-anchor", "end")
+  .text(d => {
+    // Shorten label to fit
+    const short = d.name
+      .replace("Arbitration enforcement", "Arb enforcement")
+      .replace("Arb enforcement: sanction handling", "Sanction handling")
+      .replace("Palestine-Israel articles", "PI articles")
+      .replace("Climate change dispute", "CC dispute");
+    return short.length > 22 ? short.slice(0, 20) + "…" : short;
+  });
+
+// Bar (connecting line)
+barG.append("rect")
+  .attr("x",      d => x(d.startDate))
+  .attr("y",      d => d._y - 5)
+  .attr("height", 10)
+  .attr("rx", 5).attr("ry", 5)
+  .attr("fill", d => d.color)
+  .attr("opacity", 0.3)
+  .attr("width", 0)
+  .on("mouseover", showTip).on("mousemove", showTip).on("mouseout", hideTip)
+  .transition().duration(800).delay((d, i) => i * 80).ease(d3.easeCubicOut)
+    .attr("width", d => Math.max(x(d.endDate) - x(d.startDate), 3));
+
+// Start dot
+barG.append("circle")
+  .attr("cx", d => x(d.startDate))
+  .attr("cy", d => d._y)
+  .attr("fill", d => d.color)
+  .attr("stroke", "#0d1117").attr("stroke-width", 2)
+  .attr("r", 0)
+  .on("mouseover", showTip).on("mousemove", showTip).on("mouseout", hideTip)
+  .transition().duration(400).delay((d, i) => i * 80 + 300).ease(d3.easeBackOut)
+    .attr("r", 6);
+
+// End dot
+barG.append("circle")
+  .attr("cx", d => x(d.endDate))
+  .attr("cy", d => d._y)
+  .attr("fill", d => d.color)
+  .attr("stroke", "#0d1117").attr("stroke-width", 2)
+  .attr("r", 0)
+  .on("mouseover", showTip).on("mousemove", showTip).on("mouseout", hideTip)
+  .transition().duration(400).delay((d, i) => i * 80 + 600).ease(d3.easeBackOut)
+    .attr("r", 6);
+
+// Year labels on bars (for wide bars only)
+barG.append("text")
+  .attr("x", d => x(d.startDate) + (x(d.endDate) - x(d.startDate)) / 2)
+  .attr("y", d => d._y - 12)
+  .attr("text-anchor", "middle")
+  .attr("fill", d => d.color)
+  .attr("font-size", "10px")
+  .attr("opacity", 0)
+  .text(d => {
+    const span = x(d.endDate) - x(d.startDate);
+    if (span > 80) {
+      const y1 = d.startDate.getFullYear();
+      const y2 = d.endDate.getFullYear();
+      return `${y1}–${y2}`;
+    }
+    return "";
+  })
+  .transition().duration(500).delay((d, i) => i * 80 + 800)
+    .attr("opacity", 0.7);
+
+</script>
+</body>
+</html>

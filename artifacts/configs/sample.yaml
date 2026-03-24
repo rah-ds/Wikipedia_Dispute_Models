@@ -1,0 +1,74 @@
+# Sample Pull Configuration
+# Use for testing and quick data pulls (5 cases, limited revisions)
+# Run with: make pull CONFIG=artifacts/configs/sample.yaml
+
+name: sample
+description: Small sample for testing (5 cases, limited revisions)
+
+# Output settings
+output_dir: data/raw
+log_dir: artifacts/logs/data_pull
+
+# State management for resume support
+state_file: artifacts/pull_state_sample.json
+resume_enabled: true
+checkpoint_interval: 5
+
+# Rate limiting
+rate_limit:
+  requests_per_second: 5.0
+  burst_size: 10
+  min_delay_between_requests: 0.1
+
+# Retry behavior
+retry:
+  max_retries: 10
+  base_delay: 2.0
+  max_delay: 300.0
+  exponential_base: 2.0
+
+# Cases to fetch (explicit list)
+case_list:
+  - Climate change
+  - Gamergate
+  - Eastern Europe
+  - Scientology
+  - Muhammad images
+
+# Data sources configuration
+arbitration:
+  enabled: true
+  limit: 5
+  include_revisions: true
+  revision_limit: 50
+  include_talk_pages: true
+  max_talk_pages: 10
+
+drn:
+  enabled: true
+  limit: 10
+  include_revisions: true
+  revision_limit: 50
+  include_talk_pages: false
+
+ani:
+  enabled: false
+
+talk_pages:
+  enabled: true
+  limit: 20
+  revision_limit: 50
+
+lifecycle:
+  enabled: true
+  limit: 5
+  revision_limit: 50
+
+# Feature flags (new API features)
+fetch_user_info: false
+fetch_block_history: false
+fetch_edit_tags: false
+
+# Debug options
+dry_run: false
+verbose: false
