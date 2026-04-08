@@ -1,0 +1,74 @@
+<?xml version="1.0" ?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_f2ae4786" targetNamespace="http://bpmn.io/schema/bpmn" exporter="DRN-BPMN-Generator" exporterVersion="1.0">
+  <bpmn:process id="Process_1f13f996" name="DRN: Occupy Wall Street" isExecutable="false">
+    <bpmn:startEvent id="StartEvent_120769e3" name="Dispute Filed">
+      <bpmn:outgoing>Flow_7dc11774</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="Task_e1b43be9" name="File DRN Case">
+      <bpmn:incoming>Flow_7dc11774</bpmn:incoming>
+      <bpmn:outgoing>Flow_d52227c6</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_40957890" name="Review Filing">
+      <bpmn:incoming>Flow_d52227c6</bpmn:incoming>
+      <bpmn:outgoing>Flow_4879a094</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:exclusiveGateway id="Gateway_9d916fc8" name="Valid Case?">
+      <bpmn:incoming>Flow_4879a094</bpmn:incoming>
+      <bpmn:outgoing>Flow_0ac03a4d</bpmn:outgoing>
+      <bpmn:outgoing>Flow_007f9296</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="EndEvent_78b58056" name="Closed">
+      <bpmn:incoming>Flow_0ac03a4d</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="EndEvent_65532da3" name="Declined">
+      <bpmn:incoming>Flow_007f9296</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_7dc11774" sourceRef="StartEvent_120769e3" targetRef="Task_e1b43be9"/>
+    <bpmn:sequenceFlow id="Flow_d52227c6" sourceRef="Task_e1b43be9" targetRef="Task_40957890"/>
+    <bpmn:sequenceFlow id="Flow_4879a094" sourceRef="Task_40957890" targetRef="Gateway_9d916fc8"/>
+    <bpmn:sequenceFlow id="Flow_0ac03a4d" sourceRef="Gateway_9d916fc8" targetRef="EndEvent_78b58056" name="Yes"/>
+    <bpmn:sequenceFlow id="Flow_007f9296" sourceRef="Gateway_9d916fc8" targetRef="EndEvent_65532da3" name="Invalid"/>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_c68206c8">
+    <bpmndi:BPMNPlane id="BPMNPlane_ab0238de" bpmnElement="Process_1f13f996">
+      <bpmndi:BPMNShape id="StartEvent_120769e3_di" bpmnElement="StartEvent_120769e3">
+        <dc:Bounds x="150" y="100" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_e1b43be9_di" bpmnElement="Task_e1b43be9">
+        <dc:Bounds x="250" y="78" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_40957890_di" bpmnElement="Task_40957890">
+        <dc:Bounds x="380" y="78" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_9d916fc8_di" bpmnElement="Gateway_9d916fc8">
+        <dc:Bounds x="510" y="93" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_78b58056_di" bpmnElement="EndEvent_78b58056">
+        <dc:Bounds x="590" y="100" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_65532da3_di" bpmnElement="EndEvent_65532da3">
+        <dc:Bounds x="480" y="200" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_7dc11774_di" bpmnElement="Flow_7dc11774">
+        <di:waypoint x="186" y="118.0"/>
+        <di:waypoint x="250" y="118.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_d52227c6_di" bpmnElement="Flow_d52227c6">
+        <di:waypoint x="350" y="118.0"/>
+        <di:waypoint x="380" y="118.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_4879a094_di" bpmnElement="Flow_4879a094">
+        <di:waypoint x="480" y="118.0"/>
+        <di:waypoint x="510" y="118.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0ac03a4d_di" bpmnElement="Flow_0ac03a4d">
+        <di:waypoint x="560" y="118.0"/>
+        <di:waypoint x="590" y="118.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_007f9296_di" bpmnElement="Flow_007f9296">
+        <di:waypoint x="560" y="118.0"/>
+        <di:waypoint x="480" y="218.0"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

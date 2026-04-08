@@ -24,7 +24,7 @@ Usage
   python scripts/arbitration_bpmn_hf.py --case "Wikipedia:Requests_for_arbitration/-Ril-"
   python scripts/arbitration_bpmn_hf.py --aggregate
   python scripts/arbitration_bpmn_hf.py --aggregate --sample 50
-  python scripts/arbitration_bpmn_hf.py --output-dir artifacts/bpmn_hf
+  python scripts/arbitration_bpmn_hf.py --output-dir artifacts/bpmn/arb
 
 Requirements
 ------------
@@ -1177,8 +1177,8 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--output-dir",
-        default="artifacts/bpmn",
-        help="Directory to write .bpmn and .png files (default: artifacts/bpmn).",
+        default="artifacts/bpmn/arb",
+        help="Directory to write .bpmn and .png files (default: artifacts/bpmn/arb).",
     )
     parser.add_argument(
         "--no-ner",
