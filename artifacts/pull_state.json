@@ -1,0 +1,210 @@
+{
+  "config_name": "",
+  "config_path": null,
+  "started_at": "2026-02-22T19:52:56.258585Z",
+  "last_updated": "2026-02-26T21:46:39.917615Z",
+  "version": 1,
+  "status": "completed",
+  "current_source": null,
+  "current_item": null,
+  "sources": {
+    "arbitration": {
+      "name": "arbitration",
+      "enabled": true,
+      "total_items": 5,
+      "completed_items": 5,
+      "failed_items": 0,
+      "skipped_items": 0,
+      "items": {
+        "Climate change": {
+          "name": "Climate change",
+          "status": "completed",
+          "started_at": "2026-02-22T19:52:56.297631Z",
+          "completed_at": "2026-02-22T19:53:04.425122Z",
+          "error": null,
+          "retries": 0,
+          "data": {
+            "output_file": "data/raw/arbitration/Climate change.json",
+            "duration_seconds": 8.127601861953735
+          }
+        },
+        "Gamergate": {
+          "name": "Gamergate",
+          "status": "completed",
+          "started_at": "2026-02-26T21:41:22.823323Z",
+          "completed_at": "2026-02-26T21:44:01.160942Z",
+          "error": null,
+          "retries": 0,
+          "data": {
+            "output_file": "data/raw/arbitration/Gamergate.json",
+            "duration_seconds": 158.33769989013672
+          }
+        },
+        "Eastern Europe": {
+          "name": "Eastern Europe",
+          "status": "completed",
+          "started_at": "2026-02-22T19:53:09.159666Z",
+          "completed_at": "2026-02-22T19:53:18.805481Z",
+          "error": null,
+          "retries": 0,
+          "data": {
+            "output_file": "data/raw/arbitration/Eastern Europe.json",
+            "duration_seconds": 9.645949840545654
+          }
+        },
+        "Scientology": {
+          "name": "Scientology",
+          "status": "completed",
+          "started_at": "2026-02-22T19:55:41.883655Z",
+          "completed_at": "2026-02-22T19:56:00.039625Z",
+          "error": null,
+          "retries": 0,
+          "data": {
+            "output_file": "data/raw/arbitration/Scientology.json",
+            "duration_seconds": 18.15608811378479
+          }
+        },
+        "Muhammad images": {
+          "name": "Muhammad images",
+          "status": "completed",
+          "started_at": "2026-02-22T19:56:00.039959Z",
+          "completed_at": "2026-02-22T19:56:15.863364Z",
+          "error": null,
+          "retries": 0,
+          "data": {
+            "output_file": "data/raw/arbitration/Muhammad images.json",
+            "duration_seconds": 15.823520183563232
+          }
+        }
+      }
+    },
+    "drn": {
+      "name": "drn",
+      "enabled": true,
+      "total_items": 5,
+      "completed_items": 0,
+      "failed_items": 0,
+      "skipped_items": 0,
+      "items": {
+        "Climate change": {
+          "name": "Climate change",
+          "status": "pending",
+          "started_at": null,
+          "completed_at": null,
+          "error": null,
+          "retries": 0,
+          "data": {}
+        },
+        "Gamergate": {
+          "name": "Gamergate",
+          "status": "pending",
+          "started_at": null,
+          "completed_at": null,
+          "error": null,
+          "retries": 0,
+          "data": {}
+        },
+        "Eastern Europe": {
+          "name": "Eastern Europe",
+          "status": "pending",
+          "started_at": null,
+          "completed_at": null,
+          "error": null,
+          "retries": 0,
+          "data": {}
+        },
+        "Scientology": {
+          "name": "Scientology",
+          "status": "pending",
+          "started_at": null,
+          "completed_at": null,
+          "error": null,
+          "retries": 0,
+          "data": {}
+        },
+        "Muhammad images": {
+          "name": "Muhammad images",
+          "status": "pending",
+          "started_at": null,
+          "completed_at": null,
+          "error": null,
+          "retries": 0,
+          "data": {}
+        }
+      }
+    },
+    "lifecycle": {
+      "name": "lifecycle",
+      "enabled": true,
+      "total_items": 5,
+      "completed_items": 5,
+      "failed_items": 0,
+      "skipped_items": 0,
+      "items": {
+        "Climate change": {
+          "name": "Climate change",
+          "status": "completed",
+          "started_at": "2026-02-22T19:56:15.865367Z",
+          "completed_at": "2026-02-22T20:24:01.965562Z",
+          "error": null,
+          "retries": 0,
+          "data": {
+            "output_file": "data/raw/dispute_venues/Climate change_lifecycle.json",
+            "duration_seconds": 1666.100298166275
+          }
+        },
+        "Gamergate": {
+          "name": "Gamergate",
+          "status": "completed",
+          "started_at": "2026-02-26T21:44:01.164608Z",
+          "completed_at": "2026-02-26T21:46:39.917057Z",
+          "error": null,
+          "retries": 0,
+          "data": {
+            "output_file": "data/raw/dispute_venues/Gamergate_lifecycle.json",
+            "duration_seconds": 158.7525281906128
+          }
+        },
+        "Eastern Europe": {
+          "name": "Eastern Europe",
+          "status": "completed",
+          "started_at": "2026-02-22T20:29:17.654416Z",
+          "completed_at": "2026-02-22T20:50:56.885912Z",
+          "error": null,
+          "retries": 0,
+          "data": {
+            "output_file": "data/raw/dispute_venues/Eastern Europe_lifecycle.json",
+            "duration_seconds": 1299.2316060066223
+          }
+        },
+        "Scientology": {
+          "name": "Scientology",
+          "status": "completed",
+          "started_at": "2026-02-22T20:50:56.886230Z",
+          "completed_at": "2026-02-22T21:14:25.733351Z",
+          "error": null,
+          "retries": 0,
+          "data": {
+            "output_file": "data/raw/dispute_venues/Scientology_lifecycle.json",
+            "duration_seconds": 1408.8472282886505
+          }
+        },
+        "Muhammad images": {
+          "name": "Muhammad images",
+          "status": "completed",
+          "started_at": "2026-02-22T21:14:25.733668Z",
+          "completed_at": "2026-02-22T21:37:29.304765Z",
+          "error": null,
+          "retries": 0,
+          "data": {
+            "output_file": "data/raw/dispute_venues/Muhammad images_lifecycle.json",
+            "duration_seconds": 1383.5711960792542
+          }
+        }
+      }
+    }
+  },
+  "total_api_calls": 0,
+  "total_errors": 0,
+  "total_retries": 0
+}
