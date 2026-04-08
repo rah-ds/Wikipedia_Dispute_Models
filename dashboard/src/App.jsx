@@ -17,7 +17,7 @@ export default function App() {
         <div className="app-header__inner">
           <div className="app-header__brand">
             <span className="brand-dot" />
-            <span className="brand-title">Wikipedia Arbitration Intelligence</span>
+            <span className="brand-title">Wikipedia Dispute Arbitration Overview</span>
           </div>
           <nav className="tab-nav">
             {TABS.map(t => (
