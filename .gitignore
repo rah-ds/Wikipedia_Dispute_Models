@@ -28,7 +28,7 @@ artifacts/bpmn
 artifacts/archives/
 
 # Keep these tracked
-!artifacts/results/
+!artifacts/results/F
 !artifacts/imgs/publish/
 
 # Node.js (puppeteer for SVG export)
@@ -38,6 +38,7 @@ package-lock.json
 # Test / coverage artifacts
 .coverage
 .pytest_cache/
+.claude
 
 # Passwords
 user-conf.py

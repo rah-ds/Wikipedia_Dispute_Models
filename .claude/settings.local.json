@@ -1,8 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(PYTHON=\"/c/Users/katke/.pyenv/pyenv-win/versions/3.11.4/python.exe\")",
-      "Bash($PYTHON -c \":*)"
+      "Bash(/c/Users/katke/.pyenv/pyenv-win/versions/3.11.4/python.exe -c \":*)",
+      "Bash(/c/Users/katke/.pyenv/pyenv-win/versions/3.11.4/python.exe:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "Bash(\"C:/Users/katke/.pyenv/pyenv-win/versions/3.11.4/python.exe\" -c \":*)",
+      "Bash(\"C:/Users/katke/.pyenv/pyenv-win/versions/3.11.4/python.exe\":*)"
     ]
   }
 }
