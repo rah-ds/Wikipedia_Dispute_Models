@@ -61,14 +61,30 @@ Run Python/tools via uv & no need to manually activate venv — uv handles it.
 
 ## Data Sources
 
-| Source | Description | Script |
-| ------ | ----------- | ------ |
-| Arbitration Cases | Binding decisions from ArbCom | `fetch_arbitration_cases.py` |
-| Revision History | Edit history with timestamps, users, comments | `fetch_revisions.py` |
-| Edit Wars | Pages with high revert activity | `detect_edit_wars.py` |
-| DRN Cases | Dispute Resolution Noticeboard threads | `fetch_drn_cases.py` |
+| Source | Description | Module / Script |
+| ------ | ----------- | --------------- |
+| Arbitration Cases | Binding decisions from ArbCom | `src/fetchers.py` → `fetch_arbitration_cases()` |
+| Revision History | Edit history with timestamps, users, comments | `src/fetchers.py` → `fetch_revisions()` |
+| Edit Wars | Pages with high revert activity | `scripts/detect_edit_wars.py` |
+| DRN Cases | Dispute Resolution Noticeboard threads | `src/fetchers.py` → `fetch_drn_page()` |
+| Dispute Lifecycle | Full escalation path: Talk → DRN → ANI → ArbCom | `scripts/fetch_dispute_lifecycle.py` |
+| Arb Case DFS | Depth-first collection of all related pages | `scripts/fetch_arb_dfs.py` |
 
 See [`docs/wikimedia_api.md`](docs/wikimedia_api.md) for full API documentation.
+
+---
+
+## Core Analysis Modules
+
+| Module | Description |
+| ------ | ----------- |
+| `src/arbitration.py` | Data models for arbitration cases. Parses case JSON into `ArbitrationCaseSummary` objects with editor profiles, conflict networks, and revision timelines. |
+| `src/outcome.py` | Parses ArbCom proposed/final decision wikitext to extract structured votes, findings, and remedies with pass/fail status. |
+| `src/lifecycle.py` | Traces disputes through all resolution stages (Talk → DRN → ANI → ArbCom). Extracts participants and disputed articles. |
+| `src/analysis.py` | Edit war detection, revert analysis, and 3RR violation detection from revision histories. |
+| `src/timeline.py` | Constructs chronological dispute timelines with escalation features for modeling. |
+| `src/wiki.py` | Wikipedia API client wrapper with rate limiting, retry logic, and OAuth support. |
+| `src/cli_utils.py` | CLI utilities for graceful shutdown handling and memory monitoring in data fetch scripts. |
 
 ---
 

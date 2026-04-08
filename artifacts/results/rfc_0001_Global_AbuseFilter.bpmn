@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+             targetNamespace="http://bpmn.io/schema/bpmn"
+             id="Definitions_7960e44b">
+  <process id="Process_4ee1f5cf" name="RFC: Global AbuseFilter" isExecutable="false">
+    <startEvent id="StartEvent_f9d0bbbb" name="RFC Filed"/>
+    <userTask id="Task_d6a6fe64" name="Submission - 2014-11-01"/>
+    <serviceTask id="Task_a81b223a" name="Submission Review"/>
+    <exclusiveGateway id="Gateway_b3a88590" name="Valid RFC?" gatewayDirection="Diverging"/>
+    <endEvent id="EndEvent_53a84c18" name="Marked Invalid"/>
+    <userTask id="Task_abf7f16a" name="Assess and Facilitate"/>
+    <userTask id="Task_dfc887d4" name="Discuss RFC - 44 turns, 22 participants"/>
+    <exclusiveGateway id="Gateway_4550752a" name="Outcome?" gatewayDirection="Diverging"/>
+    <endEvent id="EndEvent_1baf04c3" name="Resolved"/>
+    <sequenceFlow id="Flow_07dd3531" sourceRef="Gateway_b3a88590" targetRef="EndEvent_53a84c18" name="No - Invalid"/>
+    <sequenceFlow id="Flow_8ccab979" sourceRef="Gateway_b3a88590" targetRef="Task_abf7f16a" name="Yes"/>
+    <sequenceFlow id="Flow_92c5e715" sourceRef="Task_abf7f16a" targetRef="Task_dfc887d4"/>
+    <sequenceFlow id="Flow_6ee92a7f" sourceRef="Task_dfc887d4" targetRef="Gateway_4550752a"/>
+    <sequenceFlow id="Flow_c436559d" sourceRef="Gateway_4550752a" targetRef="EndEvent_1baf04c3" name="Resolved"/>
+    <sequenceFlow id="Flow_c63c265a" sourceRef="StartEvent_f9d0bbbb" targetRef="Task_d6a6fe64"/>
+    <sequenceFlow id="Flow_7a89f513" sourceRef="Task_d6a6fe64" targetRef="Task_a81b223a"/>
+    <sequenceFlow id="Flow_a01c7503" sourceRef="Task_a81b223a" targetRef="Gateway_b3a88590"/>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_4ee1f5cf">
+    <bpmndi:BPMNShape id="StartEvent_f9d0bbbb_di" bpmnElement="StartEvent_f9d0bbbb">
+      <dc:Bounds x="80" y="200" width="36" height="36"/>
+      <bpmndi:BPMNLabel/>
+    </bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Task_d6a6fe64_di" bpmnElement="Task_d6a6fe64">
+      <dc:Bounds x="260" y="170" width="120" height="60"/>
+      <bpmndi:BPMNLabel/>
+    </bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Task_a81b223a_di" bpmnElement="Task_a81b223a">
+      <dc:Bounds x="440" y="170" width="120" height="60"/>
+      <bpmndi:BPMNLabel/>
+    </bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Gateway_b3a88590_di" bpmnElement="Gateway_b3a88590">
+      <dc:Bounds x="620" y="175" width="50" height="50"/>
+      <bpmndi:BPMNLabel/>
+    </bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="EndEvent_53a84c18_di" bpmnElement="EndEvent_53a84c18">
+      <dc:Bounds x="800" y="40" width="36" height="36"/>
+      <bpmndi:BPMNLabel/>
+    </bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Task_abf7f16a_di" bpmnElement="Task_abf7f16a">
+      <dc:Bounds x="800" y="170" width="120" height="60"/>
+      <bpmndi:BPMNLabel/>
+    </bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Task_dfc887d4_di" bpmnElement="Task_dfc887d4">
+      <dc:Bounds x="980" y="170" width="120" height="60"/>
+      <bpmndi:BPMNLabel/>
+    </bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Gateway_4550752a_di" bpmnElement="Gateway_4550752a">
+      <dc:Bounds x="1160" y="175" width="50" height="50"/>
+      <bpmndi:BPMNLabel/>
+    </bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="EndEvent_1baf04c3_di" bpmnElement="EndEvent_1baf04c3">
+      <dc:Bounds x="1340" y="200" width="36" height="36"/>
+      <bpmndi:BPMNLabel/>
+    </bpmndi:BPMNShape>
+    <bpmndi:BPMNEdge id="Flow_07dd3531_di" bpmnElement="Flow_07dd3531">
+      <bpmndi:BPMNLabel/>
+    </bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_8ccab979_di" bpmnElement="Flow_8ccab979">
+      <bpmndi:BPMNLabel/>
+    </bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_92c5e715_di" bpmnElement="Flow_92c5e715">
+      <bpmndi:BPMNLabel/>
+    </bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_6ee92a7f_di" bpmnElement="Flow_6ee92a7f">
+      <bpmndi:BPMNLabel/>
+    </bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_c436559d_di" bpmnElement="Flow_c436559d">
+      <bpmndi:BPMNLabel/>
+    </bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_c63c265a_di" bpmnElement="Flow_c63c265a">
+      <bpmndi:BPMNLabel/>
+    </bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_7a89f513_di" bpmnElement="Flow_7a89f513">
+      <bpmndi:BPMNLabel/>
+    </bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_a01c7503_di" bpmnElement="Flow_a01c7503">
+      <bpmndi:BPMNLabel/>
+    </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

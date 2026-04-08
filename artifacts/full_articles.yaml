@@ -1,0 +1,240 @@
+# Full Article Configuration for Large-Scale Data Collection
+# ===========================================================
+# Use with `make fetch-full` for comprehensive dataset
+# This fetches more articles, more revisions, and more cases
+
+# Settings for full data collection
+defaults:
+  revision_limit: 2000  # More revisions per article for deeper analysis
+  arb_limit: 500        # Comprehensive arbitration case coverage
+
+# High-conflict articles (contentious topics with edit war history)
+# -----------------------------------------------------------------
+high_conflict:
+  # Science & Health
+  - title: "Climate change"
+    category: "Science"
+    reason: "Persistent disputes over scientific consensus framing"
+
+  - title: "COVID-19 pandemic"
+    category: "Science/Health"
+    reason: "Misinformation battles, rapidly evolving content"
+
+  - title: "Vaccines"
+    category: "Science/Health"
+    reason: "Anti-vax disputes, public health controversies"
+
+  - title: "Evolution"
+    category: "Science"
+    reason: "Creationism vs science disputes"
+
+  - title: "Intelligent design"
+    category: "Science/Religion"
+    reason: "Science/religion boundary disputes"
+
+  # Politics & BLP
+  - title: "Donald Trump"
+    category: "Politics/BLP"
+    reason: "One of the most edited/reverted articles on Wikipedia"
+
+  - title: "Joe Biden"
+    category: "Politics/BLP"
+    reason: "High-profile political figure, BLP issues"
+
+  - title: "Hillary Clinton"
+    category: "Politics/BLP"
+    reason: "Controversial political figure"
+
+  - title: "Barack Obama"
+    category: "Politics/BLP"
+    reason: "Birther conspiracy disputes"
+
+  - title: "Vladimir Putin"
+    category: "Politics/BLP"
+    reason: "Geopolitical controversies"
+
+  # Geopolitics & Conflicts
+  - title: "Israeli–Palestinian conflict"
+    category: "Geopolitics"
+    reason: "Long-running, deeply polarized edit wars"
+
+  - title: "Russo-Ukrainian War"
+    category: "Geopolitics"
+    reason: "Ongoing geopolitical conflict"
+
+  - title: "Xinjiang internment camps"
+    category: "Geopolitics"
+    reason: "China-related disputes"
+
+  - title: "Armenian genocide"
+    category: "History/Geopolitics"
+    reason: "Recognition disputes"
+
+  - title: "Kashmir conflict"
+    category: "Geopolitics"
+    reason: "India-Pakistan disputes"
+
+  # Social & Cultural Issues
+  - title: "Abortion"
+    category: "Social issues"
+    reason: "Moral/political disputes, multiple ArbCom cases"
+
+  - title: "Gun control"
+    category: "Social issues"
+    reason: "US political battleground"
+
+  - title: "Gamergate (harassment campaign)"
+    category: "Internet culture"
+    reason: "Harassment/BLP issues, prolonged edit wars"
+
+  - title: "Transgender"
+    category: "Social issues"
+    reason: "Gender identity disputes"
+
+  - title: "Critical race theory"
+    category: "Social issues"
+    reason: "Education/politics disputes"
+
+  # Religion
+  - title: "Muhammad"
+    category: "Religion"
+    reason: "Religious sensitivity, image disputes"
+
+  - title: "Scientology"
+    category: "Religion"
+    reason: "Organization-editor conflicts"
+
+  - title: "Mormonism"
+    category: "Religion"
+    reason: "Historical claims disputes"
+
+  # Historical Controversies
+  - title: "Srebrenica massacre"
+    category: "History"
+    reason: "Genocide denial disputes"
+
+  - title: "Nanjing Massacre"
+    category: "History"
+    reason: "Japan-China historical disputes"
+
+  # Brexit & EU
+  - title: "Brexit"
+    category: "Politics"
+    reason: "UK/EU political dispute"
+
+  - title: "European migrant crisis"
+    category: "Politics"
+    reason: "Immigration policy disputes"
+
+# Low-conflict articles (control group)
+# -------------------------------------
+low_conflict:
+  # Physics & Mathematics
+  - title: "Speed of light"
+    category: "Physics"
+    reason: "Settled science, fundamental constant"
+
+  - title: "Pythagorean theorem"
+    category: "Mathematics"
+    reason: "Pure math, universally accepted proof"
+
+  - title: "Gravitational constant"
+    category: "Physics"
+    reason: "Physical constant, non-controversial"
+
+  - title: "Euler's identity"
+    category: "Mathematics"
+    reason: "Mathematical beauty, uncontroversial"
+
+  - title: "Prime number"
+    category: "Mathematics"
+    reason: "Fundamental math concept"
+
+  # Biology & Chemistry
+  - title: "Photosynthesis"
+    category: "Biology"
+    reason: "Fundamental biology, well-established science"
+
+  - title: "Mitochondrion"
+    category: "Biology"
+    reason: "Cell biology basics"
+
+  - title: "DNA"
+    category: "Biology"
+    reason: "Molecular biology foundation"
+
+  - title: "Water"
+    category: "Chemistry"
+    reason: "Basic chemistry, universal"
+
+  - title: "Periodic table"
+    category: "Chemistry"
+    reason: "Chemistry foundation"
+
+  # Geography & Nature
+  - title: "Mount Everest"
+    category: "Geography"
+    reason: "Physical facts, minimal political disputes"
+
+  - title: "Pacific Ocean"
+    category: "Geography"
+    reason: "Geographic feature"
+
+  - title: "Amazon rainforest"
+    category: "Geography"
+    reason: "Natural feature"
+
+  - title: "Grand Canyon"
+    category: "Geography"
+    reason: "Natural landmark"
+
+  # Art & Culture
+  - title: "Mona Lisa"
+    category: "Art history"
+    reason: "Cultural artifact, non-political subject"
+
+  - title: "Beethoven"
+    category: "Music"
+    reason: "Historical composer, settled biography"
+
+  - title: "Shakespeare"
+    category: "Literature"
+    reason: "Literary canon, well-documented"
+
+  - title: "Ancient Rome"
+    category: "History"
+    reason: "Ancient history, scholarly consensus"
+
+  # Technology (non-controversial)
+  - title: "Transistor"
+    category: "Electronics"
+    reason: "Electronics fundamentals"
+
+  - title: "Computer"
+    category: "Technology"
+    reason: "General technology article"
+
+  - title: "Internet"
+    category: "Technology"
+    reason: "Technology history"
+
+  # Animals
+  - title: "Dog"
+    category: "Animals"
+    reason: "Popular, non-controversial"
+
+  - title: "Cat"
+    category: "Animals"
+    reason: "Popular, non-controversial"
+
+  - title: "Elephant"
+    category: "Animals"
+    reason: "Wildlife, educational"
+
+# Summary:
+# - High-conflict: 27 articles
+# - Low-conflict: 24 articles
+# - Total: 51 articles
+# - Revisions per article: 2000
+# - Arbitration cases: 50
+# - Estimated runtime: 2-4 hours depending on rate limits
