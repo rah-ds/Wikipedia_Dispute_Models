@@ -382,6 +382,7 @@
   padding: 0;
   align-items: stretch;
   justify-content: stretch;
+  background: #fff;
 }
 
 .bpmn-viewer__body img {
@@ -491,6 +492,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  background: #fff;
 }
 
 .bpmn-overlay__hint {
