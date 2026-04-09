@@ -1,7 +1,7 @@
 repos:
   # Pre-commit hooks for code quality
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v5.0.0
     hooks:
       # Prevent files larger than 5MB from being committed
       - id: check-added-large-files
@@ -16,9 +16,12 @@ repos:
       - id: mixed-line-ending
         args: ['--fix=lf']
 
+      # Catch accidental commits of private keys, .env files, etc.
+      - id: detect-private-key
+
   # Python code formatting and linting with Ruff
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.8.6
+    rev: v0.14.14
     hooks:
       - id: ruff
         args: [--fix]
