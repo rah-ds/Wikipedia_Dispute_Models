@@ -27,6 +27,16 @@ repos:
         args: [--fix]
       - id: ruff-format
 
+  # Type checking with ty (Astral) — runs on src/ only, not per-file
+  - repo: local
+    hooks:
+      - id: ty
+        name: ty type check
+        language: system
+        entry: uv run ty check src/
+        pass_filenames: false
+        types: [python]
+
   # Jupyter notebook stripping if needed
   # - repo: https://github.com/kynan/nbstripout
   #   rev: 0.7.1
