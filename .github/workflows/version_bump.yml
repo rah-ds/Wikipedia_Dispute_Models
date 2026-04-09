@@ -22,7 +22,7 @@ jobs:
       contents: write   # push version-bump commit + tag back to main
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0          # full history — cz bump needs all tags & commits
           token: ${{ secrets.GITHUB_TOKEN }}
