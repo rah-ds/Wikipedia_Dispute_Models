@@ -941,7 +941,7 @@ def select_data_file(data_dir: Path) -> Path:
     if not candidates:
         sys.exit(f"ERROR: No 'clean_arbitration_cases*.json' files found in {data_dir}")
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("Available arbitration case files:")
     print("=" * 60)
     for i, p in enumerate(candidates, 1):
@@ -967,7 +967,7 @@ def select_data_file(data_dir: Path) -> Path:
 
 def select_case(cases: list[dict]) -> dict:
     """Interactively pick one case from the list by search or index."""
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"Found {len(cases)} arbitration cases.")
     print("=" * 60)
     print("Search by title fragment (e.g. 'Ril') or enter case number.")
@@ -1043,7 +1043,7 @@ def run_specific_case(
     title = case.get("title", "Unnamed")
     sections = case.get("sections", {}) or {}
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"Generating BPMN for: {title}")
     print(
         f"Sections present:    {[k for k in sections if (sections.get(k) or '').strip()]}"
@@ -1099,7 +1099,7 @@ def run_aggregate(
 ) -> None:
     working = cases if not sample else cases[:sample]
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"Building aggregate BPMN from {len(working)} of {len(cases)} cases...")
     print("=" * 60)
 
@@ -1119,7 +1119,7 @@ def run_aggregate(
 
     print("\nSection frequencies:")
     for sec, count in sorted(section_counts.items(), key=lambda x: -x[1])[:12]:
-        print(f"  {count:4d}/{total}  ({count*100//total:3d}%)  {sec}")
+        print(f"  {count:4d}/{total}  ({count * 100 // total:3d}%)  {sec}")
     print(
         f"  Cases with active enforcement: {enforcement_count}/{total} ({enforcement_pct}%)"
     )
@@ -1215,7 +1215,7 @@ def main() -> None:
         run_specific_case(cases, args.case, ner, output_dir)
     else:
         # Interactive: ask user what they want
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print("What would you like to generate?")
         print("  [1] BPMN for a specific arbitration case")
         print("  [2] Generalised aggregate BPMN (all cases)")

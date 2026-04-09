@@ -103,6 +103,9 @@ class BpmnXmlBuilder:
         elem_type = f"{gw_type}Gateway"
         self.elements.append(
             BpmnElement(eid, name, elem_type, self._x, self._y - 7, 50, 50)
+        )
+        self._x += 80
+        return eid
 
     def add_flow(self, source: str, target: str, name: str = "") -> str:
         fid = self._uid("Flow")
@@ -482,7 +485,7 @@ def create_aggregate_bpmn(cases: list[dict], output_dir: Path) -> None:
     top2_pcts[-1] = 100 - other_pct - sum(top2_pcts[:-1])  # adjust so sum == 100%
 
     other_detail = ", ".join(
-        f"{cat_labels.get(cat, cat)} {round(100*n/total)}%"
+        f"{cat_labels.get(cat, cat)} {round(100 * n / total)}%"
         for cat, n in remainder
         if n > 0
     )
@@ -621,7 +624,7 @@ def create_aggregate_bpmn(cases: list[dict], output_dir: Path) -> None:
 
 
 def get_user_file_selection(files: list[Path]) -> list[Path]:
-    print(f"\n{'='*60}\nAvailable DRN data files:\n{'='*60}")
+    print(f"\n{'=' * 60}\nAvailable DRN data files:\n{'=' * 60}")
     for i, f in enumerate(files, 1):
         print(f"  [{i}] {f.name}")
     print("\nWhich files? (numbers, range e.g. 1-3, or 'all') [Default: all]\n")
@@ -742,11 +745,11 @@ def main():
 
     # Aggregate always uses the full dataset regardless of how many individual diagrams were made
     print(
-        f"\n{'='*60}\nCreating aggregate workflow ({len(all_cases)} cases)...\n{'='*60}"
+        f"\n{'=' * 60}\nCreating aggregate workflow ({len(all_cases)} cases)...\n{'=' * 60}"
     )
     create_aggregate_bpmn(all_cases, output_dir)
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("✓ COMPLETE")
     print(f"  Individual diagrams : {len(selected_indices)} of {len(all_cases)} cases")
     print(f"  Aggregate           : full dataset ({len(all_cases)} cases)")
