@@ -185,31 +185,31 @@ class BpmnXmlBuilder:
         for n in self.nodes:
             nid, ntype, lbl = n["id"], n["type"], self._esc(n["label"])
             if ntype in ("startEvent", "endEvent"):
-                nodes_xml.append(f'{ind*2}<{ntype} id="{nid}" name="{lbl}"/>')
+                nodes_xml.append(f'{ind * 2}<{ntype} id="{nid}" name="{lbl}"/>')
             elif ntype == "exclusiveGateway":
                 nodes_xml.append(
-                    f'{ind*2}<exclusiveGateway id="{nid}" name="{lbl}" '
+                    f'{ind * 2}<exclusiveGateway id="{nid}" name="{lbl}" '
                     f'gatewayDirection="Diverging"/>'
                 )
             else:
-                nodes_xml.append(f'{ind*2}<{ntype} id="{nid}" name="{lbl}"/>')
+                nodes_xml.append(f'{ind * 2}<{ntype} id="{nid}" name="{lbl}"/>')
             shapes_xml.append(
-                f'{ind*2}<bpmndi:BPMNShape id="{nid}_di" bpmnElement="{nid}">\n'
-                f'{ind*3}<dc:Bounds x="{n["x"]}" y="{n["y"]}" '
+                f'{ind * 2}<bpmndi:BPMNShape id="{nid}_di" bpmnElement="{nid}">\n'
+                f'{ind * 3}<dc:Bounds x="{n["x"]}" y="{n["y"]}" '
                 f'width="{n["w"]}" height="{n["h"]}"/>\n'
-                f'{ind*3}<bpmndi:BPMNLabel/>\n'
-                f'{ind*2}</bpmndi:BPMNShape>'
+                f"{ind * 3}<bpmndi:BPMNLabel/>\n"
+                f"{ind * 2}</bpmndi:BPMNShape>"
             )
         for fid, src, tgt, lbl in self.flows:
             name_attr = f' name="{self._esc(lbl)}"' if lbl else ""
             nodes_xml.append(
-                f'{ind*2}<sequenceFlow id="{fid}" sourceRef="{src}" '
+                f'{ind * 2}<sequenceFlow id="{fid}" sourceRef="{src}" '
                 f'targetRef="{tgt}"{name_attr}/>'
             )
             edges_xml.append(
-                f'{ind*2}<bpmndi:BPMNEdge id="{fid}_di" bpmnElement="{fid}">\n'
-                f"{ind*3}<bpmndi:BPMNLabel/>\n"
-                f"{ind*2}</bpmndi:BPMNEdge>"
+                f'{ind * 2}<bpmndi:BPMNEdge id="{fid}_di" bpmnElement="{fid}">\n'
+                f"{ind * 3}<bpmndi:BPMNLabel/>\n"
+                f"{ind * 2}</bpmndi:BPMNEdge>"
             )
         nl = "\n"
         return f"""<?xml version="1.0" encoding="UTF-8"?>
@@ -547,7 +547,7 @@ def _piperflow_case(parsed: dict) -> str:
     if parsed["has_injunction"]:
         injunction_def = "        [Temporary Injunction Issued] as injunction\n"
         flow_chain = (
-            "evidence->workshop->injunction->proposed" "->final->enforce->end_main"
+            "evidence->workshop->injunction->proposed->final->enforce->end_main"
         )
     else:
         injunction_def = ""
@@ -648,7 +648,7 @@ def _piperflow_aggregate(all_parsed: list[dict]) -> str:
         "",
         "    lane: Arbitrators",
         "        [Evidence Phase - Parties and Witnesses] as evidence",
-        "        [Workshop - Draft Principles, Findings, Remedies]" " as workshop",
+        "        [Workshop - Draft Principles, Findings, Remedies] as workshop",
         "        [Proposed Decision Voting] as proposed",
         "        [Final Decision Published] as final",
         "",
@@ -844,16 +844,16 @@ def create_aggregate_arb_bpmn(
     for p in all_parsed:
         remedy_counter.update(p["remedies"])
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"AGGREGATE SUMMARY - {total} ARB cases")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(f"  Avg parties per case:  {avg_parties:.1f}")
     print(f"  Avg remedies per case: {avg_remedies:.1f}")
     print(f"  Cases with injunction: {injunction_n}")
     print("\n  Outcome distribution:")
     for o, n in sorted(outcome_counts.items(), key=lambda x: -x[1]):
         bar = "X" * (n // max(1, total // 40))
-        print(f"    {o:<30} {n:>4}  " f"({round(100*n/total)}%)  {bar}")
+        print(f"    {o:<30} {n:>4}  ({round(100 * n / total)}%)  {bar}")
     print("\n  Top remedy types:")
     for r, n in remedy_counter.most_common(10):
         print(f"    {_safe_label(r, 40):<42} {n:>4}")
@@ -955,11 +955,9 @@ def select_input_file(data_dir: Path) -> Path | list[Path] | None:
         size_kb = f.stat().st_size / 1024
         total_kb += size_kb
         print(f"  [{i}] {f.name}  ({size_kb:.0f} KB)")
-    print(f"  [A] *** ALL FILES COMBINED ***  " f"({total_kb:.0f} KB total)")
+    print(f"  [A] *** ALL FILES COMBINED ***  ({total_kb:.0f} KB total)")
 
-    choice = (
-        input("\nSelect file number, or A for all " "[default: A]: ").strip().lower()
-    )
+    choice = input("\nSelect file number, or A for all [default: A]: ").strip().lower()
     if choice in ("a", "all", ""):
         print(f"\n  -> Merging all {len(json_files)} files...")
         return json_files
@@ -1049,15 +1047,15 @@ def main():
             output_dir = cwd / "artifacts" / "bpmn" / "arb"
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("ARB -> BPMN + PNG Generator")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     if isinstance(input_source, list):
         print(f"Input : {len(input_source)} JSON file(s)")
     else:
         print(f"Input : {input_source}")
     print(f"Output: {output_dir}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     raw_cases = load_arb_data(input_source)
     print(f"\nLoaded {len(raw_cases)} raw ARB cases.")
@@ -1104,7 +1102,7 @@ def main():
     else:
         selected_indices = get_user_case_selection(len(all_parsed))
 
-    print(f"\nGenerating {len(selected_indices)} individual " f"diagram(s)...\n")
+    print(f"\nGenerating {len(selected_indices)} individual diagram(s)...\n")
     bpmn_files: list[Path] = []
     png_files: list[Path] = []
 
@@ -1133,20 +1131,17 @@ def main():
     total_bpmn = len(bpmn_files) + (1 if agg_bpmn else 0)
     total_png = len(png_files) + (1 if agg_png else 0)
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("Done!")
-    print(
-        f"  Individual diagrams : {len(selected_indices)} of "
-        f"{len(all_parsed)} cases"
-    )
-    print(f"  Aggregate           : full dataset " f"({len(all_parsed)} cases)")
+    print(f"  Individual diagrams : {len(selected_indices)} of {len(all_parsed)} cases")
+    print(f"  Aggregate           : full dataset ({len(all_parsed)} cases)")
     print(f"  BPMN files : {total_bpmn}")
     print(f"  PNG files  : {total_png}")
     print(f"  Output dir : {output_dir}")
     print("\nTo view:")
     print("  PNG  -- open any .png directly")
     print("  BPMN -- drag & drop at https://demo.bpmn.io")
-    print(f"{'='*60}\n")
+    print(f"{'=' * 60}\n")
 
 
 if __name__ == "__main__":

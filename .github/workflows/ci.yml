@@ -40,6 +40,23 @@ jobs:
       - name: Run unit tests
         run: uv run pytest tests/ -m "not integration" --tb=short
 
+  type-check:
+    name: Type check (ty)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: uv sync --extra dev
+
+      - name: Run ty
+        run: uv run ty check src/
+
   dashboard:
     name: Dashboard lint & build
     runs-on: ubuntu-latest

@@ -20,6 +20,7 @@ dependencies = [
 dev = [
     "pre-commit>=3.6.0",
     "ruff>=0.8.0",
+    "ty>=0.0.1a6",
     "pytest>=8.0.0",
     "pytest-cov>=4.0.0",
     "ipykernel>=7.1.0",
@@ -27,6 +28,10 @@ dev = [
     "seaborn>=0.13.2",
     "networkx>=3.6.1",
 ]
+
+[tool.ruff.lint]
+# Scripts legitimately use sys.path.insert before local imports
+per-file-ignores = { "scripts/*.py" = ["E402"] }
 
 [tool.pytest.ini_options]
 markers = [
