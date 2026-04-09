@@ -288,7 +288,7 @@ def compute_article_overlap(event1: DisputeEvent, event2: DisputeEvent) -> float
 
 
 def compute_link_score(
-    event1: DisputeEvent, event2: DisputeEvent, weights: dict = None
+    event1: DisputeEvent, event2: DisputeEvent, weights: dict | None = None
 ) -> tuple[float, str]:
     """
     Compute overall linkage score between two events.

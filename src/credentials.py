@@ -191,7 +191,7 @@ def test_authentication() -> ValidationResult:
         import pywikibot
 
         site = pywikibot.Site("en", "wikipedia")
-        site._custom_headers = {"Authorization": f"Bearer {token}"}
+        setattr(site, "_custom_headers", {"Authorization": f"Bearer {token}"})
 
         # Try to get user info - requires authentication
         # This is a basic check; actual auth validation depends on the endpoint

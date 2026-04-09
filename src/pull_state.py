@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 import logging
 from dataclasses import dataclass, field, asdict
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -74,8 +74,12 @@ class PullState:
 
     def __post_init__(self) -> None:
         if not self.started_at:
-            self.started_at = datetime.utcnow().isoformat() + "Z"
-        self.last_updated = datetime.utcnow().isoformat() + "Z"
+            self.started_at = (
+                datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+            )
+        self.last_updated = (
+            datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+        )
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
@@ -144,7 +148,9 @@ class StateManager:
         if self._state is None:
             return
 
-        self._state.last_updated = datetime.utcnow().isoformat() + "Z"
+        self._state.last_updated = (
+            datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+        )
 
         # Only save on checkpoint interval unless forced
         self._changes_since_save += 1
@@ -202,7 +208,9 @@ class StateManager:
             if item_name not in source.items:
                 source.items[item_name] = ItemProgress(name=item_name)
             source.items[item_name].status = "in_progress"
-            source.items[item_name].started_at = datetime.utcnow().isoformat() + "Z"
+            source.items[item_name].started_at = (
+                datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+            )
 
         self.save()
 
@@ -218,7 +226,9 @@ class StateManager:
             if item_name in source.items:
                 item = source.items[item_name]
                 item.status = "completed"
-                item.completed_at = datetime.utcnow().isoformat() + "Z"
+                item.completed_at = (
+                    datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+                )
                 if data:
                     item.data = data
                 source.completed_items += 1
@@ -237,7 +247,9 @@ class StateManager:
             if item_name in source.items:
                 item = source.items[item_name]
                 item.status = "failed"
-                item.completed_at = datetime.utcnow().isoformat() + "Z"
+                item.completed_at = (
+                    datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+                )
                 item.error = error
                 item.retries += 1
                 source.failed_items += 1
