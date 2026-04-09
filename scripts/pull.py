@@ -330,9 +330,13 @@ class PullRunner:
                 # Record API usage (estimate based on enrichment)
                 api_calls = 10  # Base calls
                 if source_config.enrich_participants:
-                    api_calls += result.get("summary", {}).get("participants_enriched", 0) * 2
+                    api_calls += (
+                        result.get("summary", {}).get("participants_enriched", 0) * 2
+                    )
                 if source_config.enrich_articles:
-                    api_calls += result.get("summary", {}).get("articles_enriched", 0) * 3
+                    api_calls += (
+                        result.get("summary", {}).get("articles_enriched", 0) * 3
+                    )
                 self.rate_tracker.record("mediawiki_auth", count=api_calls)
 
                 # Save to file
