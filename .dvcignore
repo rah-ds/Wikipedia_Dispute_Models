@@ -1,0 +1,19 @@
+# DVC ignore file — patterns here are excluded from DVC tracking
+# Syntax is the same as .gitignore
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Editor files
+.DS_Store
+*.swp
+
+# Logs within tracked data dirs (track data, not operational logs)
+artifacts/logs/
+slurmlogs/

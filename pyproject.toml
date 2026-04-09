@@ -10,6 +10,7 @@ dependencies = [
     "pywikibot>=9.0.0",
     "mwparserfromhell>=0.6.0",
     "pandas>=2.0.0",
+    "pyarrow>=14.0.0",
     "pyyaml>=6.0",
     "tqdm>=4.66.0",
     "python-dotenv>=1.0.0",
@@ -20,12 +21,18 @@ dependencies = [
 dev = [
     "pre-commit>=3.6.0",
     "ruff>=0.8.0",
+    "ty>=0.0.1a6",
     "pytest>=8.0.0",
     "pytest-cov>=4.0.0",
     "ipykernel>=7.1.0",
     "matplotlib>=3.10.8",
     "seaborn>=0.13.2",
     "networkx>=3.6.1",
+    "dvc>=3.0.0",
+]
+ml = [
+    "mlflow>=2.10.0",
+    "scikit-learn>=1.4.0",
 ]
 
 [tool.pytest.ini_options]

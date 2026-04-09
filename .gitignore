@@ -40,6 +40,15 @@ package-lock.json
 .pytest_cache/
 .claude
 
+# DVC
+.dvc/cache/
+.dvc/tmp/
+/tmp/
+
+# MLflow
+artifacts/mlruns/
+
 # Passwords
 user-conf.py
 user-password.py
+..worktree

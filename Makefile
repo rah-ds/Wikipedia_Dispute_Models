@@ -1,4 +1,8 @@
-.PHONY: install install-dev clean data-dirs help lint fetch-all fetch-full fetch-arb fetch-drn fetch-small test test-unit test-cov fetch-venues fetch-ani fetch-talk fetch-arb-dfs fetch-arb-dfs-sample fetch-arb-dfs-sample-full fetch-arb-dfs-all fetch-arb-dfs-all-full update-arb-cases-list fetch-lifecycle fetch-lifecycle-dry fetch-lifecycle-sample fetch-lifecycle-all setup pull pull-status pull-reset validate archive clear-results pull-full-arb pull-full-arb-estimate pull-full-arb-force
+# Load .env file if it exists (provides RIVANNA_ID, WIKI_API_KEY, etc.)
+-include .env
+export
+
+.PHONY: install install-dev install-ml clean data-dirs help lint fetch-all fetch-full fetch-arb fetch-drn fetch-small test test-unit test-cov fetch-venues fetch-ani fetch-talk fetch-arb-dfs fetch-arb-dfs-sample fetch-arb-dfs-sample-full fetch-arb-dfs-all fetch-arb-dfs-all-full update-arb-cases-list fetch-lifecycle fetch-lifecycle-dry fetch-lifecycle-sample fetch-lifecycle-all setup pull pull-status pull-reset validate archive clear-results pull-full-arb pull-full-arb-estimate pull-full-arb-force rivanna-setup rivanna-submit rivanna-status rivanna-ssh rivanna-sync rivanna-pull rivanna-clean rivanna-logs build-dataset build-dataset-dry dvc-init dvc-push dvc-pull dvc-repro mlflow-ui
 
 # =============================================================================
 # QUICK START - Three simple commands to get started
@@ -17,6 +21,7 @@ help:
 	@echo "  make setup       Set up environment (install + validate)"
 	@echo "  make test        Run all tests"
 	@echo "  make pull        Fetch data (resumable, sample config)"
+	@echo "  make build-dataset  Extract features → data/processed/features.parquet"
 	@echo ""
 	@echo "Pull Commands:"
 	@echo "  make pull                     Fetch with sample config (5 cases)"
@@ -36,6 +41,18 @@ help:
 	@echo "  make archive         Archive results to timestamped zip file"
 	@echo "  make clear-results   Clear all results (data/raw, data/processed)"
 	@echo ""
+	@echo "Dataset & Modeling:"
+	@echo "  make build-dataset      Extract features → data/processed/features.parquet"
+	@echo "  make build-dataset-dry  Preview dataset stats without writing files"
+	@echo "  make mlflow-ui          Launch MLflow UI at http://localhost:5000"
+	@echo "  make install-ml         Install ML extras (mlflow, scikit-learn)"
+	@echo ""
+	@echo "DVC (data versioning):"
+	@echo "  make dvc-init    Initialize DVC (run once, then configure a remote)"
+	@echo "  make dvc-push    Push tracked data to remote"
+	@echo "  make dvc-pull    Pull tracked data from remote"
+	@echo "  make dvc-repro   Reproduce the full pipeline"
+	@echo ""
 	@echo "Development:"
 	@echo "  make install     Install base dependencies"
 	@echo "  make install-dev Install with dev dependencies + pre-commit hooks"
@@ -43,7 +60,7 @@ help:
 	@echo "  make test-unit   Run unit tests only (no network)"
 	@echo "  make test-cov    Run tests with coverage"
 	@echo "  make data-dirs   Create data directory structure"
-	@echo "  make clean       Remove generated files (cache, pycache)
+	@echo "  make clean       Remove generated files (cache, pycache)"
 	@echo ""
 	@echo "Legacy Data Collection (still supported):"
 	@echo "  fetch-small     Fetch sample dataset (10 articles, 5 arb cases)"
@@ -73,6 +90,16 @@ help:
 	@echo "  fetch-lifecycle-dry CASE=<n>  Preview lifecycle fetch"
 	@echo "  fetch-lifecycle-sample        Fetch 5 sample cases with full lifecycle"
 	@echo "  fetch-lifecycle-all           Fetch ALL cases with full lifecycle"
+	@echo ""
+	@echo "Rivanna HPC (set RIVANNA_ID in .env):"
+	@echo "  rivanna-ssh                   SSH into Rivanna"
+	@echo "  rivanna-setup                 One-time setup on Rivanna (over SSH)"
+	@echo "  rivanna-sync                  Rsync project to Rivanna"
+	@echo "  rivanna-submit                Submit all SLURM jobs on Rivanna"
+	@echo "  rivanna-status                Show job progress and data status"
+	@echo "  rivanna-pull                  Pull collected data from Rivanna to local"
+	@echo "  rivanna-clean                 Cancel jobs and clear data on Rivanna"
+	@echo "  rivanna-logs                  Tail recent SLURM logs from Rivanna"
 	@echo ""
 
 # =============================================================================
@@ -326,6 +353,56 @@ fetch-arb-dfs-all-full: data-dirs
 	@echo ""
 	@echo "✓ FULL arbitration cases fetched to data/raw/arbitration/"
 
+# =============================================================================
+# DATASET BUILD — feature extraction pipeline
+# =============================================================================
+
+# Build the model-ready feature matrix from raw data
+build-dataset: data-dirs
+	uv run python scripts/build_dataset.py
+
+build-dataset-dry:
+	uv run python scripts/build_dataset.py --dry-run
+
+# =============================================================================
+# DVC — data versioning
+# =============================================================================
+# One-time setup: dvc init && dvc remote add -d <name> <url>
+# See: https://dvc.org/doc/command-reference
+
+# Initialize DVC in the project (run once)
+dvc-init:
+	uv run dvc init
+	@echo "DVC initialized. Next: configure a remote with 'dvc remote add -d <name> <url>'"
+
+# Push tracked data files to the remote
+dvc-push:
+	uv run dvc push
+
+# Pull tracked data files from the remote
+dvc-pull:
+	uv run dvc pull
+
+# Reproduce the full pipeline (fetch → build_dataset)
+dvc-repro:
+	uv run dvc repro
+
+# =============================================================================
+# MLFLOW — experiment tracking
+# =============================================================================
+
+# Launch the MLflow tracking UI (local runs stored in artifacts/mlruns/)
+mlflow-ui:
+	uv run mlflow ui --backend-store-uri artifacts/mlruns --port 5000
+
+# Install ML extras (mlflow, scikit-learn)
+install-ml:
+	uv pip install -e ".[ml]"
+
+# =============================================================================
+# CLEAN
+# =============================================================================
+
 # Clean generated files (cache, pycache, logs)
 clean:
 	rm -rf artifacts/logs/*
@@ -493,3 +570,101 @@ pull-full-arb-force: data-dirs
 	@echo "Use Ctrl+C to interrupt (progress is saved, resume with same command)"
 	@echo ""
 	uv run python scripts/pull.py --config full
+
+# =============================================================================
+# RIVANNA HPC — SLURM job management
+# =============================================================================
+# Set RIVANNA_ID in .env (e.g., RIVANNA_ID=abc1de)
+# All targets SSH into Rivanna to run commands remotely.
+
+RIVANNA_HOST := rivanna
+RIVANNA_PROJECT := /scratch/rah5ff/Wikipedia_Dispute_Models
+
+# Validate RIVANNA_ID is set
+_check-rivanna-id:
+	@if [ -z "$(RIVANNA_ID)" ]; then \
+		echo "Error: RIVANNA_ID not set. Add it to .env:"; \
+		echo "  echo 'RIVANNA_ID=your_computing_id' >> .env"; \
+		exit 1; \
+	fi
+
+# SSH into Rivanna
+rivanna-ssh: _check-rivanna-id
+	ssh $(RIVANNA_HOST)
+
+# Rsync project files to Rivanna (excludes data, venv, cache)
+rivanna-sync: _check-rivanna-id
+	@echo "Syncing project to Rivanna ($(RIVANNA_HOST):$(RIVANNA_PROJECT))..."
+	rsync -avz --progress \
+		--exclude '.venv/' \
+		--exclude '__pycache__/' \
+		--exclude 'data/raw/' \
+		--exclude 'data/processed/' \
+		--exclude 'data/external/' \
+		--exclude 'apicache/' \
+		--exclude 'slurmlogs/*.out' \
+		--exclude 'slurmlogs/*.err' \
+		--exclude '.git/' \
+		--exclude 'notebooks/' \
+		./ $(RIVANNA_HOST):$(RIVANNA_PROJECT)/
+	@echo "✓ Sync complete"
+
+# One-time setup on Rivanna
+rivanna-setup: _check-rivanna-id rivanna-sync
+	@echo "Running setup on Rivanna..."
+	ssh $(RIVANNA_HOST) 'cd $(RIVANNA_PROJECT) && bash scripts/slurm/setup_rivanna.sh'
+
+# Submit all SLURM jobs
+rivanna-submit: _check-rivanna-id
+	@echo "Submitting SLURM jobs on Rivanna..."
+	ssh $(RIVANNA_HOST) 'cd $(RIVANNA_PROJECT) && bash scripts/slurm/submit_all.sh'
+
+# Show job progress and data collection status
+rivanna-status: _check-rivanna-id
+	@ssh $(RIVANNA_HOST) 'cd $(RIVANNA_PROJECT) && bash scripts/slurm/status.sh'
+
+# Show compact status
+rivanna-status-short: _check-rivanna-id
+	@ssh $(RIVANNA_HOST) 'cd $(RIVANNA_PROJECT) && bash scripts/slurm/status.sh --short'
+
+# Pull collected data from Rivanna to local
+rivanna-pull: _check-rivanna-id
+	@echo "Pulling data from Rivanna ($(RIVANNA_HOST):$(RIVANNA_PROJECT)/data/raw/)..."
+	@echo "Checking remote data size first..."
+	@ssh $(RIVANNA_HOST) 'du -sh $(RIVANNA_PROJECT)/data/raw/* 2>/dev/null | grep -v "^0"'
+	@echo ""
+	rsync -avz --progress \
+		$(RIVANNA_HOST):$(RIVANNA_PROJECT)/data/raw/ ./data/raw/
+	@echo ""
+	@echo "Pulling slurmlogs..."
+	rsync -avz --progress \
+		$(RIVANNA_HOST):$(RIVANNA_PROJECT)/slurmlogs/ ./slurmlogs/
+	@echo ""
+	@echo "Pulling artifacts (arb_cases.txt, logs, etc.)..."
+	rsync -avz --progress \
+		$(RIVANNA_HOST):$(RIVANNA_PROJECT)/artifacts/ ./artifacts/
+	@echo "✓ Pull complete. Local data/raw/ is now up to date."
+
+# Cancel all jobs and clear collected data on Rivanna
+rivanna-clean: _check-rivanna-id
+	@echo "Cancelling all SLURM jobs..."
+	@ssh $(RIVANNA_HOST) 'scancel -u $$USER 2>/dev/null; echo "Jobs cancelled"'
+	@echo "Clearing data and logs on Rivanna..."
+	@ssh $(RIVANNA_HOST) 'cd $(RIVANNA_PROJECT) && \
+		rm -rf data/raw/arbitration/* data/raw/revisions/* data/raw/edit_wars/* \
+		       data/raw/drn/* data/raw/dispute_venues/* data/raw/ani_search/* \
+		       data/raw/talk_pages/* data/processed/* \
+		       slurmlogs/*.out slurmlogs/*.err slurmlogs/*.csv && \
+		echo "Cleared: data/raw/*, data/processed/*, slurmlogs/*"'
+	@echo "✓ Rivanna cleaned. Run 'make rivanna-submit' to start fresh."
+
+# Tail recent SLURM output logs
+rivanna-logs: _check-rivanna-id
+	@echo "Most recent SLURM log files:"
+	@ssh $(RIVANNA_HOST) 'cd $(RIVANNA_PROJECT) && \
+		echo "" && \
+		echo "=== Recent .out files ===" && \
+		ls -lt slurmlogs/*.out 2>/dev/null | head -10 && \
+		echo "" && \
+		echo "=== Last 30 lines of most recent log ===" && \
+		tail -30 $$(ls -t slurmlogs/*.out 2>/dev/null | head -1) 2>/dev/null || echo "No logs yet."'

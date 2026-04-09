@@ -1,0 +1,46 @@
+# DVC Pipeline — Wikipedia Dispute Models
+# https://dvc.org/doc/command-reference/repro
+#
+# Setup (one-time):
+#   pip install dvc
+#   dvc init
+#   dvc remote add -d myremote gdrive://<folder-id>   # or s3://, ssh://, etc.
+#   dvc remote default myremote
+#
+# Run the full pipeline:
+#   dvc repro
+#
+# Re-run only the dataset build stage:
+#   dvc repro build_dataset
+#
+# Track raw data:
+#   dvc add data/raw
+#   git add data/raw.dvc .gitignore
+#   dvc push
+
+stages:
+  fetch:
+    desc: "Fetch raw Wikipedia data (sample config). Use 'make pull CONFIG=full' for full data."
+    cmd: uv run python scripts/pull.py --config sample
+    params:
+      - artifacts/configs/sample.yaml:
+          - arbitration.limit
+          - arbitration.revision_limit
+          - drn.limit
+          - lifecycle.limit
+    outs:
+      - data/raw:
+          cache: true
+          persist: true  # don't delete between runs
+
+  build_dataset:
+    desc: "Extract features from raw data → data/processed/features.parquet"
+    cmd: uv run python scripts/build_dataset.py
+    deps:
+      - scripts/build_dataset.py
+      - src/logging_config.py
+      - data/raw/arbitration
+      - data/raw/dispute_venues
+    outs:
+      - data/processed/features.parquet
+      - data/processed/features.csv
