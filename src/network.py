@@ -251,7 +251,7 @@ def retry_with_backoff(
                     if attempt < config.max_retries:
                         delay = calculate_backoff(attempt, config)
                         logger.warning(
-                            f"Retry {attempt + 1}/{config.max_retries} for {func.__name__}: "
+                            f"Retry {attempt + 1}/{config.max_retries} for {getattr(func, '__name__', repr(func))}: "
                             f"{e}. Waiting {delay:.1f}s"
                         )
                         time.sleep(delay)
@@ -261,11 +261,13 @@ def retry_with_backoff(
 
             # All retries exhausted
             logger.error(
-                f"All {config.max_retries} retries exhausted for {func.__name__}"
+                f"All {config.max_retries} retries exhausted for {getattr(func, '__name__', repr(func))}"
             )
             if last_exception is not None:
                 raise last_exception
-            raise RuntimeError(f"Retries exhausted for {func.__name__}")
+            raise RuntimeError(
+                f"Retries exhausted for {getattr(func, '__name__', repr(func))}"
+            )
 
         return wrapper
 

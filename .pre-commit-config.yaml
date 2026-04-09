@@ -1,7 +1,10 @@
+# Install both pre-commit and commit-msg hook types with: pre-commit install
+default_install_hook_types: [pre-commit, commit-msg]
+
 repos:
   # Pre-commit hooks for code quality
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v5.0.0
     hooks:
       # Prevent files larger than 5MB from being committed
       - id: check-added-large-files
@@ -16,13 +19,25 @@ repos:
       - id: mixed-line-ending
         args: ['--fix=lf']
 
+      # Catch accidental commits of private keys, .env files, etc.
+      - id: detect-private-key
+
   # Python code formatting and linting with Ruff
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.8.6
+    rev: v0.14.14
     hooks:
       - id: ruff
         args: [--fix]
       - id: ruff-format
+
+  # Enforce conventional commit messages — required for cz bump to determine
+  # version increments.  Format: <type>(<scope>): <description>
+  # Types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v4.13.9
+    hooks:
+      - id: commitizen
+        stages: [commit-msg]
 
   # Jupyter notebook stripping if needed
   # - repo: https://github.com/kynan/nbstripout
