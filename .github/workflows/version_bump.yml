@@ -1,0 +1,100 @@
+name: Version Bump
+
+on:
+  push:
+    branches: [main]
+
+# Only one bump job at a time — queued pushes share the same group
+concurrency:
+  group: version-bump
+  cancel-in-progress: false   # don't drop a bump mid-run; queue it instead
+
+jobs:
+  bump:
+    name: cz bump → tag → release
+    runs-on: ubuntu-latest
+
+    # Skip the bump commit itself — cz bump creates "bump: version X → Y",
+    # which would re-trigger this workflow and loop forever without this guard.
+    if: "!startsWith(github.event.head_commit.message, 'bump:')"
+
+    permissions:
+      contents: write   # push version-bump commit + tag back to main
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # full history — cz bump needs all tags & commits
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install commitizen
+        run: pip install commitizen
+
+      # ── Git identity for the bump commit ──────────────────────────────────
+      - name: Configure git
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      # ── Bootstrap: tag v0.1.0 if the repo has never been tagged ──────────
+      # cz bump reads the distance from the last tag; it needs at least one.
+      - name: Create initial tag if none exists
+        run: |
+          if [ -z "$(git tag -l 'v*')" ]; then
+            INIT_VER=$(python - <<'PY'
+          import tomllib, pathlib
+          data = tomllib.load(open("pyproject.toml", "rb"))
+          print(data["project"]["version"])
+          PY
+          )
+            echo "No tags found — tagging current HEAD as v${INIT_VER}"
+            git tag "v${INIT_VER}"
+            git push --tags
+          fi
+
+      # ── Version bump ──────────────────────────────────────────────────────
+      # Exit code 21 (NoneIncrementExit) means there are no qualifying commits
+      # since the last tag — not an error, just nothing to release.
+      - name: Bump version
+        id: bump
+        run: |
+          set +e
+          cz bump --yes
+          CZ_EXIT=$?
+          set -e
+
+          if [ "$CZ_EXIT" -eq 21 ]; then
+            echo "No conventional commits since last tag — skipping release."
+            echo "bumped=false" >> "$GITHUB_OUTPUT"
+          elif [ "$CZ_EXIT" -ne 0 ]; then
+            echo "cz bump failed (exit $CZ_EXIT)"
+            exit "$CZ_EXIT"
+          else
+            NEW_VERSION=$(cz version --project)
+            echo "bumped=true"          >> "$GITHUB_OUTPUT"
+            echo "version=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+            echo "Bumped to v${NEW_VERSION}"
+          fi
+
+      # ── Push bump commit + tag ────────────────────────────────────────────
+      - name: Push version bump commit and tag
+        if: steps.bump.outputs.bumped == 'true'
+        run: git push --follow-tags
+
+      # ── GitHub Release ────────────────────────────────────────────────────
+      # --generate-notes pulls release notes from merged PRs and commit titles.
+      # Remove that flag and pass --notes-file CHANGELOG.md if you prefer the
+      # cz-generated CHANGELOG instead.
+      - name: Create GitHub release
+        if: steps.bump.outputs.bumped == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ steps.bump.outputs.version }}"
+          gh release create "v${VERSION}" \
+            --title "v${VERSION}" \
+            --generate-notes
