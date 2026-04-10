@@ -1,23 +1,50 @@
-"""Wikipedia API client wrapper using Pywikibot."""
+"""Wikipedia API client — direct MediaWiki REST / action-API wrapper.
+
+Replaces the former pywikibot dependency with a plain ``requests.Session``
+that carries an optional OAuth Bearer token.  Every method now hits the
+MediaWiki Action API (``api.php``) directly.
+"""
 
 from __future__ import annotations
 
 import logging
+import os
 import random
 import time
 from datetime import datetime
 from functools import wraps
 from typing import Callable, TypeVar
+from urllib.parse import quote
 
-import pywikibot
-from pywikibot import data as pywikibot_data
-import pywikibot.data.api  # ensure submodule is loaded
-from pywikibot.exceptions import APIError, ServerError
-import os
+import requests
 
 logger = logging.getLogger(__name__)
 
+# Default user-agent that complies with Wikimedia policy
+_DEFAULT_UA = (
+    "WikipediaDisputeModels/0.1 "
+    "(https://github.com/rah-ds/Wikipedia_Dispute_Models; research)"
+)
+
 T = TypeVar("T")
+
+
+class WikiAPIError(Exception):
+    """Raised when the MediaWiki API returns an error response."""
+
+    def __init__(self, code: str, info: str = ""):
+        self.code = code
+        self.info = info
+        super().__init__(f"{code}: {info}" if info else code)
+
+
+# Exception types that are retryable
+_RETRYABLE = (
+    WikiAPIError,
+    requests.exceptions.ConnectionError,
+    requests.exceptions.Timeout,
+    requests.exceptions.HTTPError,
+)
 
 
 def retry_on_rate_limit(
@@ -46,45 +73,45 @@ def retry_on_rate_limit(
             for attempt in range(max_retries + 1):
                 try:
                     return func(*args, **kwargs)
-                except (APIError, ServerError) as e:
+                except _RETRYABLE as e:
                     last_exception = e
                     error_code = getattr(e, "code", str(e))
 
-                    # Check if it's a rate limit error
-                    if (
-                        "ratelimit" in str(error_code).lower()
-                        or "maxlag" in str(error_code).lower()
+                    retryable = False
+                    # Rate limit or maxlag → always retry
+                    if isinstance(e, WikiAPIError) and any(
+                        kw in error_code.lower()
+                        for kw in ("ratelimit", "maxlag", "readonly")
                     ):
-                        if attempt < max_retries:
-                            # Exponential backoff with jitter
-                            delay = min(base_delay * (2**attempt), max_delay)
-                            jitter = random.uniform(0.5, 1.5)
-                            delay *= jitter
-                            logger.warning(
-                                f"Rate limit hit: {error_code}. "
-                                f"Waiting {delay:.1f}s (attempt {attempt + 1}/{max_retries})"
-                            )
-                            time.sleep(delay)
-                            continue
-                    # Server errors (5xx) - retry with backoff
-                    elif isinstance(e, ServerError):
-                        if attempt < max_retries:
-                            delay = min(base_delay * (2**attempt), max_delay)
-                            jitter = random.uniform(0.5, 1.5)
-                            delay *= jitter
-                            logger.warning(
-                                f"Server error: {e}. "
-                                f"Waiting {delay:.1f}s (attempt {attempt + 1}/{max_retries})"
-                            )
-                            time.sleep(delay)
-                            continue
-                    # Non-retryable error
+                        retryable = True
+                    # HTTP 429 or 5xx
+                    elif isinstance(e, requests.exceptions.HTTPError):
+                        status = getattr(getattr(e, "response", None), "status_code", 0)
+                        retryable = status == 429 or status >= 500
+                    # Connection / timeout errors
+                    elif isinstance(
+                        e,
+                        (
+                            requests.exceptions.ConnectionError,
+                            requests.exceptions.Timeout,
+                        ),
+                    ):
+                        retryable = True
+
+                    if retryable and attempt < max_retries:
+                        delay = min(base_delay * (2**attempt), max_delay)
+                        jitter = random.uniform(0.5, 1.5)
+                        delay *= jitter
+                        logger.warning(
+                            f"Retryable error: {error_code}. "
+                            f"Waiting {delay:.1f}s (attempt {attempt + 1}/{max_retries})"
+                        )
+                        time.sleep(delay)
+                        continue
                     raise
                 except Exception:
-                    # Unexpected errors - don't retry
                     raise
 
-            # All retries exhausted
             logger.error(
                 f"Max retries ({max_retries}) exceeded for {getattr(func, '__name__', repr(func))}"
             )
@@ -99,8 +126,64 @@ def retry_on_rate_limit(
     return decorator
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Lightweight Page object — drop-in for pywikibot.Page in consumer code
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+class WikiPage:
+    """Minimal page wrapper that mirrors the pywikibot.Page interface
+    used by existing consumer code (``page.title()``, ``page.text``,
+    ``page.exists()``, ``page.isRedirectPage()``)."""
+
+    __slots__ = ("_title", "_text", "_exists", "_redirect", "_redirect_target", "_url")
+
+    def __init__(
+        self,
+        title: str,
+        text: str | None = None,
+        exists: bool = True,
+        redirect: bool = False,
+        redirect_target: str | None = None,
+        url: str | None = None,
+    ):
+        self._title = title
+        self._text = text
+        self._exists = exists
+        self._redirect = redirect
+        self._redirect_target = redirect_target
+        self._url = url
+
+    # --- pywikibot-compatible interface ---
+
+    def title(self) -> str:
+        return self._title
+
+    @property
+    def text(self) -> str:
+        if self._text is None:
+            raise ValueError(f"Page content not loaded for: {self._title}")
+        return self._text
+
+    def exists(self) -> bool:
+        return self._exists
+
+    def isRedirectPage(self) -> bool:
+        return self._redirect
+
+    def full_url(self) -> str:
+        if self._url:
+            return self._url
+        return f"https://en.wikipedia.org/wiki/{quote(self._title.replace(' ', '_'), safe='/:@')}"
+
+    def __repr__(self) -> str:
+        return f"WikiPage({self._title!r}, exists={self._exists})"
+
+
 class WikiClient:
-    """Client for interacting with Wikipedia via Pywikibot."""
+    """Client for interacting with Wikipedia via the MediaWiki Action API."""
+
+    API_URL = "https://{lang}.{project}.org/w/api.php"
 
     def __init__(
         self, lang: str = "en", project: str = "wikipedia", use_oauth: bool = True
@@ -113,19 +196,20 @@ class WikiClient:
             project: Wikimedia project (default: "wikipedia")
             use_oauth: Try OAuth if token is available; fall back to anonymous
         """
-        self.site = pywikibot.Site(lang, project)
         self.lang = lang
         self.project = project
         self.authenticated = False
 
+        self.api_url = self.API_URL.format(lang=lang, project=project)
+
+        # Build a persistent session with connection pooling
+        self.session = requests.Session()
+        self.session.headers["User-Agent"] = os.getenv("WIKI_USER_AGENT", _DEFAULT_UA)
+
         if use_oauth:
             token = os.getenv("WIKIPEDIA_ACCESS_TOKEN")
             if token:
-                # Intentionally set private pywikibot internals to inject OAuth headers
-                setattr(self.site, "_loginstatus", True)
-                setattr(
-                    self.site, "_custom_headers", {"Authorization": f"Bearer {token}"}
-                )
+                self.session.headers["Authorization"] = f"Bearer {token}"
                 self.authenticated = True
             else:
                 logger.warning(
@@ -133,26 +217,13 @@ class WikiClient:
                     "(500 req/hour limit). Set the token in .env for 5 000 req/hour."
                 )
 
-        # Tune pywikibot throttle for authenticated research use.
-        # Default pywikibot mindelay=2s + process_multiplicity can balloon
-        # to 4s+ per request (~900 req/hr), far below the 5,000/hr auth limit.
-        if self.authenticated:
-            self.site.throttle.mindelay = 0.5
-            self.site.throttle.maxdelay = 10
-            self.site.throttle.delay = 0.5
-            pywikibot.config.maxlag = 5
-        else:
-            self.site.throttle.mindelay = 2.0
-            self.site.throttle.maxdelay = 60
-            self.site.throttle.delay = 2.0
+        # Adaptive delay: unauthenticated gets much more conservative
+        self.default_delay = 0.5 if self.authenticated else 2.0
 
         # Request tracking
         self._request_count = 0
         self._hourly_counts: dict[str, int] = {}  # hour -> count
         self._start_time = datetime.now()
-
-        # Adaptive delay: unauthenticated gets much more conservative
-        self.default_delay = 0.5 if self.authenticated else 2.0
 
     def _track_request(self) -> None:
         """Track API request and log hourly stats."""
@@ -170,19 +241,33 @@ class WikiClient:
 
     def _api_request(self, **params) -> dict:
         """
-        Make a direct API request using pywikibot's Request class.
-
-        This is the proper way to make API requests that works across
-        different pywikibot versions.
+        Make a direct API request to the MediaWiki Action API.
 
         Args:
             **params: API parameters
 
         Returns:
             API response as dictionary
+
+        Raises:
+            WikiAPIError: on API-level errors
+            requests.HTTPError: on HTTP-level errors
         """
-        request = pywikibot_data.api.Request(site=self.site, parameters=params)
-        return request.submit()
+        params.setdefault("format", "json")
+        params.setdefault("maxlag", "5")
+
+        self._track_request()
+
+        resp = self.session.get(self.api_url, params=params, timeout=60)
+        resp.raise_for_status()
+        data = resp.json()
+
+        # Check for API-level errors
+        if "error" in data:
+            err = data["error"]
+            raise WikiAPIError(err.get("code", "unknown"), err.get("info", ""))
+
+        return data
 
     def get_stats(self) -> dict:
         """Get request statistics."""
@@ -202,15 +287,44 @@ class WikiClient:
         for hour, count in sorted(stats["hourly_counts"].items()):
             logger.info(f"  {hour}: {count} requests")
 
-    def get_page(self, title: str) -> pywikibot.Page:
-        """Get a Wikipedia page by title."""
-        self._track_request()
-        return pywikibot.Page(self.site, title)
+    def get_page(self, title: str) -> WikiPage:
+        """Get a Wikipedia page by title (fetches content eagerly)."""
+        params = {
+            "action": "query",
+            "titles": title,
+            "prop": "revisions|info",
+            "rvprop": "content",
+            "rvslots": "main",
+            "inprop": "url",
+            "redirects": "1",
+        }
+        data = self._api_request(**params)
+        pages = data.get("query", {}).get("pages", {})
+        # Follow normalisation / redirects applied by the API
+        redirects = {
+            r["from"]: r["to"] for r in data.get("query", {}).get("redirects", [])
+        }
 
-    def get_category(self, name: str) -> pywikibot.Category:
-        """Get a Wikipedia category by name."""
-        self._track_request()
-        return pywikibot.Category(self.site, name)
+        for page_id, page_data in pages.items():
+            if int(page_id) < 0:
+                return WikiPage(title=title, exists=False)
+            resolved_title = page_data.get("title", title)
+            content = (
+                page_data.get("revisions", [{}])[0]
+                .get("slots", {})
+                .get("main", {})
+                .get("*", "")
+            )
+            is_redirect = bool(redirects) or "redirect" in page_data
+            return WikiPage(
+                title=resolved_title,
+                text=content,
+                exists=True,
+                redirect=is_redirect,
+                redirect_target=redirects.get(title),
+                url=page_data.get("fullurl"),
+            )
+        return WikiPage(title=title, exists=False)
 
     def get_pages_latest(
         self, titles: list[str], batch_size: int = 50, sleep_time: float = 1.0
@@ -272,25 +386,54 @@ class WikiClient:
         Returns:
             List of revision dictionaries with optional tags
         """
-        page = self.get_page(title)
-        if not page.exists():
-            raise ValueError(f"Page not found: {title}")
+        revisions: list[dict] = []
+        continue_token = None
+        rvprop = "ids|timestamp|user|comment|size"
+        if include_tags:
+            rvprop += "|tags"
+        if content:
+            rvprop += "|content"
 
-        revisions = []
-        for i, rev in enumerate(page.revisions(content=content)):
-            if limit and i >= limit:
-                break
-            rev_data = {
-                "revid": rev.revid,
-                "parentid": getattr(rev, "parentid", None),
-                "timestamp": str(rev.timestamp),
-                "user": rev.user,
-                "comment": rev.comment or "",
-                "size": getattr(rev, "size", None),
+        while True:
+            params: dict = {
+                "action": "query",
+                "prop": "revisions",
+                "titles": title,
+                "rvprop": rvprop,
+                "rvlimit": min(limit or 500, 500),
             }
-            if include_tags:
-                rev_data["tags"] = getattr(rev, "tags", [])
-            revisions.append(rev_data)
+            if content:
+                params["rvslots"] = "main"
+            if continue_token:
+                params["rvcontinue"] = continue_token
+
+            data = self._api_request(**params)
+            pages = data.get("query", {}).get("pages", {})
+            for page_id, page_data in pages.items():
+                if int(page_id) < 0:
+                    raise ValueError(f"Page not found: {title}")
+                for rev in page_data.get("revisions", []):
+                    rev_data: dict = {
+                        "revid": rev.get("revid"),
+                        "parentid": rev.get("parentid"),
+                        "timestamp": rev.get("timestamp"),
+                        "user": rev.get("user"),
+                        "comment": rev.get("comment", ""),
+                        "size": rev.get("size"),
+                    }
+                    if include_tags:
+                        rev_data["tags"] = rev.get("tags", [])
+                    revisions.append(rev_data)
+
+            if limit and len(revisions) >= limit:
+                revisions = revisions[:limit]
+                break
+            cont = data.get("continue")
+            if cont and "rvcontinue" in cont:
+                continue_token = cont["rvcontinue"]
+            else:
+                break
+
         return revisions
 
     @retry_on_rate_limit()
@@ -312,7 +455,6 @@ class WikiClient:
         Returns:
             List of revision dictionaries with tags
         """
-        self._track_request()
         revisions = []
         continue_token = None
 
@@ -365,17 +507,28 @@ class WikiClient:
         return revisions
 
     def get_latest_revision(self, title):
-        page = pywikibot.Page(self.site, title)
-
-        text = page.get()  # SAFE for large pages
-        latest = page.latest_revision
-
-        return {
-            "revid": latest.revid,
-            "timestamp": latest.timestamp.isoformat(),
-            "user": latest.user,
-            "text": text,
+        """Fetch the latest revision content for a page via the API."""
+        params = {
+            "action": "query",
+            "titles": title,
+            "prop": "revisions",
+            "rvprop": "ids|timestamp|user|content",
+            "rvslots": "main",
+            "rvlimit": "1",
         }
+        data = self._api_request(**params)
+        pages = data.get("query", {}).get("pages", {})
+        for page_id, page_data in pages.items():
+            if int(page_id) < 0:
+                raise ValueError(f"Page not found: {title}")
+            rev = page_data["revisions"][0]
+            return {
+                "revid": rev["revid"],
+                "timestamp": rev["timestamp"],
+                "user": rev.get("user", ""),
+                "text": rev.get("slots", {}).get("main", {}).get("*", ""),
+            }
+        raise ValueError(f"Page not found: {title}")
 
     @retry_on_rate_limit()
     def get_page_info(self, title: str) -> dict:
@@ -404,7 +557,7 @@ class WikiClient:
         self,
         category_name: str,
         limit: int | None = None,
-    ) -> list[pywikibot.Page]:
+    ) -> list[WikiPage]:
         """
         Get pages in a category.
 
@@ -413,38 +566,70 @@ class WikiClient:
             limit: Maximum pages to return
 
         Returns:
-            List of Page objects
+            List of WikiPage objects
         """
         if not category_name.startswith("Category:"):
             category_name = f"Category:{category_name}"
 
-        cat = self.get_category(category_name)
-        pages = []
-        for i, page in enumerate(cat.articles()):
-            if limit and i >= limit:
+        pages: list[WikiPage] = []
+        continue_token = None
+
+        while True:
+            params: dict = {
+                "action": "query",
+                "list": "categorymembers",
+                "cmtitle": category_name,
+                "cmlimit": min(limit or 500, 500),
+                "cmprop": "title|ids",
+            }
+            if continue_token:
+                params["cmcontinue"] = continue_token
+
+            data = self._api_request(**params)
+            for member in data.get("query", {}).get("categorymembers", []):
+                pages.append(WikiPage(title=member["title"], text=None, exists=True))
+                if limit and len(pages) >= limit:
+                    return pages
+
+            cont = data.get("continue")
+            if cont and "cmcontinue" in cont:
+                continue_token = cont["cmcontinue"]
+            else:
                 break
-            pages.append(page)
+
         return pages
 
     def get_page_protection(self, title: str) -> dict:
         """Get page protection status."""
-        page = self.get_page(title)
-        protection = {}
-        try:
-            for prot in page.protection():
-                protection[prot[0]] = {
-                    "level": prot[1],
-                    "expiry": str(prot[2]) if len(prot) > 2 else None,
+        params = {
+            "action": "query",
+            "titles": title,
+            "prop": "info",
+            "inprop": "protection",
+        }
+        data = self._api_request(**params)
+        pages = data.get("query", {}).get("pages", {})
+        protection: dict = {}
+        for page_id, page_data in pages.items():
+            for prot in page_data.get("protection", []):
+                protection[prot.get("type", "")] = {
+                    "level": prot.get("level", ""),
+                    "expiry": prot.get("expiry"),
                 }
-        except Exception as e:
-            logger.warning(f"Failed to get protection status for '{title}': {e}")
         return protection
 
-    def get_talk_page(self, title: str) -> pywikibot.Page | None:
+    def get_talk_page(self, title: str) -> WikiPage | None:
         """Get the talk page for an article."""
-        page = self.get_page(title)
-        talk = page.toggleTalkPage()
-        return talk if talk is not None and talk.exists() else None
+        # Compute talk title from article title
+        if title.startswith("Talk:"):
+            talk_title = title
+        elif ":" in title:
+            ns, rest = title.split(":", 1)
+            talk_title = f"{ns} talk:{rest}"
+        else:
+            talk_title = f"Talk:{title}"
+        page = self.get_page(talk_title)
+        return page if page.exists() else None
 
     # =========================================================================
     # User Information Methods
@@ -461,7 +646,6 @@ class WikiClient:
         Returns:
             Dictionary with user metadata or None if user doesn't exist
         """
-        self._track_request()
         params = {
             "action": "query",
             "list": "users",
@@ -520,7 +704,6 @@ class WikiClient:
 
         for i in range(0, len(usernames), batch_size):
             batch = usernames[i : i + batch_size]
-            self._track_request()
 
             params = {
                 "action": "query",
@@ -577,7 +760,6 @@ class WikiClient:
         Returns:
             List of block events (newest first)
         """
-        self._track_request()
         blocks = []
         continue_token = None
 
@@ -647,7 +829,6 @@ class WikiClient:
         Returns:
             List of log events (newest first)
         """
-        self._track_request()
         entries = []
         continue_token = None
 
@@ -722,7 +903,6 @@ class WikiClient:
         Returns:
             List of log events
         """
-        self._track_request()
         entries = []
         continue_token = None
 
@@ -816,7 +996,6 @@ class WikiClient:
         Returns:
             Dictionary with diff information
         """
-        self._track_request()
         params = {
             "action": "compare",
             "fromrev": from_rev,
@@ -859,7 +1038,6 @@ class WikiClient:
         Returns:
             Dictionary with revision content or None
         """
-        self._track_request()
         params = {
             "action": "query",
             "prop": "revisions",
@@ -906,7 +1084,6 @@ class WikiClient:
         Returns:
             Dictionary with assessment data
         """
-        self._track_request()
         params = {
             "action": "query",
             "titles": title,
@@ -982,7 +1159,6 @@ class WikiClient:
         Returns:
             List of abuse filter log entries
         """
-        self._track_request()
         entries = []
         continue_token = None
 
@@ -1030,7 +1206,7 @@ class WikiClient:
 
         return entries[:limit]
 
-    def resolve_redirect(self, page):  # type: ignore[return]
+    def resolve_redirect(self, page: WikiPage) -> WikiPage:
         """
         Follow a redirect to its target page if the page is a redirect.
 
@@ -1040,14 +1216,14 @@ class WikiClient:
         it is not a redirect or if any error occurs.
 
         Args:
-            page: pywikibot Page object
+            page: WikiPage object
 
         Returns:
-            The redirect target Page if page is a redirect, else the original.
+            The redirect target WikiPage if page is a redirect, else the original.
         """
         try:
-            if page.isRedirectPage():
-                target = page.getRedirectTarget()
+            if page.isRedirectPage() and page._redirect_target:
+                target = self.get_page(page._redirect_target)
                 logger.debug("Redirect: %s → %s", page.title(), target.title())
                 return target
         except Exception as e:

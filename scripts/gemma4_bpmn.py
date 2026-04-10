@@ -644,12 +644,12 @@ def main() -> None:
         process_document(loader, text, stem, args.venue, output_dir, args.dry_run)
 
     elif args.arb:
-        # Lazy import — pywikibot is a project dep but may not be set up locally
+        # Use WikiClient (no pywikibot dependency)
         try:
-            import pywikibot  # type: ignore[import-untyped]
+            from src.wiki import WikiClient
 
-            site = pywikibot.Site("en", "wikipedia")
-            page = pywikibot.Page(site, args.arb)
+            client = WikiClient()
+            page = client.get_page(args.arb)
             text = page.text
         except Exception as exc:
             print(f"ERROR fetching '{args.arb}' from Wikipedia: {exc}")

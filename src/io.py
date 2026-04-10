@@ -19,7 +19,7 @@ def check_api_credentials(logger: logging.Logger | None = None) -> bool:
     """
     Check if Wikimedia API credentials are configured and warn if not.
 
-    Looks for environment variables or pywikibot user-config.py.
+    Looks for environment variables (WIKIPEDIA_ACCESS_TOKEN, WIKI_API_KEY).
 
     Args:
         logger: Logger instance for warnings. If None, uses module logger.
@@ -34,19 +34,14 @@ def check_api_credentials(logger: logging.Logger | None = None) -> bool:
     has_credentials = False
 
     # Check environment variables
-    if os.environ.get("WIKI_API_KEY") or os.environ.get("PYWIKIBOT_PASSWORD"):
-        has_credentials = True
-
-    # Check for pywikibot user-config.py
-    user_config = Path.home() / ".pywikibot" / "user-config.py"
-    if user_config.exists():
+    if os.environ.get("WIKIPEDIA_ACCESS_TOKEN") or os.environ.get("WIKI_API_KEY"):
         has_credentials = True
 
     # Check for .env file with credentials
     env_file = PROJECT_ROOT / ".env"
     if env_file.exists():
         content = env_file.read_text()
-        if "WIKI_API_KEY" in content or "PYWIKIBOT" in content:
+        if "WIKIPEDIA_ACCESS_TOKEN" in content or "WIKI_API_KEY" in content:
             has_credentials = True
 
     if not has_credentials:
@@ -65,14 +60,9 @@ def check_api_credentials(logger: logging.Logger | None = None) -> bool:
             "  1. Create a Wikimedia account: https://en.wikipedia.org/wiki/Special:CreateAccount"
         )
         logger.warning(
-            "  2. For Pywikibot, configure authentication (bot password or OAuth) via user-config.py:"
+            "  2. Create an OAuth token at: https://meta.wikimedia.org/wiki/Special:OAuthConsumerRegistration"
         )
-        logger.warning(
-            "     https://www.mediawiki.org/wiki/Manual:Pywikibot/user-config.py"
-        )
-        logger.warning(
-            "  3. If this project uses an API key-based client, store the key (e.g. WIKI_API_KEY) in your .env file and"
-        )
+        logger.warning("  3. Store WIKIPEDIA_ACCESS_TOKEN in your .env file and")
         logger.warning(
             "     ensure your client code reads it when calling the Wikimedia API."
         )

@@ -7,7 +7,6 @@ requires-python = ">=3.11"
 dependencies = [
     "datetime>=6.0",
     "requests>=2.32.5",
-    "pywikibot>=9.0.0",
     "mwparserfromhell>=0.6.0",
     "pandas>=2.0.0",
     "pyyaml>=6.0",

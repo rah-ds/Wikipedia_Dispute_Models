@@ -1,14 +1,11 @@
 """Tests for src/wiki.py - WikiClient class.
 
-Note: These tests require network access and a working Pywikibot configuration.
+Note: These tests require network access.
 Mark with @pytest.mark.integration to skip in CI if needed.
 """
 
 import pytest
 from src.wiki import WikiClient
-
-# Skip all tests if pywikibot not installed
-pywikibot = pytest.importorskip("pywikibot")
 
 
 @pytest.fixture
@@ -90,11 +87,8 @@ class TestWikiClientUnit:
 
     def test_client_attributes(self):
         """Test client has expected attributes after init."""
-        # This will fail if pywikibot config is missing, but tests the structure
-        try:
-            client = WikiClient(lang="en", project="wikipedia")
-            assert hasattr(client, "site")
-            assert hasattr(client, "lang")
-            assert hasattr(client, "project")
-        except Exception:
-            pytest.skip("Pywikibot not configured")
+        client = WikiClient(lang="en", project="wikipedia")
+        assert hasattr(client, "session")
+        assert hasattr(client, "lang")
+        assert hasattr(client, "project")
+        assert hasattr(client, "api_url")
