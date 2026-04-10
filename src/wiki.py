@@ -133,6 +133,19 @@ class WikiClient:
                     "(500 req/hour limit). Set the token in .env for 5 000 req/hour."
                 )
 
+        # Tune pywikibot throttle for authenticated research use.
+        # Default pywikibot mindelay=2s + process_multiplicity can balloon
+        # to 4s+ per request (~900 req/hr), far below the 5,000/hr auth limit.
+        if self.authenticated:
+            self.site.throttle.mindelay = 0.5
+            self.site.throttle.maxdelay = 10
+            self.site.throttle.delay = 0.5
+            pywikibot.config.maxlag = 5
+        else:
+            self.site.throttle.mindelay = 2.0
+            self.site.throttle.maxdelay = 60
+            self.site.throttle.delay = 2.0
+
         # Request tracking
         self._request_count = 0
         self._hourly_counts: dict[str, int] = {}  # hour -> count
