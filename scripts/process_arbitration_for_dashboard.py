@@ -17,8 +17,28 @@ from pathlib import Path
 # Paths
 # ──────────────────────────────────────────────
 BASE = Path(__file__).resolve().parent.parent
-RAW_JSON = BASE / "data" / "processed" / "clean_arbitration_cases_20260216_163707.json"
+DEFAULT_RAW_JSON = (
+    BASE / "data" / "processed" / "clean_arbitration_cases_20260216_163707.json"
+)
 OUT_JSON = BASE / "data" / "processed" / "dashboard_data.json"
+PUBLIC_OUT_JSON = BASE / "dashboard" / "public" / "data" / "dashboard_data.json"
+
+
+def find_raw_json() -> Path:
+    if DEFAULT_RAW_JSON.exists():
+        return DEFAULT_RAW_JSON
+
+    candidates = sorted(
+        BASE.glob("data/processed/clean_arbitration_cases_*.json"),
+        reverse=True,
+    )
+    if not candidates:
+        raise FileNotFoundError(
+            "No clean_arbitration_cases_*.json file found in data/processed. "
+            "Run scripts/clean_arbitration_cases_data.py first."
+        )
+    return candidates[0]
+
 
 # ──────────────────────────────────────────────
 # Helpers
@@ -68,8 +88,9 @@ def extract_admins(full_text: str) -> set[str]:
 # Main processing
 # ──────────────────────────────────────────────
 def main() -> None:
-    print(f"Loading {RAW_JSON} …")
-    with open(RAW_JSON, encoding="utf-8") as fh:
+    raw_json = find_raw_json()
+    print(f"Loading {raw_json} …")
+    with open(raw_json, encoding="utf-8") as fh:
         cases = json.load(fh)
 
     total_cases = len(cases)
@@ -125,10 +146,16 @@ def main() -> None:
     }
 
     OUT_JSON.parent.mkdir(parents=True, exist_ok=True)
+    PUBLIC_OUT_JSON.parent.mkdir(parents=True, exist_ok=True)
+
     with open(OUT_JSON, "w", encoding="utf-8") as fh:
         json.dump(dashboard, fh, indent=2)
 
+    with open(PUBLIC_OUT_JSON, "w", encoding="utf-8") as fh:
+        json.dump(dashboard, fh, indent=2)
+
     print(f"Wrote {OUT_JSON}")
+    print(f"Wrote {PUBLIC_OUT_JSON}")
     print(f"  totalCases            : {total_cases}")
     print(f"  totalUserLinks        : {len(all_users)}")
     print(f"  totalAdminLinks       : {len(all_admins)}")

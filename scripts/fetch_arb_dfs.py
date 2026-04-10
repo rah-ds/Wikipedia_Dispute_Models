@@ -86,6 +86,9 @@ def extract_article_links(content: str) -> list[str]:
     for link in wikicode.filter_wikilinks():
         title = str(link.title).strip()
 
+        # Normalise underscores so "User_talk:" matches too
+        title_normalised = title.replace("_", " ")
+
         # Skip non-article namespaces
         skip_prefixes = (
             "User:",
@@ -104,8 +107,10 @@ def extract_article_links(content: str) -> list[str]:
             "Portal:",
             "Draft:",
             "Module:",
+            "MOS:",
+            "MediaWiki:",
         )
-        if title.startswith(skip_prefixes):
+        if title_normalised.startswith(skip_prefixes):
             continue
 
         # Skip section links within same page

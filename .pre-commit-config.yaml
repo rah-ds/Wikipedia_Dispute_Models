@@ -1,3 +1,6 @@
+# Install both pre-commit and commit-msg hook types with: pre-commit install
+default_install_hook_types: [pre-commit, commit-msg]
+
 repos:
   # Pre-commit hooks for code quality
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -28,14 +31,24 @@ repos:
       - id: ruff-format
 
   # Type checking with ty (Astral) — runs on src/ only, not per-file
+  # Uses --no-sync to avoid platform-specific dependency resolution failures
   - repo: local
     hooks:
       - id: ty
         name: ty type check
         language: system
-        entry: uv run ty check src/
+        entry: uv run --no-sync ty check src/
         pass_filenames: false
         types: [python]
+
+  # Enforce conventional commit messages — required for cz bump to determine
+  # version increments.  Format: <type>(<scope>): <description>
+  # Types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v4.13.9
+    hooks:
+      - id: commitizen
+        stages: [commit-msg]
 
   # Jupyter notebook stripping if needed
   # - repo: https://github.com/kynan/nbstripout

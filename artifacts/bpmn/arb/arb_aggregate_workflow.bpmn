@@ -5,138 +5,138 @@
              xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
              xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
              targetNamespace="http://bpmn.io/schema/bpmn"
-             id="Definitions_d6684429">
-  <process id="Process_1bd78345" name="ArbCom Standard Workflow (Aggregate)" isExecutable="false">
-    <startEvent id="StartEvent_14286920" name="Request Filed"/>
-    <userTask id="Task_717013f8" name="Submit Arbitration
+             id="Definitions_e05051b8">
+  <process id="Process_e61eac90" name="ArbCom Standard Workflow (Aggregate)" isExecutable="false">
+    <startEvent id="StartEvent_b18b07fc" name="Request Filed"/>
+    <userTask id="Task_ab2b8a9f" name="Submit Arbitration
 Request"/>
-    <serviceTask id="Task_cfa62f97" name="Screen and
+    <serviceTask id="Task_f3eb5d7e" name="Screen and
 Categorise"/>
-    <exclusiveGateway id="Gateway_33049bdf" name="Accepted by
+    <exclusiveGateway id="Gateway_45dc39f3" name="Accepted by
 ArbCom?" gatewayDirection="Diverging"/>
-    <endEvent id="EndEvent_68608bf3" name="Declined / Rejected"/>
-    <userTask id="Task_e590b5cf" name="Evidence Phase"/>
-    <userTask id="Task_c53d938b" name="Workshop
+    <endEvent id="EndEvent_03d8d118" name="Declined / Rejected"/>
+    <userTask id="Task_56383423" name="Evidence Phase"/>
+    <userTask id="Task_66d3549a" name="Workshop
 (Draft Decision)"/>
-    <userTask id="Task_faab3aa4" name="Proposed Decision
+    <userTask id="Task_dac732dd" name="Proposed Decision
 Voting"/>
-    <serviceTask id="Task_1fdc955e" name="Final Decision
+    <serviceTask id="Task_ae484668" name="Final Decision
 Published"/>
-    <userTask id="Task_12909c23" name="Enforcement &amp;
+    <userTask id="Task_e7e36e07" name="Enforcement &amp;
 Monitoring"/>
-    <exclusiveGateway id="Gateway_1c9f5815" name="Case Outcome?" gatewayDirection="Diverging"/>
-    <endEvent id="EndEvent_650fcd06" name="Remedies Imposed (80%)"/>
-    <endEvent id="EndEvent_8bbbbd68" name="Closed - No Decision (16%)"/>
-    <endEvent id="EndEvent_76be0450" name="Other (4%): Admonishment Only 4%"/>
-    <sequenceFlow id="Flow_158ae137" sourceRef="StartEvent_14286920" targetRef="Task_717013f8"/>
-    <sequenceFlow id="Flow_b90913d9" sourceRef="Task_717013f8" targetRef="Task_cfa62f97"/>
-    <sequenceFlow id="Flow_f600a73e" sourceRef="Task_cfa62f97" targetRef="Gateway_33049bdf"/>
-    <sequenceFlow id="Flow_bc909404" sourceRef="Gateway_33049bdf" targetRef="EndEvent_68608bf3" name="No - Declined"/>
-    <sequenceFlow id="Flow_65a2ce0c" sourceRef="Gateway_33049bdf" targetRef="Task_e590b5cf" name="Yes - Accepted"/>
-    <sequenceFlow id="Flow_beb69f7e" sourceRef="Task_e590b5cf" targetRef="Task_c53d938b"/>
-    <sequenceFlow id="Flow_37d36d44" sourceRef="Task_c53d938b" targetRef="Task_faab3aa4"/>
-    <sequenceFlow id="Flow_08308d96" sourceRef="Task_faab3aa4" targetRef="Task_1fdc955e"/>
-    <sequenceFlow id="Flow_510534a0" sourceRef="Task_1fdc955e" targetRef="Task_12909c23"/>
-    <sequenceFlow id="Flow_874752bc" sourceRef="Task_12909c23" targetRef="Gateway_1c9f5815"/>
-    <sequenceFlow id="Flow_e74d6f75" sourceRef="Gateway_1c9f5815" targetRef="EndEvent_650fcd06" name="Remedies Imposed"/>
-    <sequenceFlow id="Flow_61e62126" sourceRef="Gateway_1c9f5815" targetRef="EndEvent_8bbbbd68" name="Closed - No Decision"/>
-    <sequenceFlow id="Flow_b9736816" sourceRef="Gateway_1c9f5815" targetRef="EndEvent_76be0450" name="Other"/>
+    <exclusiveGateway id="Gateway_c474c136" name="Case Outcome?" gatewayDirection="Diverging"/>
+    <endEvent id="EndEvent_668ca650" name="Remedies Imposed (80%)"/>
+    <endEvent id="EndEvent_bdf59025" name="Closed - No Decision (16%)"/>
+    <endEvent id="EndEvent_7ca08d2c" name="Other (4%): Admonishment Only 4%"/>
+    <sequenceFlow id="Flow_139a2828" sourceRef="StartEvent_b18b07fc" targetRef="Task_ab2b8a9f"/>
+    <sequenceFlow id="Flow_e82f9966" sourceRef="Task_ab2b8a9f" targetRef="Task_f3eb5d7e"/>
+    <sequenceFlow id="Flow_b9f64fc1" sourceRef="Task_f3eb5d7e" targetRef="Gateway_45dc39f3"/>
+    <sequenceFlow id="Flow_6f8046b0" sourceRef="Gateway_45dc39f3" targetRef="EndEvent_03d8d118" name="No - Declined"/>
+    <sequenceFlow id="Flow_fc427117" sourceRef="Gateway_45dc39f3" targetRef="Task_56383423" name="Yes - Accepted"/>
+    <sequenceFlow id="Flow_525673b3" sourceRef="Task_56383423" targetRef="Task_66d3549a"/>
+    <sequenceFlow id="Flow_c782cac2" sourceRef="Task_66d3549a" targetRef="Task_dac732dd"/>
+    <sequenceFlow id="Flow_670de4b4" sourceRef="Task_dac732dd" targetRef="Task_ae484668"/>
+    <sequenceFlow id="Flow_4bd062d4" sourceRef="Task_ae484668" targetRef="Task_e7e36e07"/>
+    <sequenceFlow id="Flow_c9216c59" sourceRef="Task_e7e36e07" targetRef="Gateway_c474c136"/>
+    <sequenceFlow id="Flow_0289b033" sourceRef="Gateway_c474c136" targetRef="EndEvent_668ca650" name="Remedies Imposed"/>
+    <sequenceFlow id="Flow_378bb7b8" sourceRef="Gateway_c474c136" targetRef="EndEvent_bdf59025" name="Closed - No Decision"/>
+    <sequenceFlow id="Flow_095acb11" sourceRef="Gateway_c474c136" targetRef="EndEvent_7ca08d2c" name="Other"/>
   </process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1bd78345">
-    <bpmndi:BPMNShape id="StartEvent_14286920_di" bpmnElement="StartEvent_14286920">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_e61eac90">
+    <bpmndi:BPMNShape id="StartEvent_b18b07fc_di" bpmnElement="StartEvent_b18b07fc">
       <dc:Bounds x="80" y="200" width="36" height="36"/>
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNShape>
-    <bpmndi:BPMNShape id="Task_717013f8_di" bpmnElement="Task_717013f8">
+    <bpmndi:BPMNShape id="Task_ab2b8a9f_di" bpmnElement="Task_ab2b8a9f">
       <dc:Bounds x="260" y="170" width="120" height="60"/>
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNShape>
-    <bpmndi:BPMNShape id="Task_cfa62f97_di" bpmnElement="Task_cfa62f97">
+    <bpmndi:BPMNShape id="Task_f3eb5d7e_di" bpmnElement="Task_f3eb5d7e">
       <dc:Bounds x="440" y="170" width="120" height="60"/>
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNShape>
-    <bpmndi:BPMNShape id="Gateway_33049bdf_di" bpmnElement="Gateway_33049bdf">
+    <bpmndi:BPMNShape id="Gateway_45dc39f3_di" bpmnElement="Gateway_45dc39f3">
       <dc:Bounds x="620" y="175" width="50" height="50"/>
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNShape>
-    <bpmndi:BPMNShape id="EndEvent_68608bf3_di" bpmnElement="EndEvent_68608bf3">
+    <bpmndi:BPMNShape id="EndEvent_03d8d118_di" bpmnElement="EndEvent_03d8d118">
       <dc:Bounds x="800" y="40" width="36" height="36"/>
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNShape>
-    <bpmndi:BPMNShape id="Task_e590b5cf_di" bpmnElement="Task_e590b5cf">
+    <bpmndi:BPMNShape id="Task_56383423_di" bpmnElement="Task_56383423">
       <dc:Bounds x="800" y="170" width="120" height="60"/>
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNShape>
-    <bpmndi:BPMNShape id="Task_c53d938b_di" bpmnElement="Task_c53d938b">
+    <bpmndi:BPMNShape id="Task_66d3549a_di" bpmnElement="Task_66d3549a">
       <dc:Bounds x="980" y="170" width="120" height="60"/>
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNShape>
-    <bpmndi:BPMNShape id="Task_faab3aa4_di" bpmnElement="Task_faab3aa4">
+    <bpmndi:BPMNShape id="Task_dac732dd_di" bpmnElement="Task_dac732dd">
       <dc:Bounds x="1160" y="170" width="120" height="60"/>
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNShape>
-    <bpmndi:BPMNShape id="Task_1fdc955e_di" bpmnElement="Task_1fdc955e">
+    <bpmndi:BPMNShape id="Task_ae484668_di" bpmnElement="Task_ae484668">
       <dc:Bounds x="1340" y="170" width="120" height="60"/>
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNShape>
-    <bpmndi:BPMNShape id="Task_12909c23_di" bpmnElement="Task_12909c23">
+    <bpmndi:BPMNShape id="Task_e7e36e07_di" bpmnElement="Task_e7e36e07">
       <dc:Bounds x="1520" y="170" width="120" height="60"/>
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNShape>
-    <bpmndi:BPMNShape id="Gateway_1c9f5815_di" bpmnElement="Gateway_1c9f5815">
+    <bpmndi:BPMNShape id="Gateway_c474c136_di" bpmnElement="Gateway_c474c136">
       <dc:Bounds x="1700" y="175" width="50" height="50"/>
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNShape>
-    <bpmndi:BPMNShape id="EndEvent_650fcd06_di" bpmnElement="EndEvent_650fcd06">
+    <bpmndi:BPMNShape id="EndEvent_668ca650_di" bpmnElement="EndEvent_668ca650">
       <dc:Bounds x="1880" y="200" width="36" height="36"/>
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNShape>
-    <bpmndi:BPMNShape id="EndEvent_8bbbbd68_di" bpmnElement="EndEvent_8bbbbd68">
+    <bpmndi:BPMNShape id="EndEvent_bdf59025_di" bpmnElement="EndEvent_bdf59025">
       <dc:Bounds x="1880" y="300" width="36" height="36"/>
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNShape>
-    <bpmndi:BPMNShape id="EndEvent_76be0450_di" bpmnElement="EndEvent_76be0450">
+    <bpmndi:BPMNShape id="EndEvent_7ca08d2c_di" bpmnElement="EndEvent_7ca08d2c">
       <dc:Bounds x="1880" y="400" width="36" height="36"/>
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNShape>
-    <bpmndi:BPMNEdge id="Flow_158ae137_di" bpmnElement="Flow_158ae137">
+    <bpmndi:BPMNEdge id="Flow_139a2828_di" bpmnElement="Flow_139a2828">
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNEdge>
-    <bpmndi:BPMNEdge id="Flow_b90913d9_di" bpmnElement="Flow_b90913d9">
+    <bpmndi:BPMNEdge id="Flow_e82f9966_di" bpmnElement="Flow_e82f9966">
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNEdge>
-    <bpmndi:BPMNEdge id="Flow_f600a73e_di" bpmnElement="Flow_f600a73e">
+    <bpmndi:BPMNEdge id="Flow_b9f64fc1_di" bpmnElement="Flow_b9f64fc1">
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNEdge>
-    <bpmndi:BPMNEdge id="Flow_bc909404_di" bpmnElement="Flow_bc909404">
+    <bpmndi:BPMNEdge id="Flow_6f8046b0_di" bpmnElement="Flow_6f8046b0">
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNEdge>
-    <bpmndi:BPMNEdge id="Flow_65a2ce0c_di" bpmnElement="Flow_65a2ce0c">
+    <bpmndi:BPMNEdge id="Flow_fc427117_di" bpmnElement="Flow_fc427117">
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNEdge>
-    <bpmndi:BPMNEdge id="Flow_beb69f7e_di" bpmnElement="Flow_beb69f7e">
+    <bpmndi:BPMNEdge id="Flow_525673b3_di" bpmnElement="Flow_525673b3">
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNEdge>
-    <bpmndi:BPMNEdge id="Flow_37d36d44_di" bpmnElement="Flow_37d36d44">
+    <bpmndi:BPMNEdge id="Flow_c782cac2_di" bpmnElement="Flow_c782cac2">
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNEdge>
-    <bpmndi:BPMNEdge id="Flow_08308d96_di" bpmnElement="Flow_08308d96">
+    <bpmndi:BPMNEdge id="Flow_670de4b4_di" bpmnElement="Flow_670de4b4">
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNEdge>
-    <bpmndi:BPMNEdge id="Flow_510534a0_di" bpmnElement="Flow_510534a0">
+    <bpmndi:BPMNEdge id="Flow_4bd062d4_di" bpmnElement="Flow_4bd062d4">
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNEdge>
-    <bpmndi:BPMNEdge id="Flow_874752bc_di" bpmnElement="Flow_874752bc">
+    <bpmndi:BPMNEdge id="Flow_c9216c59_di" bpmnElement="Flow_c9216c59">
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNEdge>
-    <bpmndi:BPMNEdge id="Flow_e74d6f75_di" bpmnElement="Flow_e74d6f75">
+    <bpmndi:BPMNEdge id="Flow_0289b033_di" bpmnElement="Flow_0289b033">
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNEdge>
-    <bpmndi:BPMNEdge id="Flow_61e62126_di" bpmnElement="Flow_61e62126">
+    <bpmndi:BPMNEdge id="Flow_378bb7b8_di" bpmnElement="Flow_378bb7b8">
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNEdge>
-    <bpmndi:BPMNEdge id="Flow_b9736816_di" bpmnElement="Flow_b9736816">
+    <bpmndi:BPMNEdge id="Flow_095acb11_di" bpmnElement="Flow_095acb11">
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
