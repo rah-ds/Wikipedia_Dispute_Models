@@ -258,6 +258,11 @@ class WikiClient:
 
         self._track_request()
 
+        # Small inter-request delay to stay under rate limits.
+        # Authenticated: 0.5s → ~7200 req/hr (under 5000/hr with overhead).
+        # Unauthenticated: 2.0s → ~1800 req/hr (under 500/hr in practice).
+        time.sleep(self.default_delay)
+
         resp = self.session.get(self.api_url, params=params, timeout=60)
         resp.raise_for_status()
         data = resp.json()
