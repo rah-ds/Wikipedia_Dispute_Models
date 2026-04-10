@@ -1,4 +1,4 @@
-.PHONY: install install-dev clean data-dirs help lint fetch-all fetch-full fetch-arb fetch-drn fetch-small test test-unit test-cov fetch-venues fetch-ani fetch-talk fetch-arb-dfs fetch-arb-dfs-sample fetch-arb-dfs-sample-full fetch-arb-dfs-all fetch-arb-dfs-all-full update-arb-cases-list fetch-lifecycle fetch-lifecycle-dry fetch-lifecycle-sample fetch-lifecycle-all setup pull pull-status pull-reset validate archive clear-results pull-full-arb pull-full-arb-estimate pull-full-arb-force
+.PHONY: install install-dev install-ml clean data-dirs help lint fetch-all fetch-full fetch-arb fetch-drn fetch-small test test-unit test-cov fetch-venues fetch-ani fetch-talk fetch-arb-dfs fetch-arb-dfs-sample fetch-arb-dfs-sample-full fetch-arb-dfs-all fetch-arb-dfs-all-full update-arb-cases-list fetch-lifecycle fetch-lifecycle-dry fetch-lifecycle-sample fetch-lifecycle-all setup pull pull-status pull-reset validate archive clear-results pull-full-arb pull-full-arb-estimate pull-full-arb-force train train-single survival survival-demo mlflow-ui
 
 # =============================================================================
 # QUICK START - Three simple commands to get started
@@ -325,6 +325,44 @@ fetch-arb-dfs-all-full: data-dirs
 	done < $(ARB_CASES_FILE)
 	@echo ""
 	@echo "✓ FULL arbitration cases fetched to data/raw/arbitration/"
+
+# =============================================================================
+# MODELING — classification and survival analysis
+# =============================================================================
+# Requires: make install-ml  (installs scikit-learn, mlflow, lifelines)
+# Requires: data/processed/features.parquet  (run 'make build-dataset' first)
+
+# Install ML extras (scikit-learn, mlflow, lifelines)
+install-ml:
+	uv pip install -e ".[ml]"
+
+# Train baseline classifiers (logistic regression, random forest) on all targets
+# Logs results to MLflow (view with 'make mlflow-ui')
+train:
+	uv run python scripts/train.py
+
+# Train a specific target or model
+# Usage: make train-single TARGET=was_sanctioned MODEL=logistic
+train-single:
+	uv run python scripts/train.py \
+		$(if $(TARGET),--target $(TARGET),) \
+		$(if $(MODEL),--model $(MODEL),)
+
+# Survival analysis: Kaplan-Meier + Cox PH on real case timestamps
+survival:
+	uv run python scripts/survival_analysis.py --output artifacts/imgs/survival
+
+# Survival analysis demo with synthetic data (no real data required)
+survival-demo:
+	uv run python scripts/survival_analysis.py --demo --output artifacts/imgs/survival
+
+# Launch the MLflow tracking UI
+mlflow-ui:
+	uv run mlflow ui --backend-store-uri artifacts/mlruns --port 5000
+
+# =============================================================================
+# CLEAN
+# =============================================================================
 
 # Clean generated files (cache, pycache, logs)
 clean:
