@@ -1017,6 +1017,30 @@ class WikiClient:
 
         return entries[:limit]
 
+    def resolve_redirect(self, page):  # type: ignore[return]
+        """
+        Follow a redirect to its target page if the page is a redirect.
+
+        Handles the common case where Wikipedia case titles redirect to a
+        differently-capitalised or renamed page (e.g., "Gamergate" →
+        "GamerGate controversy").  Returns the original page unchanged if
+        it is not a redirect or if any error occurs.
+
+        Args:
+            page: pywikibot Page object
+
+        Returns:
+            The redirect target Page if page is a redirect, else the original.
+        """
+        try:
+            if page.isRedirectPage():
+                target = page.getRedirectTarget()
+                logger.debug("Redirect: %s → %s", page.title(), target.title())
+                return target
+        except Exception as e:
+            logger.debug("Could not resolve redirect for %s: %s", page.title(), e)
+        return page
+
     @retry_on_rate_limit()
     def get_user_abuse_hits(self, username: str, limit: int = 50) -> dict:
         """

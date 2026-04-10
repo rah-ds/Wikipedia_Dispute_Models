@@ -1,4 +1,4 @@
-.PHONY: install install-dev clean data-dirs help lint fetch-all fetch-full fetch-arb fetch-drn fetch-small test test-unit test-cov fetch-venues fetch-ani fetch-talk fetch-arb-dfs fetch-arb-dfs-sample fetch-arb-dfs-sample-full fetch-arb-dfs-all fetch-arb-dfs-all-full update-arb-cases-list fetch-lifecycle fetch-lifecycle-dry fetch-lifecycle-sample fetch-lifecycle-all setup pull pull-status pull-reset validate archive clear-results pull-full-arb pull-full-arb-estimate pull-full-arb-force rivanna-sync rivanna-setup rivanna-submit rivanna-status rivanna-logs rivanna-pull rivanna-clean rivanna-ssh rivanna-train
+.PHONY: install install-dev clean data-dirs help lint fetch-all fetch-full fetch-arb fetch-drn fetch-small test test-unit test-cov fetch-venues fetch-ani fetch-talk fetch-arb-dfs fetch-arb-dfs-sample fetch-arb-dfs-sample-full fetch-arb-dfs-all fetch-arb-dfs-all-full update-arb-cases-list fetch-lifecycle fetch-lifecycle-dry fetch-lifecycle-sample fetch-lifecycle-all setup pull pull-status pull-reset validate archive clear-results pull-full-arb pull-full-arb-estimate pull-full-arb-force rivanna-sync rivanna-setup rivanna-submit rivanna-status rivanna-logs rivanna-pull rivanna-clean rivanna-ssh rivanna-train enrich-diffs enrich-diffs-dry fetch-declined fetch-declined-dry
 
 # =============================================================================
 # QUICK START - Three simple commands to get started
@@ -73,6 +73,13 @@ help:
 	@echo "  fetch-lifecycle-dry CASE=<n>  Preview lifecycle fetch"
 	@echo "  fetch-lifecycle-sample        Fetch 5 sample cases with full lifecycle"
 	@echo "  fetch-lifecycle-all           Fetch ALL cases with full lifecycle"
+	@echo ""
+	@echo "Data Quality:"
+	@echo "  enrich-diffs              Fetch evidence diffs for all case JSONs"
+	@echo "  enrich-diffs CASE=<name>  Fetch evidence diffs for one case"
+	@echo "  enrich-diffs-dry          Preview enrich-diffs without API calls"
+	@echo "  fetch-declined            Fetch declined ArbCom requests (negative class)"
+	@echo "  fetch-declined-dry        Preview fetch-declined without API calls"
 	@echo ""
 	@echo "Rivanna HPC (requires RIVANNA_ID in .env + SSH key):"
 	@echo "  make rivanna-sync    Sync project to Rivanna /scratch"
@@ -504,6 +511,26 @@ pull-full-arb-force: data-dirs
 	@echo "Use Ctrl+C to interrupt (progress is saved, resume with same command)"
 	@echo ""
 	uv run python scripts/pull.py --config full
+
+# =============================================================================
+# DATA QUALITY: EVIDENCE DIFFS & DECLINED REQUESTS
+# =============================================================================
+
+# Enrich arbitration case JSONs with evidence page diffs
+# Usage: make enrich-diffs
+#        make enrich-diffs CASE="Gamergate"
+enrich-diffs: data-dirs
+	uv run python scripts/enrich_evidence_diffs.py $(if $(CASE),--case "$(CASE)",)
+
+enrich-diffs-dry: data-dirs
+	uv run python scripts/enrich_evidence_diffs.py --dry-run $(if $(CASE),--case "$(CASE)",)
+
+# Fetch declined arbitration requests (negative class for escalation models)
+fetch-declined: data-dirs
+	uv run python scripts/fetch_declined_rfas.py
+
+fetch-declined-dry: data-dirs
+	uv run python scripts/fetch_declined_rfas.py --dry-run
 
 # =============================================================================
 # RIVANNA HPC TARGETS
