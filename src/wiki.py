@@ -11,6 +11,7 @@ from typing import Callable, TypeVar
 
 import pywikibot
 from pywikibot import data as pywikibot_data
+import pywikibot.data.api  # ensure submodule is loaded
 from pywikibot.exceptions import APIError, ServerError
 import os
 
@@ -84,11 +85,13 @@ def retry_on_rate_limit(
                     raise
 
             # All retries exhausted
-            logger.error(f"Max retries ({max_retries}) exceeded for {func.__name__}")
+            logger.error(
+                f"Max retries ({max_retries}) exceeded for {getattr(func, '__name__', repr(func))}"
+            )
             if last_exception is not None:
                 raise last_exception
             raise RuntimeError(
-                f"Max retries ({max_retries}) exceeded for {func.__name__}"
+                f"Max retries ({max_retries}) exceeded for {getattr(func, '__name__', repr(func))}"
             )
 
         return wrapper
@@ -120,11 +123,9 @@ class WikiClient:
                     "WIKIPEDIA_ACCESS_TOKEN not found in environment variables"
                 )
 
-            # Setup OAuth headers
-            self.site._loginstatus = (
-                True  # pretend logged in to bypass anonymous checks
-            )
-            self.site._custom_headers = {"Authorization": f"Bearer {token}"}
+            # Intentionally set private pywikibot internals to inject OAuth headers
+            setattr(self.site, "_loginstatus", True)
+            setattr(self.site, "_custom_headers", {"Authorization": f"Bearer {token}"})
 
         # Request tracking
         self._request_count = 0
@@ -421,7 +422,7 @@ class WikiClient:
         """Get the talk page for an article."""
         page = self.get_page(title)
         talk = page.toggleTalkPage()
-        return talk if talk.exists() else None
+        return talk if talk is not None and talk.exists() else None
 
     # =========================================================================
     # User Information Methods
