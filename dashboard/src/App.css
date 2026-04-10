@@ -316,6 +316,29 @@
   font-weight: 600;
 }
 
+/* Case groups */
+.bpmn-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-left: 2px solid var(--accent);
+  margin: 6px 0 2px;
+  padding-left: 0;
+}
+
+.bpmn-group__label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--accent);
+  padding: 6px 12px 4px;
+}
+
+.bpmn-item--indented {
+  padding-left: 20px;
+}
+
 /* Viewer panel */
 .bpmn-viewer {
   background: var(--surface);
@@ -382,6 +405,7 @@
   padding: 0;
   align-items: stretch;
   justify-content: stretch;
+  background: #fff;
 }
 
 .bpmn-viewer__body img {
@@ -491,6 +515,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  background: #fff;
 }
 
 .bpmn-overlay__hint {
