@@ -115,6 +115,9 @@ def extract_article_links(content: str) -> list[str]:
     for link in wikicode.filter_wikilinks():
         title = str(link.title).strip()
 
+        # Normalise underscores so "User_talk:" matches too
+        title_normalised = title.replace("_", " ")
+
         # Skip non-article namespaces
         skip_prefixes = (
             "User:",
@@ -133,8 +136,10 @@ def extract_article_links(content: str) -> list[str]:
             "Portal:",
             "Draft:",
             "Module:",
+            "MOS:",
+            "MediaWiki:",
         )
-        if title.startswith(skip_prefixes):
+        if title_normalised.startswith(skip_prefixes):
             continue
 
         if title.startswith("#"):
@@ -458,7 +463,7 @@ def fetch_dispute_lifecycle(
     ani_limit: int = 30,
     drn_archive_limit: int = 20,
     ani_archive_limit: int = 50,
-    delay: float = 0.5,
+    delay: float | None = None,
 ) -> dict:
     """
     Trace the full dispute lifecycle from an arbitration case.
@@ -483,6 +488,10 @@ def fetch_dispute_lifecycle(
     Returns:
         Dictionary with dispute lifecycle data organised by venue
     """
+    # Use the client's adaptive delay when caller didn't specify one
+    if delay is None:
+        delay = getattr(client, "default_delay", 0.5)
+
     # Try to find the correct path pattern for this case
     case_prefix, path_pattern = find_arb_case_path(client, case_name)
 
