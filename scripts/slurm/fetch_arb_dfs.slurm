@@ -54,6 +54,18 @@ fi
 echo "Case [$TASK_ID/$TOTAL_CASES]: $CASE_NAME"
 echo ""
 
+# ---------------------------------------------------------------------------
+# Skip if output already exists (allows safe resubmission after cancel)
+# ---------------------------------------------------------------------------
+SAFE_NAME=$(echo "$CASE_NAME" | tr '/ :' '___')
+EXISTING=$(find data/raw/arbitration -name "arb_dfs_${SAFE_NAME}_*.json" 2>/dev/null | head -1)
+if [[ -n "$EXISTING" ]]; then
+    echo "SKIP: Output already exists: $EXISTING"
+    log_progress "arb_dfs" "$CASE_NAME" "SUCCESS" "skipped=already_exists,file=$(basename $EXISTING)"
+    print_summary "arb_dfs" "$CASE_NAME" "SKIPPED (output exists)"
+    exit 0
+fi
+
 log_progress "arb_dfs" "$CASE_NAME" "STARTED" "task=${TASK_ID}/${TOTAL_CASES}"
 
 # Stagger start times to avoid burst API requests when concurrent tasks launch

@@ -92,8 +92,9 @@ else
 fi
 
 echo "[3/4] Submitting: fetch_arb_dfs (array 1-${TOTAL_CASES}, max 1 concurrent)"
+echo "       Depends on: update_arb_cases ($UPDATE_JOB) AND fetch_full ($FULL_JOB)"
 ARB_DFS_JOB=$(sbatch --export="$EXPORT_VARS" \
-    --dependency=afterok:${UPDATE_JOB} \
+    --dependency=afterany:${UPDATE_JOB},afterany:${FULL_JOB} \
     --array=1-${TOTAL_CASES}%1 \
     --parsable \
     "$SCRIPT_DIR/fetch_arb_dfs.slurm")
@@ -103,8 +104,9 @@ echo "  Job ID: $ARB_DFS_JOB"
 # Step 4: Fetch lifecycle (depends on step 1 for arb_cases.txt)
 # ---------------------------------------------------------------------------
 echo "[4/4] Submitting: fetch_lifecycle (array 1-${TOTAL_CASES}, max 1 concurrent)"
+echo "       Depends on: fetch_arb_dfs ($ARB_DFS_JOB)"
 LIFECYCLE_JOB=$(sbatch --export="$EXPORT_VARS" \
-    --dependency=afterok:${UPDATE_JOB} \
+    --dependency=afterany:${ARB_DFS_JOB} \
     --array=1-${TOTAL_CASES}%1 \
     --parsable \
     "$SCRIPT_DIR/fetch_lifecycle.slurm")
@@ -124,10 +126,10 @@ echo "    fetch_full       : $FULL_JOB"
 echo "    fetch_arb_dfs    : $ARB_DFS_JOB (array)"
 echo "    fetch_lifecycle  : $LIFECYCLE_JOB (array)"
 echo ""
-echo "  Dependencies:"
+echo "  Dependencies (serialized to avoid API rate limits):"
 echo "    fetch_full       -> runs immediately"
-echo "    fetch_arb_dfs    -> waits for update_arb_cases ($UPDATE_JOB)"
-echo "    fetch_lifecycle  -> waits for update_arb_cases ($UPDATE_JOB)"
+echo "    fetch_arb_dfs    -> waits for update_arb_cases + fetch_full"
+echo "    fetch_lifecycle  -> waits for fetch_arb_dfs"
 echo ""
 echo "  Monitor:"
 echo "    squeue -u \$USER                     # view queue"

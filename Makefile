@@ -550,6 +550,7 @@ rivanna-sync:
 		--exclude='.venv' --exclude='__pycache__' --exclude='node_modules' \
 		--exclude='data/raw' --exclude='data/processed' --exclude='apicache' \
 		--exclude='.git' --exclude='slurmlogs/*.out' --exclude='slurmlogs/*.err' \
+		--exclude='slurmlogs/progress_*.csv' --exclude='slurmlogs/progress_*.csv.lock' \
 		./ $(RIVANNA_HOST):$(RIVANNA_PROJECT)/
 	@echo "✓ Synced to $(RIVANNA_HOST):$(RIVANNA_PROJECT)"
 
