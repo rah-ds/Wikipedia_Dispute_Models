@@ -13,7 +13,7 @@ Usage
   python scripts/download_gemma4.py
 
   # Specific size / output dir
-  python scripts/download_gemma4.py --model google/gemma-4-9b-it
+  python scripts/download_gemma4.py --model google/gemma-4-E4B-it
   python scripts/download_gemma4.py --model google/gemma-4-27b-it \\
       --cache-dir /scratch/YOUR_COMPUTE_ID/models
 
@@ -54,18 +54,14 @@ except ImportError:
 # Constants — update model ID once Gemma 4 HF page is confirmed
 # ─────────────────────────────────────────────────────────────────────────────
 
-# TODO: Replace with the confirmed HuggingFace model ID when Gemma 4 is
-#       available on the Hub.  Common candidates:
-#         google/gemma-4-9b-it   (instruction-tuned, 9B params)
-#         google/gemma-4-27b-it  (instruction-tuned, 27B params)
-DEFAULT_MODEL_ID = "google/gemma-4-9b-it"
+DEFAULT_MODEL_ID = "google/gemma-4-E4B-it"
 
-# Approximate VRAM requirements (fp16 weights) — for choosing instance type
+# Approximate VRAM requirements (bf16 weights) — for choosing instance type
 VRAM_ESTIMATES = {
-    "google/gemma-4-1b-it": "~2 GB",
-    "google/gemma-4-4b-it": "~8 GB",
-    "google/gemma-4-9b-it": "~18 GB",
-    "google/gemma-4-27b-it": "~54 GB  (consider 4-bit quant or multi-GPU)",
+    "google/gemma-4-E2B-it": "~10 GB  (5B total, 2.3B effective)",
+    "google/gemma-4-E4B-it": "~16 GB  (8B total, 4.5B effective)",
+    "google/gemma-4-26B-A4B-it": "~52 GB  (MoE, 3.8B active — needs 4-bit quant for A100 40GB)",
+    "google/gemma-4-31B-it": "~62 GB  (dense — needs 4-bit quant or multi-GPU)",
 }
 
 

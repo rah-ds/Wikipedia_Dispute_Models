@@ -15,7 +15,8 @@
 ## plus arbitration cases and DRN data.
 ## Equivalent to: make fetch-full
 
-source "${SLURM_SUBMIT_DIR}/scripts/slurm/common.sh"
+_PROJECT="${WIKI_PROJECT_ROOT:-/scratch/rah5ff/Wikipedia_Dispute_Models}"
+source "${_PROJECT}/scripts/slurm/common.sh"
 
 log_progress "fetch_full" "full_dataset" "STARTED" "51 articles from full_articles.yaml"
 

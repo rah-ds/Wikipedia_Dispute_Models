@@ -15,7 +15,8 @@
 ## Category:Wikipedia_arbitration_cases and save to artifacts/arb_cases.txt.
 ## This is a prerequisite for fetch_arb_dfs and fetch_lifecycle array jobs.
 
-source "${SLURM_SUBMIT_DIR}/scripts/slurm/common.sh"
+_PROJECT="${WIKI_PROJECT_ROOT:-/scratch/rah5ff/Wikipedia_Dispute_Models}"
+source "${_PROJECT}/scripts/slurm/common.sh"
 
 echo "Fetching arbitration case list from Wikipedia..."
 

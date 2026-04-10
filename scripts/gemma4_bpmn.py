@@ -80,8 +80,7 @@ except ImportError:
 # Constants
 # ─────────────────────────────────────────────────────────────────────────────
 
-# TODO: confirm model ID once Gemma 4 is available on HuggingFace Hub
-DEFAULT_MODEL_ID = "google/gemma-4-9b-it"
+DEFAULT_MODEL_ID = "google/gemma-4-E4B-it"
 DEFAULT_OUTPUT_DIR = Path("artifacts/bpmn/gemma4")
 DEFAULT_MAX_NEW_TOKENS = 1024
 DEFAULT_TEMPERATURE = 0.2  # low temp → more deterministic JSON

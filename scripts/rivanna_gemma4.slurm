@@ -27,7 +27,7 @@
 #SBATCH --job-name=gemma4_bpmn
 #SBATCH --account=shakeri_ds6050          # UVA DS6050 allocation
 #SBATCH --partition=gpu                  # gpu  |  bii-gpu  |  standard
-#SBATCH --gres=gpu:a100:1               # A100 40 GB fits gemma-4-9b-it in fp16
+#SBATCH --gres=gpu:a100:1               # A100 40 GB fits gemma-4-E4B-it in bf16
                                          # Use gpu:a100:2 for 27B model
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G                        # system RAM (not VRAM)
@@ -50,7 +50,7 @@ module load miniforge/24.3.0-py3.11     # or anaconda/2023.07-py3.11
 PROJECT_DIR="$HOME/Wikipedia_Dispute_Models"   # TODO: adjust to your path
 
 # Where model weights live (use scratch for large files)
-MODEL_DIR="/scratch/$USER/models/gemma4/google/gemma-4-9b-it"  # set by download script
+MODEL_DIR="/scratch/$USER/models/gemma4/models--google--gemma-4-E4B-it/snapshots/ab4d2025e9fbb0b0dbbf5dbde081d3e546155586"  # set by download script
 
 # Input: directory of *.txt dispute files to process
 INPUT_DIR="$PROJECT_DIR/data/raw/drn"          # TODO: adjust to your input dir
@@ -95,7 +95,7 @@ echo "=========================================="
 if [ ! -d "$MODEL_DIR" ]; then
     echo "Model not found at $MODEL_DIR — downloading ..."
     python scripts/download_gemma4.py \
-        --model google/gemma-4-9b-it \
+        --model google/gemma-4-E4B-it \
         --cache-dir "/scratch/$USER/models/gemma4"
 fi
 
@@ -140,9 +140,9 @@ exit $EXIT_CODE
 # standard     CPU only              No GPU; not suitable for this script
 #
 # Request specific GPU type:
-#   --gres=gpu:a100:1    → A100 40GB (fits gemma-4-9b-it fp16)
-#   --gres=gpu:v100:1    → V100 32GB (use --quantize 8bit for 9B model)
-#   --gres=gpu:a100:2    → two A100s (fits gemma-4-27b-it fp16)
+#   --gres=gpu:a100:1    → A100 40GB (fits gemma-4-E4B-it bf16)
+#   --gres=gpu:v100:1    → V100 32GB (use --quantize 8bit for E4B model)
+#   --gres=gpu:a100:2    → two A100s (fits gemma-4-31B-it bf16)
 #
 # Check available GPUs:
 #   sinfo -p gpu --format="%N %G %m"
@@ -171,7 +171,7 @@ exit $EXIT_CODE
 #  4. Download model weights to scratch (fast storage):
 #       export HF_TOKEN=hf_YOUR_TOKEN_HERE
 #       python scripts/download_gemma4.py \
-#           --model google/gemma-4-9b-it \
+#           --model google/gemma-4-E4B-it \
 #           --cache-dir /scratch/$USER/models/gemma4
 #
 #  5. Copy or symlink your dispute text files to data/raw/ if not already there

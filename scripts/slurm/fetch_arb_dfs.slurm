@@ -22,7 +22,8 @@
 ## The %2 limits to 2 concurrent tasks to respect Wikipedia API rate limits.
 ## Adjust the concurrency cap as needed: %1 (safest), %2 (default), %4 (aggressive).
 
-source "${SLURM_SUBMIT_DIR}/scripts/slurm/common.sh"
+_PROJECT="${WIKI_PROJECT_ROOT:-/scratch/rah5ff/Wikipedia_Dispute_Models}"
+source "${_PROJECT}/scripts/slurm/common.sh"
 
 # ---------------------------------------------------------------------------
 # Read case name from arb_cases.txt using the array task ID as line number
