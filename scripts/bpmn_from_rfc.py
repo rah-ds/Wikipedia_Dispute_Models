@@ -26,164 +26,224 @@ import json
 import re
 import sys
 import uuid
+from collections import defaultdict
 from pathlib import Path
+from xml.dom import minidom
+from xml.etree import ElementTree as ET
 
 from processpiper.text2diagram import render as render_piperflow
 
 
 # ---------------------------------------------------------------------------
-# BPMN 2.0 XML Builder (zero-dependency, stdlib only)
+# BPMN 2.0 XML namespaces and layout constants
+# ---------------------------------------------------------------------------
+
+_NS_BPMN = "http://www.omg.org/spec/BPMN/20100524/MODEL"
+_NS_BPMNDI = "http://www.omg.org/spec/BPMN/20100524/DI"
+_NS_DC = "http://www.omg.org/spec/DD/20100524/DC"
+_NS_DI = "http://www.omg.org/spec/DD/20100524/DI"
+
+_POOL_X = 100
+_POOL_Y = 80
+_POOL_HEADER_W = 30
+_LANE_H = 160
+_TASK_W = 130
+_TASK_H = 60
+_GW_W = 50
+_GW_H = 50
+_EVT_W = 36
+_EVT_H = 36
+_STEP_GAP = 160
+_FIRST_X = _POOL_X + _POOL_HEADER_W + 80
+
+RFC_CASE_LANES = ["Submitter", "Steward"]
+RFC_AGG_LANES = ["Community Member", "Screening", "Steward"]
+
+
+# ---------------------------------------------------------------------------
+# Swimlane BPMN 2.0 XML Builder
 # ---------------------------------------------------------------------------
 
 
-class BpmnXmlBuilder:
-    EVENT_SIZE = 36
-    GATEWAY_SIZE = 50
-    NODE_W = 120
-    NODE_H = 60
-    X_STEP = 180
-    Y_CENTER = 200
+class SwimlaneBpmnBuilder:
+    """Builds BPMN 2.0 XML with a collaboration pool containing swimlanes."""
 
-    def __init__(self, name: str):
-        self.name = name
-        self.process_id = "Process_" + self._uid()
-        self.nodes: list[dict] = []
-        self.flows: list[tuple] = []
-        self._x = 80
+    def __init__(self, process_name: str, lanes: list[str]):
+        self.process_name = process_name
+        self.lanes = lanes
+        self._lane_ids = {name: "Lane_" + uuid.uuid4().hex[:8] for name in lanes}
+        self._collab_id = "Collab_" + uuid.uuid4().hex[:8]
+        self._part_id = "Participant_" + uuid.uuid4().hex[:8]
+        self._proc_id = "Process_" + uuid.uuid4().hex[:8]
+        self._elements: list[tuple[str, str, str, str, int]] = []
+        self._flows: list[tuple[str, str, str, str]] = []
+        self._step = 0
 
-    def add_start(self, label: str) -> str:
-        nid = "StartEvent_" + self._uid()
-        self.nodes.append(
-            {
-                "id": nid,
-                "type": "startEvent",
-                "label": label,
-                "x": self._x,
-                "y": self.Y_CENTER,
-                "w": self.EVENT_SIZE,
-                "h": self.EVENT_SIZE,
-            }
-        )
-        self._x += self.X_STEP
-        return nid
+    def _add(self, label: str, etype: str, lane: str) -> str:
+        eid = etype[:6].replace("Event", "Evt").replace("Gatew", "GW_") + "_" + uuid.uuid4().hex[:8]
+        self._elements.append((eid, label, etype, lane, self._step))
+        self._step += 1
+        return eid
 
-    def add_end(self, label: str, x_off: int = 0, y_off: int = 0) -> str:
-        nid = "EndEvent_" + self._uid()
-        self.nodes.append(
-            {
-                "id": nid,
-                "type": "endEvent",
-                "label": label,
-                "x": self._x + x_off,
-                "y": self.Y_CENTER + y_off,
-                "w": self.EVENT_SIZE,
-                "h": self.EVENT_SIZE,
-            }
-        )
-        return nid
+    def start(self, label: str, lane: str) -> str:
+        return self._add(label, "startEvent", lane)
 
-    def add_task(
-        self, label: str, task_type: str = "userTask", x_off: int = 0, y_off: int = 0
-    ) -> str:
-        nid = "Task_" + self._uid()
-        self.nodes.append(
-            {
-                "id": nid,
-                "type": task_type,
-                "label": label,
-                "x": self._x + x_off,
-                "y": self.Y_CENTER - self.NODE_H // 2 + y_off,
-                "w": self.NODE_W,
-                "h": self.NODE_H,
-            }
-        )
-        self._x += self.X_STEP
-        return nid
+    def end(self, label: str, lane: str) -> str:
+        return self._add(label, "endEvent", lane)
 
-    def add_gateway(self, label: str, x_off: int = 0, y_off: int = 0) -> str:
-        nid = "Gateway_" + self._uid()
-        self.nodes.append(
-            {
-                "id": nid,
-                "type": "exclusiveGateway",
-                "label": label,
-                "x": self._x + x_off,
-                "y": self.Y_CENTER - self.GATEWAY_SIZE // 2 + y_off,
-                "w": self.GATEWAY_SIZE,
-                "h": self.GATEWAY_SIZE,
-            }
-        )
-        self._x += self.X_STEP
-        return nid
+    def task(self, label: str, lane: str, user: bool = False) -> str:
+        return self._add(label, "userTask" if user else "task", lane)
 
-    def connect(self, src: str, tgt: str, label: str | None = None) -> str:
-        fid = "Flow_" + self._uid()
-        self.flows.append((fid, src, tgt, label))
+    def gateway(self, label: str, lane: str, exclusive: bool = True) -> str:
+        return self._add(label, "exclusiveGateway" if exclusive else "parallelGateway", lane)
+
+    def flow(self, src: str, tgt: str, label: str = "") -> str:
+        fid = "Flow_" + uuid.uuid4().hex[:8]
+        self._flows.append((fid, src, tgt, label))
         return fid
 
-    @staticmethod
-    def _esc(text: str) -> str:
-        return (
-            text.replace("&", "&amp;")
-            .replace("<", "&lt;")
-            .replace(">", "&gt;")
-            .replace('"', "&quot;")
-            .replace("'", "&apos;")
-        )
-
-    @staticmethod
-    def _uid() -> str:
-        return uuid.uuid4().hex[:8]
+    def _bounds(self, etype: str, lane: str, step: int) -> tuple[int, int, int, int]:
+        lane_idx = self.lanes.index(lane)
+        lane_top = _POOL_Y + lane_idx * _LANE_H
+        cx = _FIRST_X + step * _STEP_GAP
+        if etype in ("startEvent", "endEvent"):
+            w, h = _EVT_W, _EVT_H
+        elif "Gateway" in etype:
+            w, h = _GW_W, _GW_H
+        else:
+            w, h = _TASK_W, _TASK_H
+        y = lane_top + (_LANE_H - h) // 2
+        return cx, y, w, h
 
     def to_xml(self) -> str:
-        ind = "  "
-        nodes_xml, shapes_xml, edges_xml = [], [], []
-        for n in self.nodes:
-            nid, ntype, lbl = n["id"], n["type"], self._esc(n["label"])
-            if ntype in ("startEvent", "endEvent"):
-                nodes_xml.append(f'{ind * 2}<{ntype} id="{nid}" name="{lbl}"/>')
-            elif ntype == "exclusiveGateway":
-                nodes_xml.append(
-                    f'{ind * 2}<exclusiveGateway id="{nid}" name="{lbl}" gatewayDirection="Diverging"/>'
-                )
-            else:
-                nodes_xml.append(f'{ind * 2}<{ntype} id="{nid}" name="{lbl}"/>')
-            shapes_xml.append(
-                f'{ind * 2}<bpmndi:BPMNShape id="{nid}_di" bpmnElement="{nid}">\n'
-                f'{ind * 3}<dc:Bounds x="{n["x"]}" y="{n["y"]}" width="{n["w"]}" height="{n["h"]}"/>\n'
-                f"{ind * 3}<bpmndi:BPMNLabel/>\n"
-                f"{ind * 2}</bpmndi:BPMNShape>"
+        for prefix, uri in (
+            ("bpmn", _NS_BPMN),
+            ("bpmndi", _NS_BPMNDI),
+            ("dc", _NS_DC),
+            ("di", _NS_DI),
+        ):
+            ET.register_namespace(prefix, uri)
+
+        root = ET.Element(
+            f"{{{_NS_BPMN}}}definitions",
+            {
+                "id": "Defs_" + uuid.uuid4().hex[:8],
+                "targetNamespace": "http://bpmn.io/schema/bpmn",
+                "exporter": "RFC-BPMN-Generator",
+                "exporterVersion": "2.0",
+            },
+        )
+
+        collab = ET.SubElement(root, f"{{{_NS_BPMN}}}collaboration", {"id": self._collab_id})
+        ET.SubElement(
+            collab, f"{{{_NS_BPMN}}}participant",
+            {"id": self._part_id, "name": self.process_name, "processRef": self._proc_id},
+        )
+
+        process = ET.SubElement(
+            root, f"{{{_NS_BPMN}}}process", {"id": self._proc_id, "isExecutable": "false"}
+        )
+
+        lane_set = ET.SubElement(process, f"{{{_NS_BPMN}}}laneSet", {"id": "LS_" + uuid.uuid4().hex[:8]})
+        for lane_name in self.lanes:
+            lane_el = ET.SubElement(
+                lane_set, f"{{{_NS_BPMN}}}lane",
+                {"id": self._lane_ids[lane_name], "name": lane_name},
             )
-        for fid, src, tgt, lbl in self.flows:
-            name_attr = f' name="{self._esc(lbl)}"' if lbl else ""
-            nodes_xml.append(
-                f'{ind * 2}<sequenceFlow id="{fid}" sourceRef="{src}" targetRef="{tgt}"{name_attr}/>'
+            for eid, _lbl, _et, elane, _step in self._elements:
+                if elane == lane_name:
+                    ET.SubElement(lane_el, f"{{{_NS_BPMN}}}flowNodeRef").text = eid
+
+        incoming: dict[str, list[str]] = defaultdict(list)
+        outgoing: dict[str, list[str]] = defaultdict(list)
+        for fid, src, tgt, _lbl in self._flows:
+            outgoing[src].append(fid)
+            incoming[tgt].append(fid)
+
+        for eid, label, etype, _lane, _step in self._elements:
+            el = ET.SubElement(process, f"{{{_NS_BPMN}}}{etype}", {"id": eid, "name": label})
+            for fid in incoming.get(eid, []):
+                ET.SubElement(el, f"{{{_NS_BPMN}}}incoming").text = fid
+            for fid in outgoing.get(eid, []):
+                ET.SubElement(el, f"{{{_NS_BPMN}}}outgoing").text = fid
+
+        for fid, src, tgt, label in self._flows:
+            attrs: dict[str, str] = {"id": fid, "sourceRef": src, "targetRef": tgt}
+            if label:
+                attrs["name"] = label
+            ET.SubElement(process, f"{{{_NS_BPMN}}}sequenceFlow", attrs)
+
+        max_step = max((e[4] for e in self._elements), default=0)
+        pool_w = _FIRST_X - _POOL_X + (max_step + 1) * _STEP_GAP + 80
+        pool_h = _LANE_H * len(self.lanes)
+
+        diagram = ET.SubElement(root, f"{{{_NS_BPMNDI}}}BPMNDiagram", {"id": "Diag_" + uuid.uuid4().hex[:8]})
+        plane = ET.SubElement(
+            diagram, f"{{{_NS_BPMNDI}}}BPMNPlane",
+            {"id": "Plane_" + uuid.uuid4().hex[:8], "bpmnElement": self._collab_id},
+        )
+
+        ps = ET.SubElement(
+            plane, f"{{{_NS_BPMNDI}}}BPMNShape",
+            {"id": self._part_id + "_di", "bpmnElement": self._part_id, "isHorizontal": "true"},
+        )
+        ET.SubElement(ps, f"{{{_NS_DC}}}Bounds", {
+            "x": str(_POOL_X), "y": str(_POOL_Y), "width": str(pool_w), "height": str(pool_h),
+        })
+
+        for i, lane_name in enumerate(self.lanes):
+            lid = self._lane_ids[lane_name]
+            ls = ET.SubElement(
+                plane, f"{{{_NS_BPMNDI}}}BPMNShape",
+                {"id": lid + "_di", "bpmnElement": lid, "isHorizontal": "true"},
             )
-            edges_xml.append(
-                f'{ind * 2}<bpmndi:BPMNEdge id="{fid}_di" bpmnElement="{fid}">\n'
-                f"{ind * 3}<bpmndi:BPMNLabel/>\n"
-                f"{ind * 2}</bpmndi:BPMNEdge>"
+            ET.SubElement(ls, f"{{{_NS_DC}}}Bounds", {
+                "x": str(_POOL_X + _POOL_HEADER_W),
+                "y": str(_POOL_Y + i * _LANE_H),
+                "width": str(pool_w - _POOL_HEADER_W),
+                "height": str(_LANE_H),
+            })
+
+        bounds_cache: dict[str, tuple[int, int, int, int]] = {}
+        for eid, _label, etype, lane, step in self._elements:
+            x, y, w, h = self._bounds(etype, lane, step)
+            bounds_cache[eid] = (x, y, w, h)
+            shape = ET.SubElement(
+                plane, f"{{{_NS_BPMNDI}}}BPMNShape", {"id": eid + "_di", "bpmnElement": eid}
             )
-        nl = "\n"
-        return f"""<?xml version="1.0" encoding="UTF-8"?>
-<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
-             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
-             xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
-             xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
-             targetNamespace="http://bpmn.io/schema/bpmn"
-             id="Definitions_{self._uid()}">
-  <process id="{self.process_id}" name="{self._esc(self.name)}" isExecutable="false">
-{nl.join(nodes_xml)}
-  </process>
-  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="{self.process_id}">
-{nl.join(shapes_xml)}
-{nl.join(edges_xml)}
-    </bpmndi:BPMNPlane>
-  </bpmndi:BPMNDiagram>
-</definitions>
-"""
+            ET.SubElement(shape, f"{{{_NS_DC}}}Bounds", {
+                "x": str(x), "y": str(y), "width": str(w), "height": str(h),
+            })
+            if etype in ("startEvent", "endEvent") or "Gateway" in etype:
+                lbl_el = ET.SubElement(shape, f"{{{_NS_BPMNDI}}}BPMNLabel")
+                ET.SubElement(lbl_el, f"{{{_NS_DC}}}Bounds", {
+                    "x": str(x - 10), "y": str(y + h + 4), "width": str(w + 20), "height": "40",
+                })
+
+        for fid, src, tgt, label in self._flows:
+            edge = ET.SubElement(
+                plane, f"{{{_NS_BPMNDI}}}BPMNEdge", {"id": fid + "_di", "bpmnElement": fid}
+            )
+            if label:
+                le = ET.SubElement(edge, f"{{{_NS_BPMNDI}}}BPMNLabel")
+                sx, sy, sw, sh = bounds_cache.get(src, (0, 0, 0, 0))
+                tx, ty, tw, th = bounds_cache.get(tgt, (0, 0, 0, 0))
+                ET.SubElement(le, f"{{{_NS_DC}}}Bounds", {
+                    "x": str(int((sx + sw / 2 + tx + tw / 2) / 2 - 20)),
+                    "y": str(int((sy + sh / 2 + ty + th / 2) / 2 - 10)),
+                    "width": "60", "height": "20",
+                })
+            sx, sy, sw, sh = bounds_cache.get(src, (0, 0, 0, 0))
+            tx, ty, tw, th = bounds_cache.get(tgt, (0, 0, 0, 0))
+            ET.SubElement(edge, f"{{{_NS_DI}}}waypoint", {
+                "x": str(sx + sw), "y": str(int(sy + sh / 2)),
+            })
+            ET.SubElement(edge, f"{{{_NS_DI}}}waypoint", {
+                "x": str(tx), "y": str(int(ty + th / 2)),
+            })
+
+        xml_str = ET.tostring(root, encoding="unicode")
+        return minidom.parseString(xml_str).toprettyxml(indent="  ")
 
 
 # ---------------------------------------------------------------------------
@@ -469,30 +529,30 @@ def create_rfc_case_bpmn(
         else "Discuss RFC"
     )
 
-    b = BpmnXmlBuilder("RFC: " + parsed["title"][:60])
-    start = b.add_start("RFC Filed")
-    submit = b.add_task("Submission - " + filed_date, "userTask")
-    review = b.add_task("Submission Review", "serviceTask")
-    gw_valid = b.add_gateway("Valid RFC?")
-    inv_end = b.add_end("Marked Invalid", y_off=-160)
-    b.connect(gw_valid, inv_end, "No - Invalid")
+    b = SwimlaneBpmnBuilder("RFC: " + parsed["title"][:60], RFC_CASE_LANES)
+    start = b.start("RFC Filed", "Submitter")
+    submit = b.task("Submission - " + filed_date, "Submitter", user=True)
+    review = b.task("Submission Review", "Steward")
+    gw_valid = b.gateway("Valid RFC?", "Steward")
+    inv_end = b.end("Marked Invalid", "Steward")
+    b.flow(gw_valid, inv_end, "No - Invalid")
 
     if has_disc:
-        facilitate = b.add_task("Assess and Facilitate", "userTask")
-        discuss = b.add_task(disc_label[:60], "userTask")
-        gw_out = b.add_gateway("Outcome?")
-        b.connect(gw_valid, facilitate, "Yes")
-        b.connect(facilitate, discuss)
-        b.connect(discuss, gw_out)
+        discuss = b.task(disc_label[:60], "Submitter", user=True)
+        facilitate = b.task("Assess and Facilitate", "Steward", user=True)
+        gw_out = b.gateway("Outcome?", "Steward")
+        b.flow(gw_valid, facilitate, "Yes")
+        b.flow(facilitate, discuss)
+        b.flow(discuss, gw_out)
     else:
-        gw_out = b.add_gateway("Outcome?")
-        b.connect(gw_valid, gw_out, "Yes")
+        gw_out = b.gateway("Outcome?", "Steward")
+        b.flow(gw_valid, gw_out, "Yes")
 
-    end_main = b.add_end(outcome)
-    b.connect(gw_out, end_main, outcome)
-    b.connect(start, submit)
-    b.connect(submit, review)
-    b.connect(review, gw_valid)
+    end_main = b.end(outcome, "Steward")
+    b.flow(gw_out, end_main, outcome)
+    b.flow(start, submit)
+    b.flow(submit, review)
+    b.flow(review, gw_valid)
 
     bpmn_path.write_text(b.to_xml(), encoding="utf-8")
     return bpmn_path, png_out
@@ -532,35 +592,33 @@ def create_aggregate_rfc_bpmn(
         o + " " + str(round(100 * n / total)) + "%" for o, n in remainder if n > 0
     )
 
-    b = BpmnXmlBuilder("RFC Standard Workflow (Aggregate)")
-    start = b.add_start("RFC Filed")
-    submit = b.add_task("RFC Submission", "userTask")
-    screen = b.add_task("Categorise and Screen", "serviceTask")
-    gw_valid = b.add_gateway("Valid RFC?")
-    inv_end = b.add_end("Invalid - Closed", y_off=-160)
-    assess = b.add_task("Assess RFC", "userTask")
-    discuss = b.add_task("Discussion Period", "userTask")
-    closer = b.add_task("Closer Reviews Outcome", "userTask")
-    gw_out = b.add_gateway("Resolution Outcome?")
+    b = SwimlaneBpmnBuilder("RFC Standard Workflow (Aggregate)", RFC_AGG_LANES)
+    start = b.start("RFC Filed", "Community Member")
+    submit = b.task("RFC Submission", "Community Member", user=True)
+    screen = b.task("Categorise and Screen", "Screening")
+    gw_valid = b.gateway("Valid RFC?", "Screening")
+    inv_end = b.end("Invalid - Closed", "Screening")
+    assess = b.task("Assess RFC", "Steward", user=True)
+    discuss = b.task("Discussion Period", "Community Member", user=True)
+    closer = b.task("Closer Reviews Outcome", "Steward", user=True)
+    gw_out = b.gateway("Resolution Outcome?", "Steward")
 
-    b.connect(start, submit)
-    b.connect(submit, screen)
-    b.connect(screen, gw_valid)
-    b.connect(gw_valid, inv_end, "No - Invalid")
-    b.connect(gw_valid, assess, "Yes - Valid")
-    b.connect(assess, discuss)
-    b.connect(discuss, closer)
-    b.connect(closer, gw_out)
+    b.flow(start, submit)
+    b.flow(submit, screen)
+    b.flow(screen, gw_valid)
+    b.flow(gw_valid, inv_end, "No - Invalid")
+    b.flow(gw_valid, assess, "Yes - Valid")
+    b.flow(assess, discuss)
+    b.flow(discuss, closer)
+    b.flow(closer, gw_out)
 
-    y_off = 0
     for i, (o, _) in enumerate(top2):
-        end = b.add_end(o + " (" + str(top2_pcts[i]) + "%)", y_off=y_off)
-        b.connect(gw_out, end, o)
-        y_off += 100
-    end_other = b.add_end(
-        "Other (" + str(other_pct) + "%): " + (other_detail or "none"), y_off=y_off
+        end = b.end(o + " (" + str(top2_pcts[i]) + "%)", "Steward")
+        b.flow(gw_out, end, o)
+    end_other = b.end(
+        "Other (" + str(other_pct) + "%): " + (other_detail or "none"), "Steward"
     )
-    b.connect(gw_out, end_other, "Other")
+    b.flow(gw_out, end_other, "Other")
 
     bpmn_path.write_text(b.to_xml(), encoding="utf-8")
     return bpmn_path, png_out

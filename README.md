@@ -41,6 +41,73 @@ make fetch-drn
 
 See `make help` for all available targets.
 
+## Data Pulling
+
+The unified data pull runner is the recommended entrypoint for fetching project data.
+
+```bash
+python scripts/pull.py --config sample
+python scripts/pull.py --config full
+python scripts/pull.py --dry-run
+python scripts/pull.py --status
+python scripts/pull.py --reset
+python scripts/pull.py --validate
+python scripts/pull.py --skip-validation --skip-speed-test
+```
+
+`pull.py` supports the config presets `sample`, `full`, and `dev`, or a custom config file path.
+
+## Data Cleaning
+
+Clean raw arbitration case JSON into processed case files:
+
+```bash
+python scripts/clean_arbitration_cases_data.py
+```
+
+This interactive script reads from `data/raw/arbitration` and writes cleaned output to `data/processed/clean_arbitration_cases_*.json`.
+
+### Dashboard data
+
+Build the dashboard payload used by the React app:
+
+```bash
+python scripts/process_arbitration_for_dashboard.py
+```
+
+This writes `dashboard_data.json` to both `data/processed/` and `dashboard/public/data/`, which is required for `dashboard` dev and preview servers.
+
+## BPMN Generation
+
+Generate BPMN diagrams from saved case data.
+
+- Arbitration cases:
+  ```bash
+  python scripts/bpmn_from_arb.py --input data/raw/arb/ --output artifacts/bpmn/arb/ --max-cases 20
+  ```
+- Requests for Comments cases:
+  ```bash
+  python scripts/bpmn_from_rfc.py --input data/raw/rfc/ --output artifacts/bpmn/rfc/ --max-cases 20
+  ```
+- DRN cases (interactive):
+  ```bash
+  python scripts/bpmn_from_drn.py
+  ```
+
+### Comparative BPMN with Hugging Face
+
+Generate ArbCom BPMN using the Hugging Face NER model:
+
+```bash
+python scripts/arbitration_bpmn_hf.py --case "Wikipedia:Requests_for_arbitration/-Ril-"
+python scripts/arbitration_bpmn_hf.py --aggregate
+python scripts/arbitration_bpmn_hf.py --aggregate --sample 50
+python scripts/arbitration_bpmn_hf.py --output-dir artifacts/bpmn/arb
+python scripts/arbitration_bpmn_hf.py --no-ner
+```
+
+The default output directory is `artifacts/bpmn/arb`.
+
 ## Windows Start with WSL
 If you are working with Windows, follow here for WSL-friendly setup.
 First download WSL via your preferred IDE.
