@@ -20,13 +20,27 @@ dependencies = [
 dev = [
     "pre-commit>=3.6.0",
     "ruff>=0.8.0",
+    "ty>=0.0.1a6",
     "pytest>=8.0.0",
     "pytest-cov>=4.0.0",
     "ipykernel>=7.1.0",
     "matplotlib>=3.10.8",
     "seaborn>=0.13.2",
     "networkx>=3.6.1",
+    "commitizen>=4.0.0",
 ]
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+tag_format = "v$version"
+version_scheme = "semver"
+version_provider = "pep621"      # reads/writes [project].version in this file
+update_changelog_on_bump = true
+major_version_zero = true        # breaking changes stay on 0.x until we cut 1.0
+
+[tool.ruff.lint]
+# Scripts legitimately use sys.path.insert before local imports
+per-file-ignores = { "scripts/*.py" = ["E402"] }
 
 [tool.pytest.ini_options]
 markers = [

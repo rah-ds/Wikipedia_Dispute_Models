@@ -67,12 +67,11 @@ class ValidationResult:
 
 
 # Required environment variables for Wikipedia API access
-REQUIRED_VARS = {
-    "WIKIPEDIA_ACCESS_TOKEN": "OAuth access token for authenticated requests",
-}
+REQUIRED_VARS: dict[str, str] = {}
 
 # Optional but recommended environment variables
 OPTIONAL_VARS = {
+    "WIKIPEDIA_ACCESS_TOKEN": "OAuth access token for authenticated requests (5 000 req/hour vs 500)",
     "WIKI_USER_AGENT": "Custom user agent string",
     "WIKI_RATE_LIMIT": "Requests per second (default: 5)",
     "WIKI_RETRY_MAX": "Maximum retry attempts (default: 10)",
@@ -191,7 +190,7 @@ def test_authentication() -> ValidationResult:
         import pywikibot
 
         site = pywikibot.Site("en", "wikipedia")
-        site._custom_headers = {"Authorization": f"Bearer {token}"}
+        setattr(site, "_custom_headers", {"Authorization": f"Bearer {token}"})
 
         # Try to get user info - requires authentication
         # This is a basic check; actual auth validation depends on the endpoint
