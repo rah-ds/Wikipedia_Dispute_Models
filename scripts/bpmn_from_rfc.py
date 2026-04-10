@@ -751,12 +751,12 @@ def main():
     )
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("RFC -> BPMN + PNG Generator")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(f"Input : {input_path}")
     print(f"Output: {output_dir}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     raw_data = load_rfc_data(input_path)
     rfcs_raw = raw_data.get("rfcs", [])
@@ -802,7 +802,7 @@ def main():
     total_bpmn = len(bpmn_files) + (1 if agg_bpmn else 0)
     total_png = len(png_files) + (1 if agg_png else 0)
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("Done!")
     print(f"  Individual diagrams : {len(selected_indices)} of {len(all_parsed)} cases")
     print(f"  Aggregate           : full dataset ({len(all_parsed)} cases)")
@@ -812,7 +812,7 @@ def main():
     print("\nTo view:")
     print("  PNG  -- open any .png directly")
     print("  BPMN -- drag & drop at https://demo.bpmn.io")
-    print(f"{'='*60}\n")
+    print(f"{'=' * 60}\n")
 
 
 if __name__ == "__main__":
