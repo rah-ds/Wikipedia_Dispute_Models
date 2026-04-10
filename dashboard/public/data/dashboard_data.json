@@ -1,0 +1,212 @@
+{
+  "totalCases": 485,
+  "totalUserLinks": 3253,
+  "totalAdminLinks": 1724,
+  "totalInvolvedParties": 4977,
+  "averageDurationDays": 56.6,
+  "casesWithDuration": 361,
+  "statementByDistribution": [
+    {
+      "statementCount": 0,
+      "cases": 41
+    },
+    {
+      "statementCount": 1,
+      "cases": 54
+    },
+    {
+      "statementCount": 2,
+      "cases": 77
+    },
+    {
+      "statementCount": 3,
+      "cases": 80
+    },
+    {
+      "statementCount": 4,
+      "cases": 43
+    },
+    {
+      "statementCount": 5,
+      "cases": 42
+    },
+    {
+      "statementCount": 6,
+      "cases": 26
+    },
+    {
+      "statementCount": 7,
+      "cases": 20
+    },
+    {
+      "statementCount": 8,
+      "cases": 19
+    },
+    {
+      "statementCount": 9,
+      "cases": 15
+    },
+    {
+      "statementCount": 10,
+      "cases": 12
+    },
+    {
+      "statementCount": 11,
+      "cases": 7
+    },
+    {
+      "statementCount": 12,
+      "cases": 9
+    },
+    {
+      "statementCount": 13,
+      "cases": 4
+    },
+    {
+      "statementCount": 14,
+      "cases": 6
+    },
+    {
+      "statementCount": 15,
+      "cases": 2
+    },
+    {
+      "statementCount": 16,
+      "cases": 2
+    },
+    {
+      "statementCount": 17,
+      "cases": 4
+    },
+    {
+      "statementCount": 18,
+      "cases": 2
+    },
+    {
+      "statementCount": 19,
+      "cases": 1
+    },
+    {
+      "statementCount": 21,
+      "cases": 1
+    },
+    {
+      "statementCount": 22,
+      "cases": 1
+    },
+    {
+      "statementCount": 23,
+      "cases": 4
+    },
+    {
+      "statementCount": 26,
+      "cases": 1
+    },
+    {
+      "statementCount": 28,
+      "cases": 1
+    },
+    {
+      "statementCount": 29,
+      "cases": 1
+    },
+    {
+      "statementCount": 30,
+      "cases": 1
+    },
+    {
+      "statementCount": 31,
+      "cases": 1
+    },
+    {
+      "statementCount": 34,
+      "cases": 2
+    },
+    {
+      "statementCount": 37,
+      "cases": 1
+    },
+    {
+      "statementCount": 39,
+      "cases": 1
+    },
+    {
+      "statementCount": 43,
+      "cases": 1
+    },
+    {
+      "statementCount": 53,
+      "cases": 1
+    },
+    {
+      "statementCount": 111,
+      "cases": 1
+    },
+    {
+      "statementCount": 124,
+      "cases": 1
+    }
+  ],
+  "topRemedyVerbs": [
+    {
+      "verb": "banned",
+      "count": 544
+    },
+    {
+      "verb": "placed",
+      "count": 274
+    },
+    {
+      "verb": "blocked",
+      "count": 182
+    },
+    {
+      "verb": "admonished",
+      "count": 106
+    },
+    {
+      "verb": "reminded",
+      "count": 98
+    },
+    {
+      "verb": "warned",
+      "count": 89
+    },
+    {
+      "verb": "restricted",
+      "count": 73
+    },
+    {
+      "verb": "prohibited",
+      "count": 70
+    },
+    {
+      "verb": "limited",
+      "count": 67
+    },
+    {
+      "verb": "desysopped",
+      "count": 59
+    },
+    {
+      "verb": "cautioned",
+      "count": 58
+    },
+    {
+      "verb": "required",
+      "count": 42
+    },
+    {
+      "verb": "removed",
+      "count": 32
+    },
+    {
+      "verb": "topic-banned",
+      "count": 23
+    },
+    {
+      "verb": "revoked",
+      "count": 21
+    }
+  ]
+}
