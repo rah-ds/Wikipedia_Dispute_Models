@@ -9,8 +9,11 @@ Usage:
 """
 
 import argparse
+import os
+import smtplib
 import sys
 import time
+from email.mime.text import MIMEText
 from pathlib import Path
 
 import yaml
@@ -42,9 +45,92 @@ CONFIG_PATH = Path(__file__).parent.parent / "artifacts" / "sample_articles.yaml
 # Delay between article fetches (seconds) - be nice to Wikipedia
 FETCH_DELAY = 2.0
 
+# Email config — UVA relay discovered from Rivanna postfix config
+_SMTP_HOST = "out.mail.virginia.edu"
+_SMTP_PORT = 25
+_SENDER = "rah5ff@virginia.edu"
+
 # Global for graceful shutdown
 _client = None
 _logger = None
+
+
+def send_milestone_email(
+    notify_email: str,
+    job_type: str,
+    completed: int,
+    total: int,
+    failed: list[tuple[str, str]],
+    client: WikiClient,
+    current_article: str,
+    last_article: str,
+    skipped: int,
+    start_time: float,
+) -> None:
+    """Send a progress email at 25/50/75% milestones."""
+    if not notify_email:
+        return
+
+    pct = int(completed / total * 100) if total else 0
+    elapsed = time.time() - start_time
+    elapsed_fmt = time.strftime("%H:%M:%S", time.gmtime(elapsed))
+    remaining = (elapsed / completed * (total - completed)) if completed else 0
+    remaining_fmt = time.strftime("%H:%M:%S", time.gmtime(remaining))
+
+    stats = client.get_stats()
+    req_rate = stats["total_requests"] / (stats["runtime_minutes"] or 1)
+
+    lines = [
+        "Wikipedia Dispute Models — Progress Report",
+        "═" * 43,
+        "",
+        f"Job:             {job_type}",
+        f"Job ID:          {os.environ.get('SLURM_JOB_ID', 'local')}",
+        f"Host:            {os.environ.get('HOSTNAME', 'unknown')}",
+        f"Progress:        {pct}% — {completed} of {total} articles complete",
+        f"Elapsed:         {elapsed_fmt}",
+        f"Est. remaining:  ~{remaining_fmt}",
+        "",
+        "Summary Statistics",
+        "─" * 18,
+        f"  Completed:     {completed} / {total} articles",
+        f"  Failed:        {len(failed)}",
+        f"  Skipped:       {skipped} (already existed)",
+        f"  API requests:  {stats['total_requests']:,} ({req_rate:.1f} req/min)",
+        f"  Runtime:       {stats['runtime_minutes']:.1f} min",
+        "",
+        "Current Phase",
+        "─" * 13,
+        "  Fetching article revisions and edit war data.",
+        f"  Currently processing: {current_article}",
+        f"  Last completed: {last_article}",
+    ]
+
+    if failed:
+        lines.append("")
+        lines.append(f"  Errors ({len(failed)}):")
+        for name, error in failed[-5:]:
+            lines.append(f"    - {name}: {error}")
+        if len(failed) > 5:
+            lines.append(f"    ... and {len(failed) - 5} more")
+
+    next_pct = pct + 25 if pct < 100 else None
+    if next_pct and next_pct <= 100:
+        lines.append("")
+        lines.append(f"Next milestone email at {next_pct}%.")
+
+    subject = f"[Rivanna] {job_type} — {pct}% complete ({completed}/{total} articles)"
+    body = "\n".join(lines)
+
+    try:
+        msg = MIMEText(body, "plain", "utf-8")
+        msg["Subject"] = subject
+        msg["From"] = _SENDER
+        msg["To"] = notify_email
+        with smtplib.SMTP(_SMTP_HOST, _SMTP_PORT, timeout=15) as s:
+            s.sendmail(_SENDER, [notify_email], msg.as_string())
+    except Exception:
+        pass  # never crash the job for a notification failure
 
 
 def shutdown_handler(signum, frame):
@@ -118,6 +204,11 @@ def main():
     parser.add_argument("--skip-drn", action="store_true", help="Skip DRN cases")
     parser.add_argument(
         "--force", action="store_true", help="Re-fetch even if files exist"
+    )
+    parser.add_argument(
+        "--notify-email",
+        default=os.environ.get("NOTIFY_EMAIL", ""),
+        help="Email address for progress reports (default: $NOTIFY_EMAIL)",
     )
     args = parser.parse_args()
 
@@ -214,6 +305,10 @@ def main():
         print("All articles already fetched!")
     else:
         pbar = tqdm(to_fetch, desc="Articles", unit="article")
+        completed_count = 0
+        milestones_sent: set[int] = set()
+        loop_start = time.time()
+        last_completed_title = ""
 
         for article in pbar:
             title = article["title"]
@@ -236,11 +331,34 @@ def main():
                 save_json(analysis, output_path)
 
                 logger.info(f"Completed: {title}")
+                completed_count += 1
+                last_completed_title = title
 
             except Exception as e:
                 logger.error(f"Failed to fetch {title}: {e}")
                 failed.append((title, str(e)))
                 tqdm.write(f"  ✗ Error: {e}")
+                completed_count += 1  # count toward progress even on failure
+
+            # Check for milestone email (25%, 50%, 75%)
+            if args.notify_email and len(to_fetch) > 0:
+                pct_done = int(completed_count / len(to_fetch) * 100)
+                for milestone in (25, 50, 75):
+                    if pct_done >= milestone and milestone not in milestones_sent:
+                        milestones_sent.add(milestone)
+                        send_milestone_email(
+                            notify_email=args.notify_email,
+                            job_type="fetch_full",
+                            completed=completed_count,
+                            total=len(to_fetch),
+                            failed=failed,
+                            client=client,
+                            current_article=title,
+                            last_article=last_completed_title,
+                            skipped=skipped,
+                            start_time=loop_start,
+                        )
+                        logger.info(f"Sent {milestone}% milestone email")
 
             # Rate limiting delay
             time.sleep(FETCH_DELAY)

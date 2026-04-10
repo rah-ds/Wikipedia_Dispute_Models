@@ -167,3 +167,117 @@ print_summary() {
     printf "[ ELAPSED ]    : %s\n" "$elapsed_fmt"
     printf "======================================\n"
 }
+
+# ---------------------------------------------------------------------------
+# Email notifications — send progress/completion reports via UVA email
+# ---------------------------------------------------------------------------
+# Usage:
+#   send_report "subject line" "body text"
+#   send_report "subject line" "body text" "/path/to/body_file"  (reads file)
+#
+# Respects NOTIFY_EMAIL env var (set in .env). Does nothing if unset.
+# Runs in background with timeout — never blocks the job.
+
+send_report() {
+    local subject="$1"
+    local body="${2:-}"
+    local body_file="${3:-}"
+
+    local to="${NOTIFY_EMAIL:-}"
+    if [[ -z "$to" ]]; then
+        return 0  # no recipient configured
+    fi
+
+    local email_script="$PROJECT_ROOT/scripts/slurm/send_email.py"
+    if [[ ! -f "$email_script" ]]; then
+        echo "WARNING: send_email.py not found at $email_script" >&2
+        return 0
+    fi
+
+    # Add job metadata header to body
+    local elapsed=$(( $(date +%s) - SLURM_START_EPOCH ))
+    local elapsed_fmt
+    elapsed_fmt="$(printf '%02d:%02d:%02d' $((elapsed/3600)) $(((elapsed%3600)/60)) $((elapsed%60)))"
+    local header
+    header="$(printf 'Job ID:     %s\nHost:       %s\nElapsed:    %s\nTimestamp:  %s\n' \
+        "${SLURM_JOB_ID:-${SLURM_ARRAY_JOB_ID:-unknown}}" \
+        "$(hostname)" \
+        "$elapsed_fmt" \
+        "$(date -Iseconds)")"
+
+    local full_body
+    if [[ -n "$body_file" ]] && [[ -f "$body_file" ]]; then
+        full_body="${header}\n\n$(cat "$body_file")"
+    else
+        full_body="${header}\n\n${body}"
+    fi
+
+    # Fire-and-forget: background with 30s timeout, never crash the job
+    (
+        echo -e "$full_body" | timeout 30 python "$email_script" \
+            --to "$to" \
+            --subject "$subject" 2>/dev/null
+    ) &
+}
+
+# Helper: send report for array job milestones (25%, 50%, 75%, 100%)
+# Uses marker files to prevent duplicate emails from concurrent tasks.
+#
+# Usage: check_milestone <job_type> <total_cases>
+#   Reads progress CSV, counts successes, sends email if a new quarter is hit.
+
+check_milestone() {
+    local job_type="$1"
+    local total_cases="$2"
+    local progress_file="$PROGRESS_DIR/progress_${job_type}.csv"
+
+    if [[ ! -f "$progress_file" ]]; then
+        return 0
+    fi
+
+    local done
+    done=$(grep -c ',SUCCESS,' "$progress_file" 2>/dev/null || echo 0)
+    local failed
+    failed=$(grep -c ',FAILED,' "$progress_file" 2>/dev/null || echo 0)
+
+    for pct in 25 50 75 100; do
+        local threshold=$(( total_cases * pct / 100 ))
+        local marker="$PROGRESS_DIR/.milestone_${job_type}_${pct}"
+
+        if (( done >= threshold )) && [[ ! -f "$marker" ]]; then
+            # Use flock to prevent race between concurrent array tasks
+            (
+                flock -n 200 || exit 0
+                # Re-check after acquiring lock
+                if [[ -f "$marker" ]]; then exit 0; fi
+                touch "$marker"
+
+                local body
+                body="$(printf 'Wikipedia Dispute Models — Progress Report\n')"
+                body+="$(printf '═══════════════════════════════════════════\n\n')"
+                body+="$(printf 'Job Type:    %s\n' "$job_type")"
+                body+="$(printf 'Progress:    %d%% — %d of %d cases complete\n' "$pct" "$done" "$total_cases")"
+                body+="$(printf 'Failed:      %d cases\n' "$failed")"
+                body+="$(printf 'Remaining:   %d cases\n\n' "$((total_cases - done - failed))")"
+
+                if (( failed > 0 )); then
+                    body+="$(printf 'Failed Cases:\n')"
+                    body+="$(grep ',FAILED,' "$progress_file" | awk -F, '{printf "  - %s (job %s, task %s): %s\n", $4, $2, $3, $7}')"
+                    body+="$(printf '\n')"
+                fi
+
+                body+="$(printf 'Data Sizes:\n')"
+                body+="$(printf '  arbitration:     %s\n' "$(dir_size data/raw/arbitration)")"
+                body+="$(printf '  revisions:       %s\n' "$(dir_size data/raw/revisions)")"
+                body+="$(printf '  dispute_venues:  %s\n' "$(dir_size data/raw/dispute_venues)")"
+                body+="$(printf '  edit_wars:       %s\n' "$(dir_size data/raw/edit_wars)")"
+
+                if (( pct < 100 )); then
+                    body+="$(printf '\nNext milestone email at %d%%.\n' "$((pct + 25))")"
+                fi
+
+                send_report "[Rivanna] ${job_type} — ${pct}% complete (${done}/${total_cases})" "$body"
+            ) 200>"${marker}.lock"
+        fi
+    done
+}

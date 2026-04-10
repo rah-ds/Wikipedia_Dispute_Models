@@ -10,6 +10,8 @@
 #SBATCH -o ./slurmlogs/fetch_full_%j.out
 #SBATCH -e ./slurmlogs/fetch_full_%j.err
 #SBATCH -J wiki-fetch-full
+#SBATCH --mail-type=END,FAIL
+#SBATCH --mail-user=rah5ff@virginia.edu
 
 ## Fetch full dataset: 51 articles (27 high-conflict + 24 low-conflict)
 ## plus arbitration cases and DRN data.
@@ -46,12 +48,58 @@ NEW_DRN=$((AFTER_DRN - BEFORE_DRN))
 
 DETAILS="rev=${NEW_REV},arb=${NEW_ARB},ew=${NEW_EW},drn=${NEW_DRN},size=$(dir_size data/raw/)"
 
+# Check stderr for 429 rate-limit errors
+ERR_FILE="slurmlogs/fetch_full_${SLURM_JOB_ID}.err"
+N429=$(grep -c 'Http response status 429\|status_code.*429' "$ERR_FILE" 2>/dev/null || echo 0)
+
 if [[ $EXIT_CODE -eq 0 ]]; then
     log_progress "fetch_full" "full_dataset" "SUCCESS" "$DETAILS"
     print_summary "fetch_full" "full_dataset" "SUCCESS"
+
+    REPORT="Wikipedia Dispute Models — fetch_full Complete
+═══════════════════════════════════════════
+
+Status:      SUCCESS
+
+Output files (new / total):
+  Arbitration: +${NEW_ARB} / ${AFTER_ARB} files
+  Revisions:   +${NEW_REV} / ${AFTER_REV} files
+  Edit wars:   +${NEW_EW} / ${AFTER_EW} files
+  DRN:         +${NEW_DRN} / ${AFTER_DRN} files
+  Total size:  $(dir_size data/raw/)
+
+Rate-limit 429 errors: ${N429}"
+
+    send_report "[Rivanna] fetch_full — COMPLETE" "$REPORT"
 else
     log_progress "fetch_full" "full_dataset" "FAILED" "exit_code=${EXIT_CODE},${DETAILS}"
     print_summary "fetch_full" "full_dataset" "FAILED (exit $EXIT_CODE)"
+
+    LAST_ERR=$(tail -20 "$ERR_FILE" 2>/dev/null || echo "(no stderr)")
+    REPORT="Wikipedia Dispute Models — fetch_full FAILED
+═══════════════════════════════════════════
+
+Status:      FAILED (exit code ${EXIT_CODE})
+
+Partial output (new / total):
+  Arbitration: +${NEW_ARB} / ${AFTER_ARB} files
+  Revisions:   +${NEW_REV} / ${AFTER_REV} files
+  Edit wars:   +${NEW_EW} / ${AFTER_EW} files
+  DRN:         +${NEW_DRN} / ${AFTER_DRN} files
+  Total size:  $(dir_size data/raw/)
+
+Rate-limit 429 errors: ${N429}
+
+Last 20 lines of stderr:
+${LAST_ERR}"
+
+    send_report "[Rivanna] fetch_full — FAILED (exit $EXIT_CODE)" "$REPORT"
+fi
+
+# Warn separately about excessive 429s
+if (( N429 > 5 )); then
+    send_report "[Rivanna] WARNING: ${N429} rate-limit 429s in fetch_full" \
+        "fetch_full encountered ${N429} HTTP 429 rate-limit errors.\nThis may indicate the inter-request delay needs to be increased.\n\nCheck: tail -50 $ERR_FILE"
 fi
 
 echo ""

@@ -10,6 +10,8 @@
 #SBATCH -o ./slurmlogs/arb_dfs_%A_%a.out
 #SBATCH -e ./slurmlogs/arb_dfs_%A_%a.err
 #SBATCH -J wiki-arb-dfs
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=rah5ff@virginia.edu
 
 ## SLURM Array Job: Fetch arbitration case data via DFS traversal
 ## Each array task processes one case from artifacts/arb_cases.txt.
@@ -88,7 +90,16 @@ if [[ $EXIT_CODE -eq 0 ]]; then
 else
     log_progress "arb_dfs" "$CASE_NAME" "FAILED" "exit_code=${EXIT_CODE}"
     print_summary "arb_dfs" "$CASE_NAME" "FAILED (exit $EXIT_CODE)"
+
+    # Send failure email with stderr excerpt
+    ERR_FILE="slurmlogs/arb_dfs_${SLURM_ARRAY_JOB_ID}_${TASK_ID}.err"
+    LAST_ERR=$(tail -20 "$ERR_FILE" 2>/dev/null || echo "(no stderr)")
+    send_report "[Rivanna] arb_dfs FAILED: $CASE_NAME (task $TASK_ID)" \
+        "Case:       $CASE_NAME\nTask:       $TASK_ID / $TOTAL_CASES\nExit code:  $EXIT_CODE\n\nLast 20 lines of stderr:\n$LAST_ERR"
 fi
+
+# Check for quarter milestones (25%, 50%, 75%, 100%)
+check_milestone "arb_dfs" "$TOTAL_CASES"
 
 echo "Output: data/raw/arbitration/ (+${NEW_FILES} files)"
 exit $EXIT_CODE

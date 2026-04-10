@@ -10,6 +10,8 @@
 #SBATCH -o ./slurmlogs/lifecycle_%A_%a.out
 #SBATCH -e ./slurmlogs/lifecycle_%A_%a.err
 #SBATCH -J wiki-lifecycle
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=rah5ff@virginia.edu
 
 ## SLURM Array Job: Fetch full dispute lifecycle for each arbitration case
 ## Traces: Talk Pages -> DRN -> ANI -> ArbCom
@@ -88,7 +90,16 @@ if [[ $EXIT_CODE -eq 0 ]]; then
 else
     log_progress "lifecycle" "$CASE_NAME" "FAILED" "exit_code=${EXIT_CODE}"
     print_summary "lifecycle" "$CASE_NAME" "FAILED (exit $EXIT_CODE)"
+
+    # Send failure email with stderr excerpt
+    ERR_FILE="slurmlogs/lifecycle_${SLURM_ARRAY_JOB_ID}_${TASK_ID}.err"
+    LAST_ERR=$(tail -20 "$ERR_FILE" 2>/dev/null || echo "(no stderr)")
+    send_report "[Rivanna] lifecycle FAILED: $CASE_NAME (task $TASK_ID)" \
+        "Case:       $CASE_NAME\nTask:       $TASK_ID / $TOTAL_CASES\nExit code:  $EXIT_CODE\n\nLast 20 lines of stderr:\n$LAST_ERR"
 fi
+
+# Check for quarter milestones (25%, 50%, 75%, 100%)
+check_milestone "lifecycle" "$TOTAL_CASES"
 
 echo "Output: data/raw/dispute_venues/ (+${NEW_FILES} files)"
 exit $EXIT_CODE

@@ -103,7 +103,7 @@ echo "  Job ID: $ARB_DFS_JOB"
 # ---------------------------------------------------------------------------
 # Step 4: Fetch lifecycle (depends on step 1 for arb_cases.txt)
 # ---------------------------------------------------------------------------
-echo "[4/4] Submitting: fetch_lifecycle (array 1-${TOTAL_CASES}, max 1 concurrent)"
+echo "[4/5] Submitting: fetch_lifecycle (array 1-${TOTAL_CASES}, max 1 concurrent)"
 echo "       Depends on: fetch_arb_dfs ($ARB_DFS_JOB)"
 LIFECYCLE_JOB=$(sbatch --export="$EXPORT_VARS" \
     --dependency=afterany:${ARB_DFS_JOB} \
@@ -111,6 +111,17 @@ LIFECYCLE_JOB=$(sbatch --export="$EXPORT_VARS" \
     --parsable \
     "$SCRIPT_DIR/fetch_lifecycle.slurm")
 echo "  Job ID: $LIFECYCLE_JOB"
+
+# ---------------------------------------------------------------------------
+# Step 5: Pipeline summary (runs after everything, sends one summary email)
+# ---------------------------------------------------------------------------
+echo "[5/5] Submitting: pipeline_summary"
+echo "       Depends on: fetch_lifecycle ($LIFECYCLE_JOB)"
+SUMMARY_JOB=$(sbatch --export="$EXPORT_VARS" \
+    --dependency=afterany:${LIFECYCLE_JOB} \
+    --parsable \
+    "$SCRIPT_DIR/pipeline_summary.slurm")
+echo "  Job ID: $SUMMARY_JOB"
 
 # ---------------------------------------------------------------------------
 # Summary
@@ -125,16 +136,24 @@ echo "    update_arb_cases : $UPDATE_JOB"
 echo "    fetch_full       : $FULL_JOB"
 echo "    fetch_arb_dfs    : $ARB_DFS_JOB (array)"
 echo "    fetch_lifecycle  : $LIFECYCLE_JOB (array)"
+echo "    pipeline_summary : $SUMMARY_JOB"
 echo ""
 echo "  Dependencies (serialized to avoid API rate limits):"
 echo "    fetch_full       -> runs immediately"
 echo "    fetch_arb_dfs    -> waits for update_arb_cases + fetch_full"
 echo "    fetch_lifecycle  -> waits for fetch_arb_dfs"
+echo "    pipeline_summary -> waits for fetch_lifecycle (sends summary email)"
+echo ""
+echo "  Email notifications:"
+echo "    Quarter-progress emails at 25%, 50%, 75% for each job type"
+echo "    Completion/failure emails for each job"
+echo "    One pipeline summary email when everything finishes"
+echo "    Recipient: \${NOTIFY_EMAIL:-not set}"
 echo ""
 echo "  Monitor:"
 echo "    squeue -u \$USER                     # view queue"
-echo "    sacct -j $UPDATE_JOB,$FULL_JOB,$ARB_DFS_JOB,$LIFECYCLE_JOB  # job accounting"
+echo "    sacct -j $UPDATE_JOB,$FULL_JOB,$ARB_DFS_JOB,$LIFECYCLE_JOB,$SUMMARY_JOB  # job accounting"
 echo "    tail -f slurmlogs/fetch_full_${FULL_JOB}.out   # follow fetch_full output"
 echo ""
 echo "  Cancel all:"
-echo "    scancel $UPDATE_JOB $FULL_JOB $ARB_DFS_JOB $LIFECYCLE_JOB"
+echo "    scancel $UPDATE_JOB $FULL_JOB $ARB_DFS_JOB $LIFECYCLE_JOB $SUMMARY_JOB"
