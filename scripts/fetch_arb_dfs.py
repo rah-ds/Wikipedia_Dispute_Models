@@ -179,7 +179,8 @@ def fetch_arb_case_dfs(
                 print(f"   ✗ {page_title} (not found)")
                 continue
 
-            print(f"   ✓ {page_title}")
+            page = client.resolve_redirect(page)
+            print(f"   ✓ {page.title()}")
 
             page_data = {
                 "title": page.title(),
@@ -253,13 +254,19 @@ def fetch_arb_case_dfs(
                 print(f"   ✗ {article_title} (not found)")
                 continue
 
+            page = client.resolve_redirect(page)
+            article_title = page.title()
             print(f"   ✓ {article_title}")
 
+            protection_log = client.get_protection_log(article_title, limit=20)
             article_data = {
-                "title": page.title(),
+                "title": article_title,
                 "url": page.full_url(),
                 "revisions": client.get_revisions(article_title, limit=revision_limit),
                 "revision_count": 0,
+                "protection_log": protection_log,
+                "was_ever_protected": len(protection_log) > 0,
+                "protection_events": len(protection_log),
             }
             article_data["revision_count"] = len(article_data["revisions"])
 

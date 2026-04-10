@@ -86,7 +86,8 @@ def _resolve_arb_case_title(client: WikiClient, case_name: str) -> str:
     if case_name.startswith("Wikipedia:"):
         page = client.get_page(case_name)
         if page.exists():
-            return case_name
+            page = client.resolve_redirect(page)
+            return page.title()
         raise ValueError(f"Arbitration case page not found: {case_name}")
 
     for pattern in ARB_PATH_PATTERNS:
@@ -94,7 +95,9 @@ def _resolve_arb_case_title(client: WikiClient, case_name: str) -> str:
         try:
             page = client.get_page(full_title)
             if page.exists():
-                return full_title
+                # Follow redirects (e.g. "Gamergate" → "GamerGate controversy")
+                page = client.resolve_redirect(page)
+                return page.title()
         except Exception:
             continue
 
