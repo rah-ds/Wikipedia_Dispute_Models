@@ -80,7 +80,11 @@ class SwimlaneBpmnBuilder:
         self._step = 0
 
     def _add(self, label: str, etype: str, lane: str) -> str:
-        eid = etype[:6].replace("Event", "Evt").replace("Gatew", "GW_") + "_" + uuid.uuid4().hex[:8]
+        eid = (
+            etype[:6].replace("Event", "Evt").replace("Gatew", "GW_")
+            + "_"
+            + uuid.uuid4().hex[:8]
+        )
         self._elements.append((eid, label, etype, lane, self._step))
         self._step += 1
         return eid
@@ -95,7 +99,9 @@ class SwimlaneBpmnBuilder:
         return self._add(label, "userTask" if user else "task", lane)
 
     def gateway(self, label: str, lane: str, exclusive: bool = True) -> str:
-        return self._add(label, "exclusiveGateway" if exclusive else "parallelGateway", lane)
+        return self._add(
+            label, "exclusiveGateway" if exclusive else "parallelGateway", lane
+        )
 
     def flow(self, src: str, tgt: str, label: str = "") -> str:
         fid = "Flow_" + uuid.uuid4().hex[:8]
@@ -134,20 +140,32 @@ class SwimlaneBpmnBuilder:
             },
         )
 
-        collab = ET.SubElement(root, f"{{{_NS_BPMN}}}collaboration", {"id": self._collab_id})
+        collab = ET.SubElement(
+            root, f"{{{_NS_BPMN}}}collaboration", {"id": self._collab_id}
+        )
         ET.SubElement(
-            collab, f"{{{_NS_BPMN}}}participant",
-            {"id": self._part_id, "name": self.process_name, "processRef": self._proc_id},
+            collab,
+            f"{{{_NS_BPMN}}}participant",
+            {
+                "id": self._part_id,
+                "name": self.process_name,
+                "processRef": self._proc_id,
+            },
         )
 
         process = ET.SubElement(
-            root, f"{{{_NS_BPMN}}}process", {"id": self._proc_id, "isExecutable": "false"}
+            root,
+            f"{{{_NS_BPMN}}}process",
+            {"id": self._proc_id, "isExecutable": "false"},
         )
 
-        lane_set = ET.SubElement(process, f"{{{_NS_BPMN}}}laneSet", {"id": "LS_" + uuid.uuid4().hex[:8]})
+        lane_set = ET.SubElement(
+            process, f"{{{_NS_BPMN}}}laneSet", {"id": "LS_" + uuid.uuid4().hex[:8]}
+        )
         for lane_name in self.lanes:
             lane_el = ET.SubElement(
-                lane_set, f"{{{_NS_BPMN}}}lane",
+                lane_set,
+                f"{{{_NS_BPMN}}}lane",
                 {"id": self._lane_ids[lane_name], "name": lane_name},
             )
             for eid, _lbl, _et, elane, _step in self._elements:
@@ -161,7 +179,9 @@ class SwimlaneBpmnBuilder:
             incoming[tgt].append(fid)
 
         for eid, label, etype, _lane, _step in self._elements:
-            el = ET.SubElement(process, f"{{{_NS_BPMN}}}{etype}", {"id": eid, "name": label})
+            el = ET.SubElement(
+                process, f"{{{_NS_BPMN}}}{etype}", {"id": eid, "name": label}
+            )
             for fid in incoming.get(eid, []):
                 ET.SubElement(el, f"{{{_NS_BPMN}}}incoming").text = fid
             for fid in outgoing.get(eid, []):
@@ -177,70 +197,123 @@ class SwimlaneBpmnBuilder:
         pool_w = _FIRST_X - _POOL_X + (max_step + 1) * _STEP_GAP + 80
         pool_h = _LANE_H * len(self.lanes)
 
-        diagram = ET.SubElement(root, f"{{{_NS_BPMNDI}}}BPMNDiagram", {"id": "Diag_" + uuid.uuid4().hex[:8]})
+        diagram = ET.SubElement(
+            root, f"{{{_NS_BPMNDI}}}BPMNDiagram", {"id": "Diag_" + uuid.uuid4().hex[:8]}
+        )
         plane = ET.SubElement(
-            diagram, f"{{{_NS_BPMNDI}}}BPMNPlane",
+            diagram,
+            f"{{{_NS_BPMNDI}}}BPMNPlane",
             {"id": "Plane_" + uuid.uuid4().hex[:8], "bpmnElement": self._collab_id},
         )
 
         ps = ET.SubElement(
-            plane, f"{{{_NS_BPMNDI}}}BPMNShape",
-            {"id": self._part_id + "_di", "bpmnElement": self._part_id, "isHorizontal": "true"},
+            plane,
+            f"{{{_NS_BPMNDI}}}BPMNShape",
+            {
+                "id": self._part_id + "_di",
+                "bpmnElement": self._part_id,
+                "isHorizontal": "true",
+            },
         )
-        ET.SubElement(ps, f"{{{_NS_DC}}}Bounds", {
-            "x": str(_POOL_X), "y": str(_POOL_Y), "width": str(pool_w), "height": str(pool_h),
-        })
+        ET.SubElement(
+            ps,
+            f"{{{_NS_DC}}}Bounds",
+            {
+                "x": str(_POOL_X),
+                "y": str(_POOL_Y),
+                "width": str(pool_w),
+                "height": str(pool_h),
+            },
+        )
 
         for i, lane_name in enumerate(self.lanes):
             lid = self._lane_ids[lane_name]
             ls = ET.SubElement(
-                plane, f"{{{_NS_BPMNDI}}}BPMNShape",
+                plane,
+                f"{{{_NS_BPMNDI}}}BPMNShape",
                 {"id": lid + "_di", "bpmnElement": lid, "isHorizontal": "true"},
             )
-            ET.SubElement(ls, f"{{{_NS_DC}}}Bounds", {
-                "x": str(_POOL_X + _POOL_HEADER_W),
-                "y": str(_POOL_Y + i * _LANE_H),
-                "width": str(pool_w - _POOL_HEADER_W),
-                "height": str(_LANE_H),
-            })
+            ET.SubElement(
+                ls,
+                f"{{{_NS_DC}}}Bounds",
+                {
+                    "x": str(_POOL_X + _POOL_HEADER_W),
+                    "y": str(_POOL_Y + i * _LANE_H),
+                    "width": str(pool_w - _POOL_HEADER_W),
+                    "height": str(_LANE_H),
+                },
+            )
 
         bounds_cache: dict[str, tuple[int, int, int, int]] = {}
         for eid, _label, etype, lane, step in self._elements:
             x, y, w, h = self._bounds(etype, lane, step)
             bounds_cache[eid] = (x, y, w, h)
             shape = ET.SubElement(
-                plane, f"{{{_NS_BPMNDI}}}BPMNShape", {"id": eid + "_di", "bpmnElement": eid}
+                plane,
+                f"{{{_NS_BPMNDI}}}BPMNShape",
+                {"id": eid + "_di", "bpmnElement": eid},
             )
-            ET.SubElement(shape, f"{{{_NS_DC}}}Bounds", {
-                "x": str(x), "y": str(y), "width": str(w), "height": str(h),
-            })
+            ET.SubElement(
+                shape,
+                f"{{{_NS_DC}}}Bounds",
+                {
+                    "x": str(x),
+                    "y": str(y),
+                    "width": str(w),
+                    "height": str(h),
+                },
+            )
             if etype in ("startEvent", "endEvent") or "Gateway" in etype:
                 lbl_el = ET.SubElement(shape, f"{{{_NS_BPMNDI}}}BPMNLabel")
-                ET.SubElement(lbl_el, f"{{{_NS_DC}}}Bounds", {
-                    "x": str(x - 10), "y": str(y + h + 4), "width": str(w + 20), "height": "40",
-                })
+                ET.SubElement(
+                    lbl_el,
+                    f"{{{_NS_DC}}}Bounds",
+                    {
+                        "x": str(x - 10),
+                        "y": str(y + h + 4),
+                        "width": str(w + 20),
+                        "height": "40",
+                    },
+                )
 
         for fid, src, tgt, label in self._flows:
             edge = ET.SubElement(
-                plane, f"{{{_NS_BPMNDI}}}BPMNEdge", {"id": fid + "_di", "bpmnElement": fid}
+                plane,
+                f"{{{_NS_BPMNDI}}}BPMNEdge",
+                {"id": fid + "_di", "bpmnElement": fid},
             )
             if label:
                 le = ET.SubElement(edge, f"{{{_NS_BPMNDI}}}BPMNLabel")
                 sx, sy, sw, sh = bounds_cache.get(src, (0, 0, 0, 0))
                 tx, ty, tw, th = bounds_cache.get(tgt, (0, 0, 0, 0))
-                ET.SubElement(le, f"{{{_NS_DC}}}Bounds", {
-                    "x": str(int((sx + sw / 2 + tx + tw / 2) / 2 - 20)),
-                    "y": str(int((sy + sh / 2 + ty + th / 2) / 2 - 10)),
-                    "width": "60", "height": "20",
-                })
+                ET.SubElement(
+                    le,
+                    f"{{{_NS_DC}}}Bounds",
+                    {
+                        "x": str(int((sx + sw / 2 + tx + tw / 2) / 2 - 20)),
+                        "y": str(int((sy + sh / 2 + ty + th / 2) / 2 - 10)),
+                        "width": "60",
+                        "height": "20",
+                    },
+                )
             sx, sy, sw, sh = bounds_cache.get(src, (0, 0, 0, 0))
             tx, ty, tw, th = bounds_cache.get(tgt, (0, 0, 0, 0))
-            ET.SubElement(edge, f"{{{_NS_DI}}}waypoint", {
-                "x": str(sx + sw), "y": str(int(sy + sh / 2)),
-            })
-            ET.SubElement(edge, f"{{{_NS_DI}}}waypoint", {
-                "x": str(tx), "y": str(int(ty + th / 2)),
-            })
+            ET.SubElement(
+                edge,
+                f"{{{_NS_DI}}}waypoint",
+                {
+                    "x": str(sx + sw),
+                    "y": str(int(sy + sh / 2)),
+                },
+            )
+            ET.SubElement(
+                edge,
+                f"{{{_NS_DI}}}waypoint",
+                {
+                    "x": str(tx),
+                    "y": str(int(ty + th / 2)),
+                },
+            )
 
         xml_str = ET.tostring(root, encoding="unicode")
         return minidom.parseString(xml_str).toprettyxml(indent="  ")

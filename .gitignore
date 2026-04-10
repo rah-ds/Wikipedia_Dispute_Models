@@ -5,7 +5,8 @@ src/__pycache__
 src/wikipedia_arbitration.egg-info
 
 # Data directory — raw/processed/external data should not be in git
-#data/raw/
+data/raw/
+!data/raw/.gitkeep
 data/processed/
 data/external/
 
@@ -43,3 +44,4 @@ package-lock.json
 # Passwords
 user-conf.py
 user-password.py
+slurmlogs
