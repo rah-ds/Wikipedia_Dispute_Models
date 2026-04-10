@@ -123,7 +123,9 @@ class WikiClient:
             if token:
                 # Intentionally set private pywikibot internals to inject OAuth headers
                 setattr(self.site, "_loginstatus", True)
-                setattr(self.site, "_custom_headers", {"Authorization": f"Bearer {token}"})
+                setattr(
+                    self.site, "_custom_headers", {"Authorization": f"Bearer {token}"}
+                )
                 self.authenticated = True
             else:
                 logger.warning(
