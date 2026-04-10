@@ -5,153 +5,153 @@
              xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
              xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
              targetNamespace="http://bpmn.io/schema/bpmn"
-             id="Definitions_f3f256eb">
-  <process id="Process_b7380a95" name="ARB Case: A Man In Black" isExecutable="false">
-    <startEvent id="StartEvent_7e3ef550" name="Request Filed"/>
-    <userTask id="Task_6f47c250" name="Submission - 23 May 2009"/>
-    <userTask id="Task_e40c3b98" name="Preliminary Review
+             id="Definitions_68a0798a">
+  <process id="Process_c62f3e0d" name="ARB Case: A Man In Black" isExecutable="false">
+    <startEvent id="StartEvent_b9032f5a" name="Request Filed"/>
+    <userTask id="Task_900a0d39" name="Submission - 23 May 2009"/>
+    <userTask id="Task_bdcb86d7" name="Preliminary Review
 (ArbCom Votes)"/>
-    <exclusiveGateway id="Gateway_06820e61" name="Accepted?" gatewayDirection="Diverging"/>
-    <endEvent id="EndEvent_639f8211" name="Declined"/>
-    <userTask id="Task_3dd574de" name="Evidence Phase"/>
-    <userTask id="Task_24061d2f" name="Workshop
+    <exclusiveGateway id="Gateway_9f4dd0c1" name="Accepted?" gatewayDirection="Diverging"/>
+    <endEvent id="EndEvent_d457bfa8" name="Declined"/>
+    <userTask id="Task_05d1dece" name="Evidence Phase"/>
+    <userTask id="Task_ffafdea2" name="Workshop
 (Draft Decision)"/>
-    <userTask id="Task_4d25e3d4" name="Proposed Decision
+    <userTask id="Task_f558a18e" name="Proposed Decision
 Voting"/>
-    <serviceTask id="Task_8ddeb298" name="Final Decision
+    <serviceTask id="Task_6f6ab126" name="Final Decision
 Published"/>
-    <userTask id="Task_cadf1787" name="Enforcement"/>
-    <exclusiveGateway id="Gateway_1c71601e" name="Outcome?" gatewayDirection="Diverging"/>
-    <endEvent id="EndEvent_a26a7c41" name="Remedies Imposed"/>
-    <endEvent id="EndEvent_805d5f05" name="A Man In Black desysopped"/>
-    <endEvent id="EndEvent_ae894d9e" name="A Man in Black topic-banned"/>
-    <endEvent id="EndEvent_ba8995ed" name="A Man in Black restricted"/>
-    <endEvent id="EndEvent_ceb86d23" name="Ikip warned"/>
-    <sequenceFlow id="Flow_88001743" sourceRef="StartEvent_7e3ef550" targetRef="Task_6f47c250"/>
-    <sequenceFlow id="Flow_be88a7bf" sourceRef="Task_6f47c250" targetRef="Task_e40c3b98"/>
-    <sequenceFlow id="Flow_8a65fc43" sourceRef="Task_e40c3b98" targetRef="Gateway_06820e61"/>
-    <sequenceFlow id="Flow_511cfa68" sourceRef="Gateway_06820e61" targetRef="EndEvent_639f8211" name="No - Declined"/>
-    <sequenceFlow id="Flow_00851250" sourceRef="Gateway_06820e61" targetRef="Task_3dd574de" name="Yes - Accepted"/>
-    <sequenceFlow id="Flow_33fe6ae3" sourceRef="Task_3dd574de" targetRef="Task_24061d2f"/>
-    <sequenceFlow id="Flow_73e3949d" sourceRef="Task_24061d2f" targetRef="Task_4d25e3d4"/>
-    <sequenceFlow id="Flow_9cd9ffd9" sourceRef="Task_4d25e3d4" targetRef="Task_8ddeb298"/>
-    <sequenceFlow id="Flow_7d5e0dd0" sourceRef="Task_8ddeb298" targetRef="Task_cadf1787"/>
-    <sequenceFlow id="Flow_3ab7cade" sourceRef="Task_cadf1787" targetRef="Gateway_1c71601e"/>
-    <sequenceFlow id="Flow_514ae76e" sourceRef="Gateway_1c71601e" targetRef="EndEvent_a26a7c41" name="Remedies Imposed"/>
-    <sequenceFlow id="Flow_130d7265" sourceRef="Gateway_1c71601e" targetRef="EndEvent_805d5f05" name="A Man In Black desysopped"/>
-    <sequenceFlow id="Flow_82da51b5" sourceRef="Gateway_1c71601e" targetRef="EndEvent_ae894d9e" name="A Man in Black topic-bann…"/>
-    <sequenceFlow id="Flow_8861025c" sourceRef="Gateway_1c71601e" targetRef="EndEvent_ba8995ed" name="A Man in Black restricted"/>
-    <sequenceFlow id="Flow_b86acae1" sourceRef="Gateway_1c71601e" targetRef="EndEvent_ceb86d23" name="Ikip warned"/>
+    <userTask id="Task_8fd71782" name="Enforcement"/>
+    <exclusiveGateway id="Gateway_9b46051f" name="Outcome?" gatewayDirection="Diverging"/>
+    <endEvent id="EndEvent_75d43213" name="Remedies Imposed"/>
+    <endEvent id="EndEvent_89a64451" name="A Man In Black desysopped"/>
+    <endEvent id="EndEvent_4b393551" name="A Man in Black topic-banned"/>
+    <endEvent id="EndEvent_b5065541" name="A Man in Black restricted"/>
+    <endEvent id="EndEvent_5e9a36b0" name="Ikip warned"/>
+    <sequenceFlow id="Flow_16518789" sourceRef="StartEvent_b9032f5a" targetRef="Task_900a0d39"/>
+    <sequenceFlow id="Flow_6772fdee" sourceRef="Task_900a0d39" targetRef="Task_bdcb86d7"/>
+    <sequenceFlow id="Flow_8dcdef1e" sourceRef="Task_bdcb86d7" targetRef="Gateway_9f4dd0c1"/>
+    <sequenceFlow id="Flow_aa6ee932" sourceRef="Gateway_9f4dd0c1" targetRef="EndEvent_d457bfa8" name="No - Declined"/>
+    <sequenceFlow id="Flow_b18bc764" sourceRef="Gateway_9f4dd0c1" targetRef="Task_05d1dece" name="Yes - Accepted"/>
+    <sequenceFlow id="Flow_627d2e27" sourceRef="Task_05d1dece" targetRef="Task_ffafdea2"/>
+    <sequenceFlow id="Flow_0263ba0c" sourceRef="Task_ffafdea2" targetRef="Task_f558a18e"/>
+    <sequenceFlow id="Flow_6c775401" sourceRef="Task_f558a18e" targetRef="Task_6f6ab126"/>
+    <sequenceFlow id="Flow_1065dfab" sourceRef="Task_6f6ab126" targetRef="Task_8fd71782"/>
+    <sequenceFlow id="Flow_86c3db48" sourceRef="Task_8fd71782" targetRef="Gateway_9b46051f"/>
+    <sequenceFlow id="Flow_b4e1a33d" sourceRef="Gateway_9b46051f" targetRef="EndEvent_75d43213" name="Remedies Imposed"/>
+    <sequenceFlow id="Flow_9236e5cf" sourceRef="Gateway_9b46051f" targetRef="EndEvent_89a64451" name="A Man In Black desysopped"/>
+    <sequenceFlow id="Flow_c75b062c" sourceRef="Gateway_9b46051f" targetRef="EndEvent_4b393551" name="A Man in Black topic-bann…"/>
+    <sequenceFlow id="Flow_2e1fc5db" sourceRef="Gateway_9b46051f" targetRef="EndEvent_b5065541" name="A Man in Black restricted"/>
+    <sequenceFlow id="Flow_4a04994a" sourceRef="Gateway_9b46051f" targetRef="EndEvent_5e9a36b0" name="Ikip warned"/>
   </process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_b7380a95">
-    <bpmndi:BPMNShape id="StartEvent_7e3ef550_di" bpmnElement="StartEvent_7e3ef550">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_c62f3e0d">
+    <bpmndi:BPMNShape id="StartEvent_b9032f5a_di" bpmnElement="StartEvent_b9032f5a">
       <dc:Bounds x="80" y="200" width="36" height="36"/>
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNShape>
-    <bpmndi:BPMNShape id="Task_6f47c250_di" bpmnElement="Task_6f47c250">
+    <bpmndi:BPMNShape id="Task_900a0d39_di" bpmnElement="Task_900a0d39">
       <dc:Bounds x="260" y="170" width="120" height="60"/>
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNShape>
-    <bpmndi:BPMNShape id="Task_e40c3b98_di" bpmnElement="Task_e40c3b98">
+    <bpmndi:BPMNShape id="Task_bdcb86d7_di" bpmnElement="Task_bdcb86d7">
       <dc:Bounds x="440" y="170" width="120" height="60"/>
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNShape>
-    <bpmndi:BPMNShape id="Gateway_06820e61_di" bpmnElement="Gateway_06820e61">
+    <bpmndi:BPMNShape id="Gateway_9f4dd0c1_di" bpmnElement="Gateway_9f4dd0c1">
       <dc:Bounds x="620" y="175" width="50" height="50"/>
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNShape>
-    <bpmndi:BPMNShape id="EndEvent_639f8211_di" bpmnElement="EndEvent_639f8211">
+    <bpmndi:BPMNShape id="EndEvent_d457bfa8_di" bpmnElement="EndEvent_d457bfa8">
       <dc:Bounds x="800" y="40" width="36" height="36"/>
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNShape>
-    <bpmndi:BPMNShape id="Task_3dd574de_di" bpmnElement="Task_3dd574de">
+    <bpmndi:BPMNShape id="Task_05d1dece_di" bpmnElement="Task_05d1dece">
       <dc:Bounds x="800" y="170" width="120" height="60"/>
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNShape>
-    <bpmndi:BPMNShape id="Task_24061d2f_di" bpmnElement="Task_24061d2f">
+    <bpmndi:BPMNShape id="Task_ffafdea2_di" bpmnElement="Task_ffafdea2">
       <dc:Bounds x="980" y="170" width="120" height="60"/>
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNShape>
-    <bpmndi:BPMNShape id="Task_4d25e3d4_di" bpmnElement="Task_4d25e3d4">
+    <bpmndi:BPMNShape id="Task_f558a18e_di" bpmnElement="Task_f558a18e">
       <dc:Bounds x="1160" y="170" width="120" height="60"/>
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNShape>
-    <bpmndi:BPMNShape id="Task_8ddeb298_di" bpmnElement="Task_8ddeb298">
+    <bpmndi:BPMNShape id="Task_6f6ab126_di" bpmnElement="Task_6f6ab126">
       <dc:Bounds x="1340" y="170" width="120" height="60"/>
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNShape>
-    <bpmndi:BPMNShape id="Task_cadf1787_di" bpmnElement="Task_cadf1787">
+    <bpmndi:BPMNShape id="Task_8fd71782_di" bpmnElement="Task_8fd71782">
       <dc:Bounds x="1520" y="170" width="120" height="60"/>
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNShape>
-    <bpmndi:BPMNShape id="Gateway_1c71601e_di" bpmnElement="Gateway_1c71601e">
+    <bpmndi:BPMNShape id="Gateway_9b46051f_di" bpmnElement="Gateway_9b46051f">
       <dc:Bounds x="1700" y="175" width="50" height="50"/>
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNShape>
-    <bpmndi:BPMNShape id="EndEvent_a26a7c41_di" bpmnElement="EndEvent_a26a7c41">
+    <bpmndi:BPMNShape id="EndEvent_75d43213_di" bpmnElement="EndEvent_75d43213">
       <dc:Bounds x="1880" y="200" width="36" height="36"/>
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNShape>
-    <bpmndi:BPMNShape id="EndEvent_805d5f05_di" bpmnElement="EndEvent_805d5f05">
+    <bpmndi:BPMNShape id="EndEvent_89a64451_di" bpmnElement="EndEvent_89a64451">
       <dc:Bounds x="1880" y="300" width="36" height="36"/>
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNShape>
-    <bpmndi:BPMNShape id="EndEvent_ae894d9e_di" bpmnElement="EndEvent_ae894d9e">
+    <bpmndi:BPMNShape id="EndEvent_4b393551_di" bpmnElement="EndEvent_4b393551">
       <dc:Bounds x="1880" y="380" width="36" height="36"/>
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNShape>
-    <bpmndi:BPMNShape id="EndEvent_ba8995ed_di" bpmnElement="EndEvent_ba8995ed">
+    <bpmndi:BPMNShape id="EndEvent_b5065541_di" bpmnElement="EndEvent_b5065541">
       <dc:Bounds x="1880" y="460" width="36" height="36"/>
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNShape>
-    <bpmndi:BPMNShape id="EndEvent_ceb86d23_di" bpmnElement="EndEvent_ceb86d23">
+    <bpmndi:BPMNShape id="EndEvent_5e9a36b0_di" bpmnElement="EndEvent_5e9a36b0">
       <dc:Bounds x="1880" y="540" width="36" height="36"/>
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNShape>
-    <bpmndi:BPMNEdge id="Flow_88001743_di" bpmnElement="Flow_88001743">
+    <bpmndi:BPMNEdge id="Flow_16518789_di" bpmnElement="Flow_16518789">
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNEdge>
-    <bpmndi:BPMNEdge id="Flow_be88a7bf_di" bpmnElement="Flow_be88a7bf">
+    <bpmndi:BPMNEdge id="Flow_6772fdee_di" bpmnElement="Flow_6772fdee">
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNEdge>
-    <bpmndi:BPMNEdge id="Flow_8a65fc43_di" bpmnElement="Flow_8a65fc43">
+    <bpmndi:BPMNEdge id="Flow_8dcdef1e_di" bpmnElement="Flow_8dcdef1e">
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNEdge>
-    <bpmndi:BPMNEdge id="Flow_511cfa68_di" bpmnElement="Flow_511cfa68">
+    <bpmndi:BPMNEdge id="Flow_aa6ee932_di" bpmnElement="Flow_aa6ee932">
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNEdge>
-    <bpmndi:BPMNEdge id="Flow_00851250_di" bpmnElement="Flow_00851250">
+    <bpmndi:BPMNEdge id="Flow_b18bc764_di" bpmnElement="Flow_b18bc764">
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNEdge>
-    <bpmndi:BPMNEdge id="Flow_33fe6ae3_di" bpmnElement="Flow_33fe6ae3">
+    <bpmndi:BPMNEdge id="Flow_627d2e27_di" bpmnElement="Flow_627d2e27">
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNEdge>
-    <bpmndi:BPMNEdge id="Flow_73e3949d_di" bpmnElement="Flow_73e3949d">
+    <bpmndi:BPMNEdge id="Flow_0263ba0c_di" bpmnElement="Flow_0263ba0c">
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNEdge>
-    <bpmndi:BPMNEdge id="Flow_9cd9ffd9_di" bpmnElement="Flow_9cd9ffd9">
+    <bpmndi:BPMNEdge id="Flow_6c775401_di" bpmnElement="Flow_6c775401">
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNEdge>
-    <bpmndi:BPMNEdge id="Flow_7d5e0dd0_di" bpmnElement="Flow_7d5e0dd0">
+    <bpmndi:BPMNEdge id="Flow_1065dfab_di" bpmnElement="Flow_1065dfab">
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNEdge>
-    <bpmndi:BPMNEdge id="Flow_3ab7cade_di" bpmnElement="Flow_3ab7cade">
+    <bpmndi:BPMNEdge id="Flow_86c3db48_di" bpmnElement="Flow_86c3db48">
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNEdge>
-    <bpmndi:BPMNEdge id="Flow_514ae76e_di" bpmnElement="Flow_514ae76e">
+    <bpmndi:BPMNEdge id="Flow_b4e1a33d_di" bpmnElement="Flow_b4e1a33d">
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNEdge>
-    <bpmndi:BPMNEdge id="Flow_130d7265_di" bpmnElement="Flow_130d7265">
+    <bpmndi:BPMNEdge id="Flow_9236e5cf_di" bpmnElement="Flow_9236e5cf">
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNEdge>
-    <bpmndi:BPMNEdge id="Flow_82da51b5_di" bpmnElement="Flow_82da51b5">
+    <bpmndi:BPMNEdge id="Flow_c75b062c_di" bpmnElement="Flow_c75b062c">
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNEdge>
-    <bpmndi:BPMNEdge id="Flow_8861025c_di" bpmnElement="Flow_8861025c">
+    <bpmndi:BPMNEdge id="Flow_2e1fc5db_di" bpmnElement="Flow_2e1fc5db">
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNEdge>
-    <bpmndi:BPMNEdge id="Flow_b86acae1_di" bpmnElement="Flow_b86acae1">
+    <bpmndi:BPMNEdge id="Flow_4a04994a_di" bpmnElement="Flow_4a04994a">
       <bpmndi:BPMNLabel/>
     </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
