@@ -1,4 +1,4 @@
-.PHONY: install install-dev clean data-dirs help lint fetch-all fetch-full fetch-arb fetch-drn fetch-small test test-unit test-cov fetch-venues fetch-ani fetch-talk fetch-arb-dfs fetch-arb-dfs-sample fetch-arb-dfs-sample-full fetch-arb-dfs-all fetch-arb-dfs-all-full update-arb-cases-list fetch-lifecycle fetch-lifecycle-dry fetch-lifecycle-sample fetch-lifecycle-all setup pull pull-status pull-reset validate archive clear-results pull-full-arb pull-full-arb-estimate pull-full-arb-force
+.PHONY: install install-dev clean data-dirs help lint fetch-all fetch-full fetch-arb fetch-drn fetch-small test test-unit test-cov fetch-venues fetch-ani fetch-talk fetch-arb-dfs fetch-arb-dfs-sample fetch-arb-dfs-sample-full fetch-arb-dfs-all fetch-arb-dfs-all-full update-arb-cases-list fetch-lifecycle fetch-lifecycle-dry fetch-lifecycle-sample fetch-lifecycle-all setup pull pull-status pull-reset validate archive clear-results pull-full-arb pull-full-arb-estimate pull-full-arb-force rivanna-sync rivanna-setup rivanna-submit rivanna-status rivanna-logs rivanna-pull rivanna-clean rivanna-ssh rivanna-train
 
 # =============================================================================
 # QUICK START - Three simple commands to get started
@@ -43,7 +43,7 @@ help:
 	@echo "  make test-unit   Run unit tests only (no network)"
 	@echo "  make test-cov    Run tests with coverage"
 	@echo "  make data-dirs   Create data directory structure"
-	@echo "  make clean       Remove generated files (cache, pycache)
+	@echo "  make clean       Remove generated files (cache, pycache)"
 	@echo ""
 	@echo "Legacy Data Collection (still supported):"
 	@echo "  fetch-small     Fetch sample dataset (10 articles, 5 arb cases)"
@@ -73,6 +73,17 @@ help:
 	@echo "  fetch-lifecycle-dry CASE=<n>  Preview lifecycle fetch"
 	@echo "  fetch-lifecycle-sample        Fetch 5 sample cases with full lifecycle"
 	@echo "  fetch-lifecycle-all           Fetch ALL cases with full lifecycle"
+	@echo ""
+	@echo "Rivanna HPC (requires RIVANNA_ID in .env + SSH key):"
+	@echo "  make rivanna-sync    Sync project to Rivanna /scratch"
+	@echo "  make rivanna-setup   One-time setup (uv, venv, deps)"
+	@echo "  make rivanna-submit  Submit all SLURM jobs"
+	@echo "  make rivanna-status  Show SLURM job progress"
+	@echo "  make rivanna-logs    Tail recent SLURM log output"
+	@echo "  make rivanna-pull    Download collected data locally"
+	@echo "  make rivanna-clean   Cancel jobs and clear remote data"
+	@echo "  make rivanna-ssh     SSH into Rivanna interactively"
+	@echo "  make rivanna-train   Submit Gemma4 BPMN GPU job"
 	@echo ""
 
 # =============================================================================
@@ -493,3 +504,70 @@ pull-full-arb-force: data-dirs
 	@echo "Use Ctrl+C to interrupt (progress is saved, resume with same command)"
 	@echo ""
 	uv run python scripts/pull.py --config full
+
+# =============================================================================
+# RIVANNA HPC TARGETS
+# =============================================================================
+# Local convenience targets that SSH into Rivanna to manage SLURM jobs.
+# Requires: RIVANNA_ID set in .env, SSH key configured (see docs/rivanna_guide.md)
+
+# Load RIVANNA_ID from .env if not already set
+RIVANNA_ID ?= $(shell grep '^RIVANNA_ID=' .env 2>/dev/null | cut -d= -f2)
+RIVANNA_HOST := $(RIVANNA_ID)@login.hpc.virginia.edu
+RIVANNA_PROJECT := /scratch/$(RIVANNA_ID)/Wikipedia_Dispute_Models
+
+# Sync project files to Rivanna (excludes large/generated dirs)
+rivanna-sync:
+	@if [ -z "$(RIVANNA_ID)" ]; then echo "Error: RIVANNA_ID not set. Add it to .env"; exit 1; fi
+	rsync -avz --delete \
+		--exclude='.venv' --exclude='__pycache__' --exclude='node_modules' \
+		--exclude='data/raw' --exclude='data/processed' --exclude='apicache' \
+		--exclude='.git' --exclude='slurmlogs/*.out' --exclude='slurmlogs/*.err' \
+		./ $(RIVANNA_HOST):$(RIVANNA_PROJECT)/
+	@echo "✓ Synced to $(RIVANNA_HOST):$(RIVANNA_PROJECT)"
+
+# One-time setup: install uv, create venv, install deps, smoke test
+rivanna-setup: rivanna-sync
+	ssh $(RIVANNA_HOST) 'cd $(RIVANNA_PROJECT) && bash scripts/slurm/setup_rivanna.sh'
+
+# Submit all SLURM jobs (update cases → fetch_full, arb_dfs, lifecycle)
+rivanna-submit:
+	ssh $(RIVANNA_HOST) 'cd $(RIVANNA_PROJECT) && bash scripts/slurm/submit_all.sh'
+
+# Show SLURM job progress and data collection status
+rivanna-status:
+	ssh $(RIVANNA_HOST) 'cd $(RIVANNA_PROJECT) && bash scripts/slurm/status.sh'
+
+# Tail recent SLURM log output
+rivanna-logs:
+	ssh $(RIVANNA_HOST) 'cd $(RIVANNA_PROJECT) && for f in $$(ls -t slurmlogs/*.out 2>/dev/null | head -5); do echo "=== $$f ==="; tail -20 "$$f"; echo; done'
+
+# Pull collected data from Rivanna to local machine
+rivanna-pull:
+	@if [ -z "$(RIVANNA_ID)" ]; then echo "Error: RIVANNA_ID not set. Add it to .env"; exit 1; fi
+	rsync -avz $(RIVANNA_HOST):$(RIVANNA_PROJECT)/data/raw/ data/raw/
+	rsync -avz $(RIVANNA_HOST):$(RIVANNA_PROJECT)/data/processed/ data/processed/
+	rsync -avz $(RIVANNA_HOST):$(RIVANNA_PROJECT)/slurmlogs/ slurmlogs/
+	rsync -avz --include='*.txt' --include='*.yaml' --include='*.json' --exclude='*' \
+		$(RIVANNA_HOST):$(RIVANNA_PROJECT)/artifacts/ artifacts/
+	@echo "✓ Pulled data from Rivanna"
+
+# Cancel all SLURM jobs and clear remote data
+rivanna-clean:
+	@echo "This will cancel all your SLURM jobs and delete remote data/raw/*"
+	@read -p "Are you sure? [y/N] " confirm; \
+	if [ "$$confirm" = "y" ] || [ "$$confirm" = "Y" ]; then \
+		ssh $(RIVANNA_HOST) 'scancel -u $(RIVANNA_ID) 2>/dev/null; \
+			cd $(RIVANNA_PROJECT) && rm -rf data/raw/* slurmlogs/*.out slurmlogs/*.err'; \
+		echo "✓ Cancelled jobs and cleared data on Rivanna"; \
+	else \
+		echo "Cancelled"; \
+	fi
+
+# SSH into Rivanna interactively
+rivanna-ssh:
+	ssh $(RIVANNA_HOST)
+
+# Submit Gemma4 BPMN GPU job to Rivanna
+rivanna-train: rivanna-sync
+	ssh $(RIVANNA_HOST) 'cd $(RIVANNA_PROJECT) && mkdir -p logs && sbatch scripts/rivanna_gemma4.slurm'

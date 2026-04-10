@@ -25,7 +25,7 @@
 # ── SLURM directives ──────────────────────────────────────────────────────────
 
 #SBATCH --job-name=gemma4_bpmn
-#SBATCH --account=YOUR_ALLOCATION        # TODO: replace with your Rivanna allocation (e.g. mst3k)
+#SBATCH --account=shakeri_ds6050          # UVA DS6050 allocation
 #SBATCH --partition=gpu                  # gpu  |  bii-gpu  |  standard
 #SBATCH --gres=gpu:a100:1               # A100 40 GB fits gemma-4-9b-it in fp16
                                          # Use gpu:a100:2 for 27B model
@@ -35,7 +35,7 @@
 #SBATCH --output=logs/gemma4_bpmn_%j.out
 #SBATCH --error=logs/gemma4_bpmn_%j.err
 #SBATCH --mail-type=BEGIN,END,FAIL
-#SBATCH --mail-user=YOUR_EMAIL@virginia.edu   # TODO: replace with your UVA email
+#SBATCH --mail-user=rah5ff@virginia.edu
 
 # ── Environment ───────────────────────────────────────────────────────────────
 

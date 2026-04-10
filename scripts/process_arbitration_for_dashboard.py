@@ -17,7 +17,9 @@ from pathlib import Path
 # Paths
 # ──────────────────────────────────────────────
 BASE = Path(__file__).resolve().parent.parent
-DEFAULT_RAW_JSON = BASE / "data" / "processed" / "clean_arbitration_cases_20260216_163707.json"
+DEFAULT_RAW_JSON = (
+    BASE / "data" / "processed" / "clean_arbitration_cases_20260216_163707.json"
+)
 OUT_JSON = BASE / "data" / "processed" / "dashboard_data.json"
 PUBLIC_OUT_JSON = BASE / "dashboard" / "public" / "data" / "dashboard_data.json"
 
