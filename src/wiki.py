@@ -11,6 +11,7 @@ from typing import Callable, TypeVar
 
 import pywikibot
 from pywikibot import data as pywikibot_data
+import pywikibot.data.api  # ensure submodule is loaded
 from pywikibot.exceptions import APIError, ServerError
 import os
 
@@ -84,11 +85,13 @@ def retry_on_rate_limit(
                     raise
 
             # All retries exhausted
-            logger.error(f"Max retries ({max_retries}) exceeded for {func.__name__}")
+            logger.error(
+                f"Max retries ({max_retries}) exceeded for {getattr(func, '__name__', repr(func))}"
+            )
             if last_exception is not None:
                 raise last_exception
             raise RuntimeError(
-                f"Max retries ({max_retries}) exceeded for {func.__name__}"
+                f"Max retries ({max_retries}) exceeded for {getattr(func, '__name__', repr(func))}"
             )
 
         return wrapper
@@ -108,28 +111,33 @@ class WikiClient:
         Args:
             lang: Language code (default: "en")
             project: Wikimedia project (default: "wikipedia")
+            use_oauth: Try OAuth if token is available; fall back to anonymous
         """
         self.site = pywikibot.Site(lang, project)
         self.lang = lang
         self.project = project
+        self.authenticated = False
 
         if use_oauth:
             token = os.getenv("WIKIPEDIA_ACCESS_TOKEN")
-            if not token:
-                raise ValueError(
-                    "WIKIPEDIA_ACCESS_TOKEN not found in environment variables"
+            if token:
+                # Intentionally set private pywikibot internals to inject OAuth headers
+                setattr(self.site, "_loginstatus", True)
+                setattr(self.site, "_custom_headers", {"Authorization": f"Bearer {token}"})
+                self.authenticated = True
+            else:
+                logger.warning(
+                    "WIKIPEDIA_ACCESS_TOKEN not set — running unauthenticated "
+                    "(500 req/hour limit). Set the token in .env for 5 000 req/hour."
                 )
-
-            # Setup OAuth headers
-            self.site._loginstatus = (
-                True  # pretend logged in to bypass anonymous checks
-            )
-            self.site._custom_headers = {"Authorization": f"Bearer {token}"}
 
         # Request tracking
         self._request_count = 0
         self._hourly_counts: dict[str, int] = {}  # hour -> count
         self._start_time = datetime.now()
+
+        # Adaptive delay: unauthenticated gets much more conservative
+        self.default_delay = 0.5 if self.authenticated else 2.0
 
     def _track_request(self) -> None:
         """Track API request and log hourly stats."""
@@ -421,7 +429,7 @@ class WikiClient:
         """Get the talk page for an article."""
         page = self.get_page(title)
         talk = page.toggleTalkPage()
-        return talk if talk.exists() else None
+        return talk if talk is not None and talk.exists() else None
 
     # =========================================================================
     # User Information Methods

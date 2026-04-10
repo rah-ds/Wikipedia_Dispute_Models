@@ -17,7 +17,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import shutil
 import sys
 from pathlib import Path
@@ -55,9 +54,7 @@ def load_case_list(case_file: str) -> list[str]:
 
     with open(path) as f:
         cases = [
-            line.strip()
-            for line in f
-            if line.strip() and not line.startswith("#")
+            line.strip() for line in f if line.strip() and not line.startswith("#")
         ]
     return cases
 
@@ -190,7 +187,9 @@ def print_estimate(
     if storage_warning:
         print("!" * 70)
         print("!!! WARNING: Free space would drop below threshold !!!")
-        print(f"!!!          Remaining: {remaining_space_gb:.1f} GB < {threshold_gb:.1f} GB")
+        print(
+            f"!!!          Remaining: {remaining_space_gb:.1f} GB < {threshold_gb:.1f} GB"
+        )
         print("!" * 70)
         print()
         print("Options:")
@@ -269,7 +268,9 @@ def main():
             ),
             "free_space_gb": free_space,
             "threshold_gb": args.threshold,
-            "storage_ok": free_space - (len(pending) * estimates["total_per_case"] / 1024) >= args.threshold,
+            "storage_ok": free_space
+            - (len(pending) * estimates["total_per_case"] / 1024)
+            >= args.threshold,
         }
         print(json.dumps(result, indent=2))
         sys.exit(0 if result["storage_ok"] else 1)

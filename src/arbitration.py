@@ -624,3 +624,55 @@ def cases_to_dataframe(cases: list[ArbitrationCaseSummary]):
         df = df.sort_values("case_name").reset_index(drop=True)
 
     return df
+
+
+# ---------------------------------------------------------------------------
+# Convenience fetcher used by scripts/pull.py
+# ---------------------------------------------------------------------------
+
+
+def fetch_full_arbitration_case(
+    client,
+    case_name: str,
+    revision_limit: int = 100,
+    max_articles: int = 20,
+    enrich_participants: bool = True,
+    enrich_articles: bool = True,
+    include_ani: bool = True,
+    include_drn: bool = True,
+) -> dict:
+    """Fetch a single arbitration case with full lifecycle enrichment.
+
+    Thin wrapper around :func:`src.lifecycle.fetch_dispute_lifecycle` that
+    maps the enrichment flags used by ``scripts/pull.py`` to the
+    underlying lifecycle parameters.
+    """
+    from src.lifecycle import fetch_dispute_lifecycle
+
+    result = fetch_dispute_lifecycle(
+        client,
+        case_name,
+        max_talk_pages=max_articles,
+        revision_limit=revision_limit,
+        ani_limit=30 if include_ani else 0,
+        drn_archive_limit=20 if include_drn else 0,
+        delay=getattr(client, "default_delay", 0.5),
+    )
+
+    # If ANI/DRN are disabled, clear those stages so downstream doesn't
+    # misinterpret empty-because-skipped as empty-because-none-found.
+    if not include_ani:
+        result["lifecycle_stages"]["stage_4_ani"]["reports"] = []
+    if not include_drn:
+        result["lifecycle_stages"]["stage_3_drn"]["mentions"] = []
+
+    # Provide enrichment counts expected by pull.py timing / rate logic
+    result.setdefault("summary", {})
+    result["summary"]["participants_enriched"] = (
+        len(result.get("participants", [])) if enrich_participants else 0
+    )
+    result["summary"]["articles_enriched"] = (
+        len(result.get("disputed_articles", [])) if enrich_articles else 0
+    )
+
+    return result

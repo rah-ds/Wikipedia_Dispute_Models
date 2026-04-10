@@ -141,28 +141,28 @@ class BpmnXmlBuilder:
         for n in self.nodes:
             nid, ntype, lbl = n["id"], n["type"], self._esc(n["label"])
             if ntype in ("startEvent", "endEvent"):
-                nodes_xml.append(f'{ind*2}<{ntype} id="{nid}" name="{lbl}"/>')
+                nodes_xml.append(f'{ind * 2}<{ntype} id="{nid}" name="{lbl}"/>')
             elif ntype == "exclusiveGateway":
                 nodes_xml.append(
-                    f'{ind*2}<exclusiveGateway id="{nid}" name="{lbl}" gatewayDirection="Diverging"/>'
+                    f'{ind * 2}<exclusiveGateway id="{nid}" name="{lbl}" gatewayDirection="Diverging"/>'
                 )
             else:
-                nodes_xml.append(f'{ind*2}<{ntype} id="{nid}" name="{lbl}"/>')
+                nodes_xml.append(f'{ind * 2}<{ntype} id="{nid}" name="{lbl}"/>')
             shapes_xml.append(
-                f'{ind*2}<bpmndi:BPMNShape id="{nid}_di" bpmnElement="{nid}">\n'
-                f'{ind*3}<dc:Bounds x="{n["x"]}" y="{n["y"]}" width="{n["w"]}" height="{n["h"]}"/>\n'
-                f'{ind*3}<bpmndi:BPMNLabel/>\n'
-                f'{ind*2}</bpmndi:BPMNShape>'
+                f'{ind * 2}<bpmndi:BPMNShape id="{nid}_di" bpmnElement="{nid}">\n'
+                f'{ind * 3}<dc:Bounds x="{n["x"]}" y="{n["y"]}" width="{n["w"]}" height="{n["h"]}"/>\n'
+                f"{ind * 3}<bpmndi:BPMNLabel/>\n"
+                f"{ind * 2}</bpmndi:BPMNShape>"
             )
         for fid, src, tgt, lbl in self.flows:
             name_attr = f' name="{self._esc(lbl)}"' if lbl else ""
             nodes_xml.append(
-                f'{ind*2}<sequenceFlow id="{fid}" sourceRef="{src}" targetRef="{tgt}"{name_attr}/>'
+                f'{ind * 2}<sequenceFlow id="{fid}" sourceRef="{src}" targetRef="{tgt}"{name_attr}/>'
             )
             edges_xml.append(
-                f'{ind*2}<bpmndi:BPMNEdge id="{fid}_di" bpmnElement="{fid}">\n'
-                f"{ind*3}<bpmndi:BPMNLabel/>\n"
-                f"{ind*2}</bpmndi:BPMNEdge>"
+                f'{ind * 2}<bpmndi:BPMNEdge id="{fid}_di" bpmnElement="{fid}">\n'
+                f"{ind * 3}<bpmndi:BPMNLabel/>\n"
+                f"{ind * 2}</bpmndi:BPMNEdge>"
             )
         nl = "\n"
         return f"""<?xml version="1.0" encoding="UTF-8"?>
@@ -693,12 +693,12 @@ def main():
     )
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("RFC -> BPMN + PNG Generator")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(f"Input : {input_path}")
     print(f"Output: {output_dir}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     raw_data = load_rfc_data(input_path)
     rfcs_raw = raw_data.get("rfcs", [])
@@ -744,7 +744,7 @@ def main():
     total_bpmn = len(bpmn_files) + (1 if agg_bpmn else 0)
     total_png = len(png_files) + (1 if agg_png else 0)
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("Done!")
     print(f"  Individual diagrams : {len(selected_indices)} of {len(all_parsed)} cases")
     print(f"  Aggregate           : full dataset ({len(all_parsed)} cases)")
@@ -754,7 +754,7 @@ def main():
     print("\nTo view:")
     print("  PNG  -- open any .png directly")
     print("  BPMN -- drag & drop at https://demo.bpmn.io")
-    print(f"{'='*60}\n")
+    print(f"{'=' * 60}\n")
 
 
 if __name__ == "__main__":

@@ -4,9 +4,8 @@ from __future__ import annotations
 
 import logging
 import re
-import time
 from datetime import datetime
-from typing import Optional
+from typing import Any, Optional
 
 import mwparserfromhell
 from tqdm import tqdm
@@ -196,7 +195,7 @@ def parse_drn_sections(content: str) -> list[dict]:
     wikicode = mwparserfromhell.parse(content)
 
     cases = []
-    current_section = None
+    current_section: dict[str, Any] | None = None
 
     for node in wikicode.nodes:
         if isinstance(node, mwparserfromhell.nodes.Heading):
@@ -461,7 +460,7 @@ def _extract_ani_sections(content: str, search_term: str) -> list[dict]:
     wikicode = mwparserfromhell.parse(content)
     sections = []
 
-    current_section = None
+    current_section: dict[str, Any] | None = None
     for node in wikicode.nodes:
         if isinstance(node, mwparserfromhell.nodes.Heading):
             # Save previous section if it contains the search term
@@ -542,7 +541,7 @@ def fetch_third_opinion_requests(
     wikicode = mwparserfromhell.parse(content)
 
     requests = []
-    current_request = None
+    current_request: dict[str, Any] | None = None
 
     for node in wikicode.nodes:
         if isinstance(node, mwparserfromhell.nodes.Heading):
@@ -689,7 +688,7 @@ def fetch_dispute_venues_for_article(
     """
     logger.info(f"Fetching dispute venues for: {article_title}")
 
-    result = {
+    result: dict[str, Any] = {
         "article": article_title,
         "fetched_at": datetime.now().isoformat(),
         "talk_page": None,
@@ -874,7 +873,7 @@ def check_user_spi_status(client: WikiClient, username: str) -> dict:
     Returns:
         Dictionary with SPI status summary
     """
-    result = {
+    result: dict[str, Any] = {
         "username": username,
         "has_spi_case": False,
         "is_suspected_sockpuppet": False,
