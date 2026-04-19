@@ -22,7 +22,7 @@ class TestWikiClient:
         """Test client initialization."""
         assert client.lang == "en"
         assert client.project == "wikipedia"
-        assert client.site is not None
+        assert client.session is not None
 
     @pytest.mark.integration
     def test_get_page_exists(self, client):

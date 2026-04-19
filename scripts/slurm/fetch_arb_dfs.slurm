@@ -46,7 +46,7 @@ if (( TASK_ID < 1 || TASK_ID > TOTAL_CASES )); then
     exit 1
 fi
 
-CASE_NAME=$(sed -n "${TASK_ID}p" "$ARB_CASES_FILE")
+CASE_NAME=$(sed -n "${TASK_ID}p" "$ARB_CASES_FILE" | xargs)
 
 if [[ -z "$CASE_NAME" ]]; then
     echo "ERROR: Empty case name at line $TASK_ID"
