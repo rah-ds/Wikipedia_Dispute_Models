@@ -23,6 +23,7 @@ throttle.ctrl
 # Artifacts - ignore all except results and imgs/publish
 artifacts/models/
 artifacts/imgs/dev/
+artifacts/graphs/
 artifacts/logs/
 artifacts/exports/
 artifacts/bpmn

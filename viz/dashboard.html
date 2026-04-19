@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Wikipedia Arbitration — Dispute Dashboard</title>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+:root {
+  --bg:#F8FCFF; --surface:#FFFFFF; --surface2:#EAF3FB;
+  --border:#A2A9B1; --border-light:#EAECF0; --text:#202122; --muted:#54595D; --faint:#A2A9B1;
+  --link:#3366CC;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+/* ── NAV ── */
+#nav{display:flex;align-items:stretch;border-bottom:1px solid var(--border);background:var(--surface);overflow-x:auto;flex-shrink:0;}
+#nav .brand{padding:12px 18px;font-size:.78rem;font-weight:600;color:var(--muted);white-space:nowrap;border-right:1px solid var(--border);display:flex;align-items:center;}
+#nav .tab{padding:12px 16px;font-size:.76rem;color:var(--muted);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;user-select:none;display:flex;align-items:center;gap:6px;}
+#nav .tab:hover{color:var(--text);}
+#nav .tab.active{color:var(--text);border-bottom-color:var(--case-color,var(--link));}
+.tab-dot{width:8px;height:8px;border-radius:50%;background:var(--case-color,#888);flex-shrink:0;}
+
+/* ── VIEWS ── */
+.view{display:none;height:calc(100vh - 45px);overflow:hidden;}
+.view.active{display:flex;flex-direction:column;}
+
+/* ── OVERVIEW ── */
+#view-overview{overflow-y:auto;}
+#overview-body{padding:22px 26px;}
+h2.section-title{font-size:.68rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
+.cards{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:24px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px;border-top:3px solid var(--case-color,#A2A9B1);cursor:pointer;transition:background .12s;}
+.card:hover{background:var(--surface2);}
+.card .label{font-size:.68rem;color:var(--muted);margin-bottom:6px;}
+.card .case-name{font-size:.82rem;font-weight:600;color:var(--text);margin-bottom:8px;line-height:1.2;}
+.card .stat{font-size:.71rem;color:var(--muted);line-height:1.6;}
+.card .stat strong{color:var(--text);}
+.card .sanction-badge{display:inline-block;margin-top:6px;font-size:.65rem;background:#FFF0F0;color:#B60000;border:1px solid rgba(182,0,0,.3);border-radius:3px;padding:1px 6px;}
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;}
+.chart-panel,.chart-panel-full{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;}
+.chart-panel-full{margin-bottom:14px;}
+.insights{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:22px;}
+.insight{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px;}
+.insight .insight-label{font-size:.67rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;}
+.insight .insight-value{font-size:1.4rem;font-weight:700;margin-bottom:3px;}
+.insight .insight-sub{font-size:.7rem;color:var(--muted);line-height:1.4;}
+
+/* ── CASE DETAIL ── */
+.detail-header{padding:12px 24px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;}
+.detail-header h2{font-size:1rem;font-weight:600;}
+.detail-header .meta{font-size:.76rem;color:var(--muted);}
+.detail-header .meta strong{color:var(--text);}
+.sub-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface);}
+.sub-tab{padding:8px 18px;font-size:.75rem;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;user-select:none;}
+.sub-tab:hover{color:var(--text);}
+.sub-tab.active{color:var(--text);border-bottom-color:#3366CC;}
+.legend-strip{padding:7px 24px;border-bottom:1px solid var(--border);display:flex;gap:14px;flex-wrap:wrap;flex-shrink:0;background:var(--surface);}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:.7rem;color:var(--muted);}
+.legend-dot{width:8px;height:8px;border-radius:50%;}
+.hint{font-size:.68rem;color:var(--faint);margin-left:auto;display:flex;align-items:center;}
+.sub-view{display:none;flex:1;overflow:hidden;}
+.sub-view.active{display:flex;flex-direction:column;}
+.chart-scroll{flex:1;overflow:auto;position:relative;}
+
+/* ── NETWORK CONTROLS ── */
+.net-controls{padding:8px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;flex-shrink:0;font-size:.72rem;color:var(--muted);}
+.net-controls label{display:flex;align-items:center;gap:6px;}
+.net-controls input[type=range]{width:90px;accent-color:#3366CC;}
+.net-legend{display:flex;align-items:center;gap:12px;margin-left:auto;}
+.net-legend-item{display:flex;align-items:center;gap:4px;}
+
+/* ── SVG COMMON ── */
+.axis text{fill:#54595D;font-size:10px;}
+.axis line,.axis path{stroke:#A2A9B1;}
+.axis .domain{display:none;}
+.grid-line{stroke:#EAECF0;stroke-opacity:1;stroke-width:.5;}
+.stage-band{opacity:1;}
+.stage-label-text{font-size:8.5px;fill:#54595D;text-transform:uppercase;letter-spacing:.07em;opacity:.65;}
+.lane-label{font-size:10.5px;fill:#54595D;dominant-baseline:middle;}
+.section-label{font-size:8.5px;fill:#A2A9B1;font-weight:600;letter-spacing:.05em;text-transform:uppercase;}
+.edit-dot{cursor:pointer;transition:opacity .08s;}
+.revert-arc{fill:none;stroke:#B60000;stroke-width:1.5;stroke-dasharray:4 2;opacity:.45;}
+.departed-marker{font-size:8.5px;fill:#A2A9B1;opacity:.55;}
+.sanction-marker{font-size:13px;cursor:pointer;}
+/* network */
+.net-link{stroke-opacity:.35;fill:none;}
+.net-node{cursor:grab;}
+.net-node:active{cursor:grabbing;}
+.net-label{font-size:9px;fill:#54595D;pointer-events:none;}
+
+/* ── TOOLTIP ── */
+#tooltip{position:fixed;background:#FFFFFF;border:1px solid #A2A9B1;border-radius:6px;padding:9px 12px;font-size:11.5px;line-height:1.5;pointer-events:none;max-width:280px;z-index:999;display:none;color:#202122;box-shadow:0 2px 8px rgba(0,0,0,.12);}
+#tooltip strong{font-weight:600;}
+#tooltip .muted{color:#54595D;}
+</style>
+</head>
+<body>
+
+<div id="nav">
+  <div class="brand">Wikipedia Arbitration</div>
+  <div class="tab active" data-view="overview" onclick="switchView('overview',this)">Overview</div>
+</div>
+
+<div id="view-overview" class="view active">
+  <div id="overview-body"></div>
+</div>
+
+<div id="view-cases"></div>
+<div id="tooltip"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════════
+const CASES = [
+  {slug:'cold_fusion_2',        label:'Cold fusion 2',        color:'#E97500'},
+  {slug:'climate_change',       label:'Climate change',        color:'#006733'},
+  {slug:'armenia-azerbaijan_3', label:'Armenia–Azerbaijan 3',  color:'#B60000'},
+  {slug:'american_politics',    label:'American politics',     color:'#3366CC'},
+  {slug:'ayn_rand',             label:'Ayn Rand',              color:'#5C3D99'},
+];
+
+const PAGE_COLOR = {
+  main:'#595959', article:'#3366CC', evidence:'#E97500',
+  workshop:'#7600EC', proposed_decision:'#006733', outcome:'#B60000',
+};
+const STAGE_FILL = {
+  main:'#F5F5F5', article:'#EEF3FF', evidence:'#FFF8F0',
+  workshop:'#F8F4FF', proposed_decision:'#F0FFF6',
+};
+const ROLE_COLOR = {
+  arbitrator:'#0057AF', participant:'#006733',
+  arbitrator_candidate:'#C46C00', observer:'#595959',
+};
+const ROLE_ORDER = {arbitrator:0,participant:1,arbitrator_candidate:2,observer:3};
+
+const LANE_H=20, LANE_PAD=3, LABEL_W=155, DOT_R=3.2;
+const M={top:44,right:50,bottom:16,left:LABEL_W};
+
+// ═══════════════════════════════════════════════════════════
+// TOOLTIP
+// ═══════════════════════════════════════════════════════════
+const tip=document.getElementById('tooltip');
+function showTip(ev,html){tip.innerHTML=html;tip.style.display='block';moveTip(ev);}
+function moveTip(ev){
+  const p=12,tw=tip.offsetWidth,th=tip.offsetHeight;
+  let l=ev.clientX+p,t=ev.clientY+p;
+  if(l+tw>window.innerWidth-p) l=ev.clientX-tw-p;
+  if(t+th>window.innerHeight-p) t=ev.clientY-th-p;
+  tip.style.left=l+'px';tip.style.top=t+'px';
+}
+function hideTip(){tip.style.display='none';}
+
+// ═══════════════════════════════════════════════════════════
+// VIEW SWITCHING
+// ═══════════════════════════════════════════════════════════
+function switchView(id,tabEl){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('#nav .tab').forEach(t=>t.classList.remove('active'));
+  const el=document.getElementById(id==='overview'?'view-overview':'view-case-'+id);
+  if(el) el.classList.add('active');
+  if(tabEl) tabEl.classList.add('active');
+}
+
+function switchSubView(slug,view){
+  const panel=document.getElementById('view-case-'+slug);
+  panel.querySelectorAll('.sub-tab').forEach(t=>t.classList.remove('active'));
+  panel.querySelectorAll('.sub-view').forEach(v=>v.classList.remove('active'));
+  panel.querySelector('.sub-tab[data-sv="'+view+'"]').classList.add('active');
+  const sv=panel.querySelector('.sub-view[data-sv="'+view+'"]');
+  sv.classList.add('active');
+  // Lazy-render network on first show
+  if(view==='network'&&sv.dataset.rendered!=='1'){
+    sv.dataset.rendered='1';
+    const c=CASES.find(c=>c.slug===slug);
+    if(c&&c.data) renderNetwork(c,sv);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// LOAD
+// ═══════════════════════════════════════════════════════════
+Promise.all(
+  CASES.map(c=>d3.json(`../data/processed/d3/${c.slug}.json`).then(d=>{c.data=d;return c;}))
+).then(cases=>{
+  buildNav(cases);
+  buildDetailPanels(cases);
+  buildOverview(cases);
+}).catch(err=>{
+  document.getElementById('overview-body').innerHTML=
+    `<p style="padding:40px;color:#B60000">Error: ${err.message}<br>Run <code>python3 -m http.server 8765</code> from project root</p>`;
+});
+
+// ═══════════════════════════════════════════════════════════
+// NAV TABS
+// ═══════════════════════════════════════════════════════════
+function buildNav(cases){
+  const nav=document.getElementById('nav');
+  cases.forEach(c=>{
+    const t=document.createElement('div');
+    t.className='tab';
+    t.dataset.view=c.slug;
+    t.style.setProperty('--case-color',c.color);
+    t.onclick=()=>switchView(c.slug,t);
+    t.innerHTML=`<span class="tab-dot" style="background:${c.color}"></span>${c.label}`;
+    nav.appendChild(t);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// OVERVIEW
+// ═══════════════════════════════════════════════════════════
+function buildOverview(cases){
+  const body=document.getElementById('overview-body');
+  const sums=cases.map(c=>{
+    const {meta,nodes,events}=c.data;
+    const edits=events.filter(e=>e.type==='edit'||e.type==='revert');
+    const byPage=d3.rollup(edits,v=>v.length,d=>d.page_type);
+    const sanctioned=nodes.filter(n=>n.sanctions?.length>0);
+    const departed=nodes.filter(n=>n.departed);
+    // Starter retention: editors active in first 25% who also lasted to final 25%
+    const caseMs=+new Date(meta.case_end) - +new Date(meta.case_start);
+    const earlyThresh=+new Date(meta.case_start)+caseMs*0.25;
+    const lateThresh =+new Date(meta.case_end)  -caseMs*0.25;
+    const starters   =nodes.filter(n=>n.total_edits>=2&&+new Date(n.first_active)<=earlyThresh);
+    const sawThrough =starters.filter(n=>+new Date(n.last_active)>=lateThresh);
+    return{...c,meta,nodes,events,edits,byPage,
+      sanctioned:sanctioned.length,departed:departed.length,
+      dep_rate:nodes.length?departed.length/nodes.length:0,
+      totalEdits:edits.length,
+      starters:starters.length, sawThrough:sawThrough.length,
+      retentionRate:starters.length?sawThrough.length/starters.length:0};
+  });
+
+  body.innerHTML=`
+    <div class="insights" id="ins-row"></div>
+    <h2 class="section-title">Case Profiles — click to explore</h2>
+    <div class="cards" id="cards-row"></div>
+    <div class="charts-row">
+      <div class="chart-panel"><h2 class="section-title">Edit Activity by Phase</h2><div id="p-phase"></div></div>
+      <div class="chart-panel"><h2 class="section-title">Editor Departure Rate</h2><div id="p-depart"></div></div>
+    </div>
+    <div class="chart-panel-full"><h2 class="section-title">Case Timelines</h2><div id="p-gantt"></div></div>
+    <div class="chart-panel-full"><h2 class="section-title">Monthly Edit Activity (Case Pages)</h2><div id="p-flow"></div></div>
+  `;
+
+  // Insights
+  const avgRetention=Math.round(d3.mean(sums,s=>s.retentionRate)*100);
+  const ins=[
+    {label:'Cases analysed',value:'5',sub:'Spanning 2009–2023 across science, climate, geopolitics, politics and ideology'},
+    {label:'Duration range',value:'74d – 15y',sub:'Armenia-Az resolved in 74 days; Climate change spans to 2025'},
+    {label:'Total editors',value:d3.sum(sums,s=>s.meta.total_editors),sub:'Unique editors across all case pages'},
+    {label:'Avg departure rate',value:Math.round(d3.mean(sums,s=>s.dep_rate)*100)+'%',sub:'Editors who stopped participating before case resolved'},
+    {label:'Starter retention',value:avgRetention+'%',sub:'Of editors active in the first quarter of a case, this fraction stayed active through the final quarter'},
+    {label:'Dominant phase',value:'Evidence',sub:'Evidence + Workshop absorb ~75% of edits in every case — ArbCom is a filing exercise, not a dialogue'},
+  ];
+  document.getElementById('ins-row').innerHTML=ins.map(i=>`
+    <div class="insight">
+      <div class="insight-label">${i.label}</div>
+      <div class="insight-value">${i.value}</div>
+      <div class="insight-sub">${i.sub}</div>
+    </div>`).join('');
+
+  // Cards
+  document.getElementById('cards-row').innerHTML=sums.map(s=>`
+    <div class="card" style="--case-color:${s.color}"
+         onclick="switchView('${s.slug}',document.querySelector('[data-view=${s.slug}]'))">
+      <div class="label">Arbitration Case</div>
+      <div class="case-name">${s.label}</div>
+      <div class="stat"><strong>${s.meta.total_editors}</strong> editors</div>
+      <div class="stat"><strong>${s.totalEdits}</strong> edits</div>
+      <div class="stat"><strong>${s.meta.case_duration_days >= 365
+        ? (s.meta.case_duration_days/365).toFixed(1)+'y'
+        : s.meta.case_duration_days+'d'}</strong> window</div>
+      <div class="stat"><strong>${Math.round(s.dep_rate*100)}%</strong> departed</div>
+      <div class="stat" title="Of editors active in the first quarter who also stayed through the final quarter">
+        <strong>${s.sawThrough}/${s.starters}</strong> starters stayed (<strong>${Math.round(s.retentionRate*100)}%</strong>)
+      </div>
+      ${s.sanctioned>0?`<span class="sanction-badge">⚖ ${s.sanctioned} sanctioned</span>`:''}
+    </div>`).join('');
+
+  buildPhaseChart(sums);
+  buildDepartChart(sums);
+  buildGantt(sums);
+  buildFlow(cases);
+}
+
+function buildPhaseChart(sums){
+  const phases=['main','evidence','workshop','proposed_decision'];
+  const el=document.getElementById('p-phase');
+  const W=el.parentElement.clientWidth-30, rowH=26, padY=5, labelW=115;
+  const H=sums.length*(rowH+padY)+28;
+  const innerW=W-labelW-10;
+  const svg=d3.select(el).append('svg').attr('width',W).attr('height',H);
+  const g=svg.append('g').attr('transform',`translate(${labelW},20)`);
+  // Legend
+  phases.forEach((p,i)=>{
+    g.append('rect').attr('x',i*(innerW/4)).attr('y',-16).attr('width',8).attr('height',8).attr('fill',PAGE_COLOR[p]).attr('rx',2);
+    g.append('text').attr('x',i*(innerW/4)+11).attr('y',-8).attr('fill','#54595D').attr('font-size',8.5).text(p.replace('_',' '));
+  });
+  sums.forEach((s,ri)=>{
+    const y=ri*(rowH+padY);
+    const total=phases.reduce((a,p)=>a+(s.byPage.get(p)||0),0)||1;
+    let cx=0;
+    svg.append('text').attr('x',labelW-6).attr('y',y+rowH/2+5)
+      .attr('text-anchor','end').attr('fill',s.color).attr('font-size',10.5).text(s.label);
+    phases.forEach(p=>{
+      const val=s.byPage.get(p)||0, pct=val/total, w=pct*innerW;
+      if(w<0.5){cx+=w;return;}
+      g.append('rect').attr('x',cx).attr('y',y).attr('width',w).attr('height',rowH)
+        .attr('fill',PAGE_COLOR[p]).attr('rx',2)
+        .on('mouseover',e=>showTip(e,`<strong>${s.label}</strong><br><span class="muted">${p.replace('_',' ')}</span>: ${val} edits (${Math.round(pct*100)}%)`))
+        .on('mousemove',moveTip).on('mouseout',hideTip);
+      if(w>22) g.append('text').attr('x',cx+w/2).attr('y',y+rowH/2+4)
+        .attr('text-anchor','middle').attr('font-size',8.5).attr('fill','rgba(255,255,255,.85)').text(Math.round(pct*100)+'%');
+      cx+=w;
+    });
+  });
+}
+
+function buildDepartChart(sums){
+  const el=document.getElementById('p-depart');
+  const W=el.parentElement.clientWidth-30, rowH=24, padY=6, labelW=115;
+  const H=sums.length*(rowH+padY)+28;
+  const innerW=W-labelW-10;
+  const svg=d3.select(el).append('svg').attr('width',W).attr('height',H);
+  const g=svg.append('g').attr('transform',`translate(${labelW},14)`);
+  const x=d3.scaleLinear().domain([0,1]).range([0,innerW]);
+  g.append('g').attr('class','axis').attr('transform',`translate(0,${sums.length*(rowH+padY)+2})`)
+    .call(d3.axisBottom(x).ticks(4).tickFormat(d=>Math.round(d*100)+'%'));
+  sums.forEach((s,ri)=>{
+    const y=ri*(rowH+padY);
+    g.append('rect').attr('x',0).attr('y',y).attr('width',innerW).attr('height',rowH)
+      .attr('fill','rgba(0,0,0,.04)').attr('rx',3);
+    g.append('rect').attr('x',0).attr('y',y).attr('width',x(s.dep_rate)).attr('height',rowH)
+      .attr('fill',s.color).attr('opacity',.55).attr('rx',3)
+      .on('mouseover',e=>showTip(e,`<strong>${s.label}</strong><br><span class="muted">Departed:</span> ${s.departed}/${s.meta.total_editors} editors (${Math.round(s.dep_rate*100)}%)`))
+      .on('mousemove',moveTip).on('mouseout',hideTip);
+    svg.append('text').attr('x',labelW-6).attr('y',y+rowH/2+5)
+      .attr('text-anchor','end').attr('fill',s.color).attr('font-size',10.5).text(s.label);
+    g.append('text').attr('x',x(s.dep_rate)+5).attr('y',y+rowH/2+4).attr('fill','#54595D').attr('font-size',9).text(Math.round(s.dep_rate*100)+'%');
+  });
+}
+
+function buildGantt(sums){
+  const el=document.getElementById('p-gantt');
+  const W=el.parentElement.clientWidth-30, rowH=24, padY=6, labelW=115;
+  const H=sums.length*(rowH+padY)+34;
+  const innerW=W-labelW-10;
+  const allD=sums.flatMap(s=>[new Date(s.meta.case_start),new Date(s.meta.case_end)]);
+  const x=d3.scaleTime().domain(d3.extent(allD)).range([0,innerW]);
+  const svg=d3.select(el).append('svg').attr('width',W).attr('height',H);
+  const g=svg.append('g').attr('transform',`translate(${labelW},8)`);
+  g.append('g').attr('class','axis').attr('transform',`translate(0,${sums.length*(rowH+padY)+4})`)
+    .call(d3.axisBottom(x).ticks(8).tickFormat(d3.timeFormat('%Y')));
+  x.ticks(8).forEach(t=>{
+    g.append('line').attr('class','grid-line')
+      .attr('x1',x(t)).attr('x2',x(t)).attr('y1',0).attr('y2',sums.length*(rowH+padY));
+  });
+  sums.forEach((s,ri)=>{
+    const y=ri*(rowH+padY);
+    const x0=x(new Date(s.meta.case_start)), x1=x(new Date(s.meta.case_end));
+    g.append('rect').attr('x',0).attr('y',y).attr('width',innerW).attr('height',rowH)
+      .attr('fill','rgba(0,0,0,.03)').attr('rx',3);
+    g.append('rect').attr('x',x0).attr('y',y).attr('width',Math.max(3,x1-x0)).attr('height',rowH)
+      .attr('fill',s.color).attr('opacity',.45).attr('rx',3)
+      .on('mouseover',e=>showTip(e,`<strong>${s.label}</strong><br><span class="muted">${s.meta.case_start.slice(0,10)} → ${s.meta.case_end.slice(0,10)}</span><br>${s.meta.case_duration_days} days`))
+      .on('mousemove',moveTip).on('mouseout',hideTip);
+    if(s.sanctioned>0) g.append('text').attr('x',x1+4).attr('y',y+rowH/2+5).attr('font-size',11).text('⚖');
+    svg.append('text').attr('x',labelW-6).attr('y',y+rowH/2+5).attr('text-anchor','end').attr('fill',s.color).attr('font-size',10.5).text(s.label);
+  });
+}
+
+function buildFlow(cases){
+  const el=document.getElementById('p-flow');
+  const W=el.parentElement.clientWidth-30, H=140;
+  const mL=28,mR=100,mT=8,mB=24;
+  const iW=W-mL-mR, iH=H-mT-mB;
+  const caseMonths=cases.map(c=>{
+    const ev=c.data.events.filter(e=>(e.type==='edit'||e.type==='revert')&&e.page_type!=='article');
+    const bm=d3.rollup(ev,v=>v.length,d=>d.timestamp.slice(0,7));
+    return{...c,bm};
+  });
+  const allM=[...new Set(caseMonths.flatMap(c=>[...c.bm.keys()]))].sort();
+  const x=d3.scalePoint().domain(allM).range([0,iW]).padding(.1);
+  const maxV=d3.max(caseMonths,c=>d3.max([...c.bm.values()]))||1;
+  const y=d3.scaleLinear().domain([0,maxV]).range([iH,0]);
+  const svg=d3.select(el).append('svg').attr('width',W).attr('height',H);
+  const g=svg.append('g').attr('transform',`translate(${mL},${mT})`);
+  y.ticks(4).forEach(t=>{
+    g.append('line').attr('class','grid-line').attr('x1',0).attr('x2',iW).attr('y1',y(t)).attr('y2',y(t));
+  });
+  g.append('g').attr('class','axis').call(d3.axisLeft(y).ticks(4));
+  g.append('g').attr('class','axis').attr('transform',`translate(0,${iH})`)
+    .call(d3.axisBottom(x).tickValues(allM.filter(m=>m.endsWith('-01'))).tickFormat(d=>d.slice(0,4)));
+  const line=d3.line().x(d=>x(d.m)).y(d=>y(d.v)).defined(d=>x(d.m)!==undefined);
+  caseMonths.forEach(c=>{
+    const pts=[...c.bm.entries()].map(([m,v])=>({m,v})).filter(d=>x(d.m)!==undefined);
+    g.append('path').datum(pts).attr('fill','none').attr('stroke',c.color)
+      .attr('stroke-width',1.5).attr('opacity',.7).attr('d',line);
+    const pk=pts.reduce((a,b)=>b.v>a.v?b:a,{v:0});
+    if(pk.m) g.append('circle').attr('cx',x(pk.m)).attr('cy',y(pk.v)).attr('r',3.5)
+      .attr('fill',c.color).attr('opacity',.9)
+      .on('mouseover',e=>showTip(e,`<strong>${c.label}</strong><br>Peak: ${pk.v} edits in ${pk.m}`))
+      .on('mousemove',moveTip).on('mouseout',hideTip);
+  });
+  // Legend
+  caseMonths.forEach((c,i)=>{
+    svg.append('circle').attr('cx',W-mR+8).attr('cy',mT+14*i+5).attr('r',4).attr('fill',c.color);
+    svg.append('text').attr('x',W-mR+16).attr('y',mT+14*i+9).attr('fill','#54595D').attr('font-size',8.5).text(c.label.slice(0,16));
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// CASE DETAIL PANELS
+// ═══════════════════════════════════════════════════════════
+function buildDetailPanels(cases){
+  const container=document.getElementById('view-cases');
+  cases.forEach(c=>{
+    const panel=document.createElement('div');
+    panel.id='view-case-'+c.slug;
+    panel.className='view';
+    container.appendChild(panel);
+
+    const {meta,nodes,events}=c.data;
+    const edits=events.filter(e=>e.type==='edit'||e.type==='revert').length;
+    const sanctioned=nodes.filter(n=>n.sanctions?.length>0).length;
+    const departed=nodes.filter(n=>n.departed).length;
+    const fmt=d=>d3.timeFormat('%b %Y')(new Date(d));
+
+    panel.innerHTML=`
+      <div class="detail-header">
+        <h2 style="color:${c.color}">${c.label}</h2>
+        <div class="meta">
+          ${fmt(meta.case_start)} – ${fmt(meta.case_end)} ·
+          <strong>${meta.case_duration_days}</strong> days ·
+          <strong>${meta.total_editors}</strong> editors ·
+          <strong>${edits}</strong> edits ·
+          <strong>${sanctioned}</strong> sanctioned ·
+          <strong>${departed}</strong> departed
+        </div>
+      </div>
+      <div class="sub-tabs">
+        <div class="sub-tab active" data-sv="timeline" onclick="switchSubView('${c.slug}','timeline')">Timeline</div>
+        <div class="sub-tab" data-sv="network" onclick="switchSubView('${c.slug}','network')">Interaction Network</div>
+      </div>
+      <div class="sub-view active" data-sv="timeline">
+        <div class="legend-strip">
+          ${['main','evidence','workshop','proposed_decision'].map(p=>`
+            <div class="legend-item"><div class="legend-dot" style="background:${PAGE_COLOR[p]}"></div>${p.replace('_',' ')}</div>`).join('')}
+          <div class="legend-item"><span style="font-size:12px">⚖</span> Sanctioned</div>
+          <div class="legend-item"><span style="font-size:10px;opacity:.55">→∅</span> Departed</div>
+          <div class="hint">Scroll to zoom · Drag to pan</div>
+        </div>
+        <div class="chart-scroll" id="tl-${c.slug}"></div>
+      </div>
+      <div class="sub-view" data-sv="network" data-rendered="0">
+        <div class="net-controls">
+          <label>Min interactions: <input type="range" min="1" max="10" value="2" id="thr-${c.slug}"/><span id="thr-val-${c.slug}">2</span></label>
+          <div class="net-legend">
+            ${Object.entries(ROLE_COLOR).map(([r,col])=>`<div class="net-legend-item"><div class="legend-dot" style="background:${col}"></div><span>${r.replace('_',' ')}</span></div>`).join('')}
+            <div class="net-legend-item"><div style="width:20px;height:1.5px;background:#A2A9B1;opacity:.5;border-top:1.5px dashed #B60000"></div><span>Revert</span></div>
+            <div class="net-legend-item"><div style="width:14px;height:14px;border-radius:50%;border:1.5px dashed rgba(50,102,204,.5);"></div><span>Filed early (first 25%)</span></div>
+            <div class="net-legend-item"><div style="width:14px;height:14px;border-radius:50%;background:#595959;opacity:.5;"></div><span>Departed</span></div>
+          </div>
+        </div>
+        <div class="chart-scroll" id="net-${c.slug}"></div>
+      </div>
+    `;
+    renderTimeline(c, document.getElementById('tl-'+c.slug));
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// TIMELINE with X-ZOOM
+// ═══════════════════════════════════════════════════════════
+function renderTimeline(c, container){
+  const {meta,nodes,events}=c.data;
+  const ordered=[...nodes].sort((a,b)=>{
+    const r=(ROLE_ORDER[a.role]??9)-(ROLE_ORDER[b.role]??9);
+    return r||+(a.first_active>b.first_active)||-+(a.first_active<b.first_active);
+  });
+  const yIdx={};
+  ordered.forEach((n,i)=>yIdx[n.username]=i);
+
+  const rows=ordered.length;
+  const chartW=Math.max(900,window.innerWidth-M.left-M.right-20);
+  const svgH=M.top+rows*(LANE_H+LANE_PAD)+M.bottom;
+  const svgW=M.left+chartW+M.right;
+
+  const xOrig=d3.scaleTime()
+    .domain([new Date(meta.case_start),new Date(meta.case_end)])
+    .range([0,chartW]);
+
+  const svg=d3.select(container).append('svg')
+    .attr('width',svgW).attr('height',svgH)
+    .style('cursor','crosshair');
+
+  // Clip path covers chart area only
+  const clipId='clip-'+c.slug;
+  svg.append('defs').append('clipPath').attr('id',clipId)
+    .append('rect').attr('x',0).attr('y',-M.top).attr('width',chartW).attr('height',svgH+M.top);
+
+  // Fixed labels group (left of chart, not clipped)
+  const labG=svg.append('g').attr('transform',`translate(${M.left},${M.top})`);
+
+  // Clipped chart group
+  const cG=svg.append('g').attr('transform',`translate(${M.left},${M.top})`)
+    .attr('clip-path',`url(#${clipId})`);
+
+  // Stage bands (in cG, move with zoom)
+  const bandData=meta.stages.filter(s=>s.name!=='outcome');
+  bandData.forEach(s=>{
+    cG.append('rect').attr('class','stage-band').attr('data-start',s.start).attr('data-end',s.end)
+      .attr('y',-M.top+20).attr('height',svgH).attr('fill',STAGE_FILL[s.name]||'#F5F5F5');
+    cG.append('text').attr('class','stage-label-text').attr('data-ts',s.start).attr('dy',-M.top+13)
+      .text(s.name.replace('_',' '));
+  });
+
+  // X axis group
+  const tickInterval=meta.case_duration_days>500?d3.timeMonth.every(3):d3.timeMonth.every(1);
+  const tickFmt=meta.case_duration_days>500?d3.timeFormat('%b %y'):d3.timeFormat('%b %Y');
+  const xAxisG=cG.append('g').attr('class','axis');
+
+  // Grid lines group
+  const gridG=cG.append('g');
+
+  // Editor labels (fixed)
+  let lastRole=null;
+  ordered.forEach((node,i)=>{
+    const y=i*(LANE_H+LANE_PAD)+LANE_H/2;
+    if(node.role!==lastRole){
+      lastRole=node.role;
+      labG.append('text').attr('class','section-label')
+        .attr('x',-LABEL_W+4).attr('y',y-LANE_H/2-2)
+        .text(node.role.replace('_',' ').toUpperCase());
+    }
+    labG.append('text').attr('class','lane-label').attr('x',-6).attr('y',y)
+      .attr('text-anchor','end').style('fill',ROLE_COLOR[node.role]||'#595959').text(node.username);
+  });
+
+  // Edit dots
+  const editEvents=events.filter(e=>e.type==='edit'||e.type==='revert');
+  const dotsG=cG.append('g');
+  const dots=dotsG.selectAll('circle').data(editEvents).join('circle')
+    .attr('class','edit-dot')
+    .attr('cy',d=>{const i=yIdx[d.actor]??0;return i*(LANE_H+LANE_PAD)+LANE_H/2;})
+    .attr('r',d=>d.type==='revert'?DOT_R+1.5:DOT_R)
+    .attr('fill',d=>PAGE_COLOR[d.page_type]||'#595959')
+    .attr('stroke',d=>d.type==='revert'?'#B60000':'none').attr('stroke-width',1.5)
+    .on('mouseover',function(ev,d){
+      const nd=nodes.find(n=>n.username===d.actor)||{};
+      const ts=new Date(d.timestamp).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'});
+      showTip(ev,`<strong>${d.actor}</strong> <span class="muted">${nd.role||''}</span><br>
+        <span class="muted">${ts} · ${d.page_type.replace('_',' ')}</span>
+        ${d.section?`<br><span class="muted">§ ${d.section}</span>`:''}
+        ${d.comment?`<br><span style="font-size:10.5px;color:#54595D">${d.comment}</span>`:''}
+        ${d.type==='revert'?`<br><span style="color:#B60000">⟳ revert${d.reverted?' of '+d.reverted:''}</span>`:''}`);
+    })
+    .on('mousemove',moveTip).on('mouseout',hideTip);
+
+  // Departure markers
+  const depG=cG.append('g');
+  const depNodes=nodes.filter(n=>n.departed&&!n.sanctions?.length);
+  const depMarks=depG.selectAll('text').data(depNodes).join('text')
+    .attr('class','departed-marker')
+    .attr('y',d=>{const i=yIdx[d.username]??0;return i*(LANE_H+LANE_PAD)+LANE_H/2+4;})
+    .text('→∅')
+    .on('mouseover',(ev,d)=>showTip(ev,`<strong>${d.username}</strong><br><span class="muted">Last: ${d.last_active.slice(0,10)}</span><br>Departed before resolution`))
+    .on('mousemove',moveTip).on('mouseout',hideTip);
+
+  // Sanction markers
+  const sanctG=cG.append('g');
+  const sanctNodes=nodes.filter(n=>n.sanctions?.length>0);
+  const sanctMarks=sanctG.selectAll('text').data(sanctNodes).join('text')
+    .attr('class','sanction-marker')
+    .attr('y',d=>{const i=yIdx[d.username]??0;return i*(LANE_H+LANE_PAD)+LANE_H/2+5;})
+    .text('⚖')
+    .on('mouseover',(ev,d)=>showTip(ev,
+      `<strong>${d.username}</strong> — Sanctioned<br>`+
+      d.sanctions.map(s=>`<span class="muted">${s.sanction_type}</span>: ${s.description.slice(0,120)}…`).join('<br>')))
+    .on('mousemove',moveTip).on('mouseout',hideTip);
+
+  // Revert arcs
+  events.filter(e=>e.type==='revert'&&e.reverted).forEach(e=>{
+    const si=yIdx[e.actor],ti=yIdx[e.reverted];
+    if(si===undefined||ti===undefined) return;
+    const y1=si*(LANE_H+LANE_PAD)+LANE_H/2, y2=ti*(LANE_H+LANE_PAD)+LANE_H/2;
+    cG.append('path').attr('class','revert-arc').attr('data-ts',e.timestamp)
+      .attr('y1',y1).attr('y2',y2);
+  });
+
+  // Horizontal row rules
+  ordered.forEach((_,i)=>{
+    labG.append('line').attr('x1',-LABEL_W).attr('x2',0)
+      .attr('y1',i*(LANE_H+LANE_PAD)+LANE_H+LANE_PAD-1).attr('y2',i*(LANE_H+LANE_PAD)+LANE_H+LANE_PAD-1)
+      .attr('stroke','rgba(0,0,0,.06)').attr('stroke-width',.5);
+  });
+
+  // ── Update function called on zoom ──
+  function updateX(x){
+    // Axis
+    xAxisG.call(d3.axisTop(x).ticks(tickInterval).tickFormat(tickFmt));
+    // Grid lines
+    const ticks=x.ticks(tickInterval);
+    const lines=gridG.selectAll('line').data(ticks);
+    lines.join('line').attr('class','grid-line')
+      .attr('x1',d=>x(d)).attr('x2',d=>x(d))
+      .attr('y1',0).attr('y2',rows*(LANE_H+LANE_PAD));
+    // Dots
+    dots.attr('cx',d=>x(new Date(d.timestamp)));
+    // Departure markers
+    depMarks.attr('x',d=>x(new Date(d.last_active))+5);
+    // Sanction markers
+    sanctMarks.attr('x',d=>x(new Date(meta.case_end))+6);
+    // Stage bands
+    cG.selectAll('.stage-band')
+      .attr('x',function(){return x(new Date(this.dataset.start));})
+      .attr('width',function(){return Math.max(1,x(new Date(this.dataset.end))-x(new Date(this.dataset.start)));});
+    cG.selectAll('.stage-label-text')
+      .attr('x',function(){return x(new Date(this.dataset.ts))+4;});
+    // Revert arcs
+    cG.selectAll('.revert-arc').each(function(){
+      const ts=this.dataset.ts;
+      if(!ts) return;
+      const xc=x(new Date(ts));
+      const y1=+this.getAttribute('y1'), y2=+this.getAttribute('y2');
+      const cx=xc+Math.abs(y2-y1)*.4;
+      d3.select(this).attr('d',`M${xc},${y1} C${cx},${y1} ${cx},${y2} ${xc},${y2}`);
+    });
+  }
+
+  // Initial render
+  updateX(xOrig);
+
+  // Zoom behavior — clamp domain to case bounds so you can't pan before the start or after the end
+  const caseStartMs=+new Date(meta.case_start);
+  const caseEndMs  =+new Date(meta.case_end);
+  const zoom=d3.zoom()
+    .scaleExtent([1,80])
+    .on('zoom',function(ev){
+      let newX=ev.transform.rescaleX(xOrig);
+      const [d0,d1]=newX.domain(), span=+d1 - +d0;
+      if(+d0 < caseStartMs) newX=xOrig.copy().domain([new Date(caseStartMs), new Date(caseStartMs+span)]);
+      if(+d1 > caseEndMs)   newX=xOrig.copy().domain([new Date(caseEndMs-span), new Date(caseEndMs)]);
+      updateX(newX);
+    });
+
+  svg.call(zoom);
+
+  // Auto-zoom long cases to show active burst
+  if(meta.case_duration_days>500){
+    const start=new Date(meta.case_start);
+    const focusEnd=new Date(start);
+    focusEnd.setMonth(focusEnd.getMonth()+18); // show first 18 months
+    const k=chartW/(xOrig(focusEnd)-xOrig(start));
+    const tx=d3.zoomIdentity.scale(k).translate(-xOrig(start),0);
+    svg.call(zoom.transform,tx);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// INTERACTION EXTRACTION
+// ═══════════════════════════════════════════════════════════
+function extractInteractions(events, windowHours=6){
+  const edits=events.filter(e=>(e.type==='edit'||e.type==='revert')&&e.page_type!=='article');
+  const byPage=d3.group(edits,d=>d.page_type);
+  const linkMap=new Map(); // "A|B" -> {source,target,weight,hasRevert}
+
+  byPage.forEach(pageEvents=>{
+    const sorted=[...pageEvents].sort((a,b)=>+(a.timestamp>b.timestamp)||-+(a.timestamp<b.timestamp));
+    for(let i=0;i<sorted.length;i++){
+      const e1=sorted[i];
+      const t1=+new Date(e1.timestamp);
+      for(let j=i+1;j<sorted.length;j++){
+        const e2=sorted[j];
+        if(e1.actor===e2.actor) continue;
+        if(+new Date(e2.timestamp)-t1>windowHours*3_600_000) break;
+        const key=[e1.actor,e2.actor].sort().join('|');
+        if(!linkMap.has(key)) linkMap.set(key,{source:e1.actor,target:e2.actor,weight:0,hasRevert:false});
+        const lk=linkMap.get(key);
+        lk.weight+=1;
+        // Same section = stronger signal
+        if(e1.section&&e1.section===e2.section) lk.weight+=3;
+      }
+    }
+  });
+
+  // Revert edges (strong, directional)
+  events.filter(e=>e.type==='revert'&&e.reverted).forEach(e=>{
+    const key=[e.actor,e.reverted].sort().join('|');
+    if(!linkMap.has(key)) linkMap.set(key,{source:e.actor,target:e.reverted,weight:0,hasRevert:false});
+    const lk=linkMap.get(key);
+    lk.weight+=10;
+    lk.hasRevert=true;
+    lk.source=e.actor;
+    lk.target=e.reverted;
+  });
+
+  return [...linkMap.values()];
+}
+
+// ═══════════════════════════════════════════════════════════
+// NETWORK VIEW
+// ═══════════════════════════════════════════════════════════
+function renderNetwork(c, container){
+  const {meta,nodes,events}=c.data;
+
+  const slider=document.getElementById('thr-'+c.slug);
+  const thrVal=document.getElementById('thr-val-'+c.slug);
+
+  const W=container.clientWidth||900;
+  const H=Math.max(500,window.innerHeight-220);
+  container.style.height=H+'px';
+
+  // Build full interaction list once
+  const allLinks=extractInteractions(events);
+
+  const svg=d3.select(container).append('svg')
+    .attr('width','100%').attr('height',H)
+    .style('cursor','grab');
+
+  svg.append('defs').append('marker')
+    .attr('id','arrow-'+c.slug).attr('viewBox','0 -4 8 8')
+    .attr('refX',14).attr('refY',0)
+    .attr('markerWidth',6).attr('markerHeight',6)
+    .attr('orient','auto')
+    .append('path').attr('d','M0,-4L8,0L0,4').attr('fill','#B60000').attr('opacity',.6);
+
+  const g=svg.append('g');
+
+  // Zoom on network
+  svg.call(d3.zoom().scaleExtent([.2,4]).on('zoom',ev=>g.attr('transform',ev.transform)));
+
+  let sim, linkSel, nodeSel, labelSel;
+
+  // Pre-compute case timing thresholds for filer/retention detection
+  const netCaseMs  =+new Date(meta.case_end) - +new Date(meta.case_start);
+  const netEarlyMs =+new Date(meta.case_start) + netCaseMs*0.25;  // first quarter
+  const netLateMs  =+new Date(meta.case_end)   - netCaseMs*0.25;  // final quarter
+
+  function rebuild(threshold){
+    const links=allLinks.filter(l=>l.weight>=threshold);
+    const nodeSet=new Set(links.flatMap(l=>[l.source,l.target]));
+    // Include all nodes with >=2 edits even if isolated
+    nodes.forEach(n=>{if(n.total_edits>=2)nodeSet.add(n.username);});
+
+    const nodeData=nodes
+      .filter(n=>nodeSet.has(n.username))
+      .map(n=>({
+        id:n.username,
+        role:n.role,
+        edits:n.total_edits,
+        r:Math.max(4,Math.sqrt(n.total_edits)*2.8),
+        sanctioned:n.sanctions?.length>0,
+        departed:n.departed,
+        first:n.first_active,
+        last:n.last_active,
+        isEarlyFiler: +new Date(n.first_active) <= netEarlyMs && n.total_edits >= 2,
+        sawItThrough: +new Date(n.last_active)  >= netLateMs,
+      }));
+
+    const nodeById=new Map(nodeData.map(n=>[n.id,n]));
+    const linkData=links
+      .filter(l=>nodeById.has(l.source)&&nodeById.has(l.target))
+      .map(l=>({...l,source:l.source,target:l.target}));
+
+    // Role-based initial positions
+    const cx=W/2, cy=H/2;
+    const roleR={arbitrator:.12,participant:.32,arbitrator_candidate:.22,observer:.48};
+    nodeData.forEach(n=>{
+      const r=(roleR[n.role]||.4)*Math.min(W,H)*.9;
+      const angle=Math.random()*2*Math.PI;
+      n.x=cx+r*Math.cos(angle);
+      n.y=cy+r*Math.sin(angle);
+    });
+
+    if(sim) sim.stop();
+    g.selectAll('*').remove();
+
+    // Links
+    linkSel=g.append('g').selectAll('line').data(linkData).join('line')
+      .attr('class','net-link')
+      .attr('stroke',d=>d.hasRevert?'#B60000':'#A2A9B1')
+      .attr('stroke-width',d=>Math.min(Math.log(d.weight+1)*1.5,6))
+      .attr('stroke-dasharray',d=>d.hasRevert?'5 3':null)
+      .attr('marker-end',d=>d.hasRevert?`url(#arrow-${c.slug})`:null)
+      .on('mouseover',(ev,d)=>showTip(ev,
+        `<strong>${d.source.id||d.source}</strong> ↔ <strong>${d.target.id||d.target}</strong><br>
+         <span class="muted">Interactions: ${d.weight}${d.hasRevert?' (includes revert)':''}</span>`))
+      .on('mousemove',moveTip).on('mouseout',hideTip);
+
+    // Early-filer outer ring (dashed, drawn before nodes so nodes render on top)
+    const filerRingG=g.append('g');
+    filerRingG.selectAll('circle.filer-ring').data(nodeData.filter(n=>n.isEarlyFiler)).join('circle')
+      .attr('class','filer-ring')
+      .attr('r',d=>d.r+7)
+      .attr('fill','none')
+      .attr('stroke','rgba(50,102,204,.5)')
+      .attr('stroke-width',1.5)
+      .attr('stroke-dasharray','3 2')
+      .attr('pointer-events','none');
+
+    // Nodes
+    nodeSel=g.append('g').selectAll('circle').data(nodeData).join('circle')
+      .attr('class','net-node')
+      .attr('r',d=>d.r)
+      .attr('fill',d=>ROLE_COLOR[d.role]||'#595959')
+      .attr('opacity',d=>d.sawItThrough?1:.55)
+      .attr('stroke',d=>d.sanctioned?'#B60000':'rgba(0,0,0,.15)')
+      .attr('stroke-width',d=>d.sanctioned?2.5:1)
+      .call(d3.drag()
+        .on('start',(ev,d)=>{if(!ev.active)sim.alphaTarget(.2).restart();d.fx=d.x;d.fy=d.y;})
+        .on('drag',(ev,d)=>{d.fx=ev.x;d.fy=ev.y;})
+        .on('end',(ev,d)=>{if(!ev.active)sim.alphaTarget(0);d.fx=null;d.fy=null;}))
+      .on('mouseover',function(ev,d){
+        // Highlight only this node's connections, dim everything else
+        const connected=new Set();
+        linkData.forEach(l=>{
+          const s=l.source.id||l.source, t=l.target.id||l.target;
+          if(s===d.id) connected.add(t);
+          if(t===d.id) connected.add(s);
+        });
+        linkSel.attr('opacity',l=>{
+          const s=l.source.id||l.source,t=l.target.id||l.target;
+          return(s===d.id||t===d.id)?.85:.04;
+        });
+        nodeSel.attr('opacity',n=>n.id===d.id||connected.has(n.id)?1:.08);
+        labelSel.attr('opacity',n=>n.id===d.id||connected.has(n.id)?1:.04);
+        filerRingG.selectAll('circle').attr('opacity',n=>n.id===d.id||connected.has(n.id)?.9:.04);
+        const roleLabel=d.role==='arbitrator'?`<span style="color:#0057AF">⚖ Arbitrator</span>`:
+                         d.role==='participant'?`<span style="color:#006733">Participant</span>`:
+                         d.role==='arbitrator_candidate'?`<span style="color:#C46C00">Arb candidate</span>`:
+                         '<span class="muted">Observer</span>';
+        const filerLabel=d.isEarlyFiler?'<br><span style="color:#202122">📋 Filed early — active from case open</span>':'';
+        const throughLabel=d.sawItThrough
+          ?'<br><span style="color:#006733">✓ Saw the case through</span>'
+          :'<br><span style="color:#595959">→∅ Departed before resolution</span>';
+        const sanctLabel=d.sanctioned?'<br><span style="color:#B60000">⚖ Sanctioned</span>':'';
+        showTip(ev,
+          `<strong>${d.id}</strong> · ${roleLabel}${filerLabel}${throughLabel}${sanctLabel}<br>
+           <span class="muted">${d.edits} edits · ${Math.round((new Date(d.last)-new Date(d.first))/864e5)} days active</span>`);
+      })
+      .on('mousemove',moveTip)
+      .on('mouseout',function(){
+        linkSel.attr('opacity',.35);
+        nodeSel.attr('opacity',d=>d.sawItThrough?1:.55);
+        labelSel.attr('opacity',d=>d.edits>=3?.9:.45);
+        filerRingG.selectAll('circle').attr('opacity',1);
+        hideTip();
+      });
+
+    // Labels
+    labelSel=g.append('g').selectAll('text').data(nodeData).join('text')
+      .attr('class','net-label')
+      .attr('dy','0.32em')
+      .text(d=>d.id)
+      .attr('x',d=>d.r+4)
+      .style('font-size',d=>d.edits>10?'10px':'8.5px')
+      .style('fill',d=>ROLE_COLOR[d.role]||'#595959')
+      .style('opacity',d=>d.edits>=3?.9:.45);
+
+    // Sanction ring
+    g.append('g').selectAll('circle.sanct-ring').data(nodeData.filter(n=>n.sanctioned)).join('circle')
+      .attr('r',d=>d.r+5).attr('fill','none')
+      .attr('stroke','#B60000').attr('stroke-width',1.5).attr('stroke-dasharray','3 2').attr('opacity',.5);
+
+    // Simulation
+    sim=d3.forceSimulation(nodeData)
+      .force('link',d3.forceLink(linkData).id(d=>d.id)
+        .distance(d=>80/Math.log(d.weight+2)).strength(d=>Math.min(d.weight/30,.6)))
+      .force('charge',d3.forceManyBody().strength(d=>-Math.max(80,d.r*25)))
+      .force('center',d3.forceCenter(W/2,H/2).strength(.05))
+      .force('collide',d3.forceCollide(d=>d.r+10))
+      .on('tick',()=>{
+        linkSel.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y)
+               .attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+        nodeSel.attr('cx',d=>d.x).attr('cy',d=>d.y);
+        labelSel.attr('x',d=>d.x+d.r+4).attr('y',d=>d.y);
+        g.selectAll('circle.sanct-ring').attr('cx',d=>d.x).attr('cy',d=>d.y);
+        filerRingG.selectAll('circle').attr('cx',d=>d.x).attr('cy',d=>d.y);
+      });
+  }
+
+  rebuild(+slider.value);
+
+  slider.addEventListener('input',function(){
+    thrVal.textContent=this.value;
+    rebuild(+this.value);
+  });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wikipedia Dispute Timeline</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --border: #334155;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --arbitrator: #f59e0b;
+      --participant: #60a5fa;
+      --observer: #6b7280;
+
+      --page-main: #94a3b8;
+      --page-article: #3b82f6;
+      --page-evidence: #f59e0b;
+      --page-workshop: #a78bfa;
+      --page-proposed: #34d399;
+      --page-outcome: #f87171;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    #header {
+      padding: 20px 32px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    #header h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    #header .meta {
+      font-size: 0.8rem;
+      color: var(--muted);
+      display: flex;
+      gap: 20px;
+    }
+
+    #header .meta span strong { color: var(--text); }
+
+    #controls {
+      padding: 10px 32px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .legend {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .legend-role {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .legend-bar {
+      width: 12px;
+      height: 3px;
+      border-radius: 2px;
+    }
+
+    #chart-wrapper {
+      position: relative;
+      overflow-x: auto;
+      overflow-y: auto;
+      max-height: calc(100vh - 130px);
+    }
+
+    svg {
+      display: block;
+    }
+
+    /* Lane rows */
+    .lane-bg { fill: transparent; }
+    .lane-bg:hover { fill: rgba(255,255,255,0.03); }
+    .lane-label {
+      font-size: 11px;
+      fill: var(--muted);
+      dominant-baseline: middle;
+      cursor: default;
+    }
+    .lane-label.arbitrator { fill: var(--arbitrator); }
+    .lane-label.participant { fill: var(--participant); }
+
+    /* Axis */
+    .axis text { fill: var(--muted); font-size: 10px; }
+    .axis line, .axis path { stroke: var(--border); }
+    .axis .domain { display: none; }
+
+    /* Stage bands */
+    .stage-band { opacity: 0.06; }
+
+    /* Edit dots */
+    .edit-dot { opacity: 0.85; cursor: pointer; transition: r 0.1s; }
+    .edit-dot:hover { opacity: 1; }
+
+    /* Revert arc */
+    .revert-arc {
+      fill: none;
+      stroke: #f87171;
+      stroke-width: 1.5;
+      stroke-dasharray: 4 2;
+      opacity: 0.4;
+    }
+
+    /* Departure marker */
+    .departed-marker {
+      font-size: 9px;
+      fill: var(--muted);
+      opacity: 0.5;
+    }
+
+    /* Sanction marker */
+    .sanction-marker {
+      font-size: 14px;
+    }
+
+    /* Section dividers */
+    .section-label {
+      font-size: 10px;
+      fill: var(--muted);
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    /* Tooltip */
+    #tooltip {
+      position: fixed;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 13px;
+      font-size: 12px;
+      line-height: 1.5;
+      pointer-events: none;
+      max-width: 300px;
+      z-index: 100;
+      display: none;
+      color: var(--text);
+    }
+
+    #tooltip strong { color: var(--text); font-weight: 600; }
+    #tooltip .muted { color: var(--muted); }
+
+    /* Stage tooltip strip */
+    .stage-label-text {
+      font-size: 9px;
+      fill: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      opacity: 0.7;
+    }
+
+    .grid-line {
+      stroke: var(--border);
+      stroke-opacity: 0.4;
+      stroke-width: 0.5;
+    }
+  </style>
+</head>
+<body>
+
+<div id="header">
+  <h1 id="case-title">Loading…</h1>
+  <div class="meta" id="meta-line"></div>
+</div>
+
+<div id="controls">
+  <div class="legend">
+    <span style="font-size:0.75rem;color:var(--muted);margin-right:4px">Page type:</span>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--page-main)"></div> Main filing</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--page-article)"></div> Article</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--page-evidence)"></div> Evidence</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--page-workshop)"></div> Workshop</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--page-proposed)"></div> Proposed decision</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--page-outcome)"></div> Sanction</div>
+  </div>
+  <div class="legend" style="margin-left:20px">
+    <span style="font-size:0.75rem;color:var(--muted);margin-right:4px">Markers:</span>
+    <div class="legend-item"><span style="font-size:13px">⚖</span> Sanctioned</div>
+    <div class="legend-item"><span style="font-size:11px;color:var(--muted)">→∅</span> Departed</div>
+    <div class="legend-item"><div style="width:20px;height:1.5px;background:#f87171;border-top:1.5px dashed #f87171"></div> Revert</div>
+  </div>
+</div>
+
+<div id="chart-wrapper"></div>
+<div id="tooltip"></div>
+
+<script>
+// ─────────────────────────────────────────────────────────────
+// Config
+// ─────────────────────────────────────────────────────────────
+const LANE_HEIGHT  = 22;     // px per editor row
+const LANE_PAD     =  3;     // px between rows
+const LABEL_WIDTH  = 160;    // px for left name labels
+const DOT_R        =  3.5;   // edit dot radius
+const MARGIN       = { top: 50, right: 40, bottom: 30, left: LABEL_WIDTH };
+
+const PAGE_COLOR = {
+  main:              '#94a3b8',
+  article:           '#3b82f6',
+  evidence:          '#f59e0b',
+  workshop:          '#a78bfa',
+  proposed_decision: '#34d399',
+  outcome:           '#f87171',
+};
+
+const STAGE_COLOR = {
+  main:              '#475569',
+  article:           '#1d4ed8',
+  evidence:          '#92400e',
+  workshop:          '#5b21b6',
+  proposed_decision: '#065f46',
+};
+
+const ROLE_COLOR = {
+  arbitrator:           '#f59e0b',
+  participant:          '#60a5fa',
+  arbitrator_candidate: '#fb923c',
+  observer:             '#6b7280',
+};
+
+// ─────────────────────────────────────────────────────────────
+// Load + render
+// ─────────────────────────────────────────────────────────────
+const DATA_URL = '../data/processed/d3/cold_fusion_2.json';
+
+d3.json(DATA_URL).then(render).catch(err => {
+  document.getElementById('case-title').textContent = 'Error loading data: ' + err.message;
+  document.getElementById('case-title').style.color = '#f87171';
+  console.error(err);
+});
+
+function render(data) {
+  const { meta, nodes, events, links } = data;
+
+  // ── Header ──────────────────────────────────────────────
+  document.getElementById('case-title').textContent =
+    `Cold fusion 2 · Wikipedia Arbitration Case`;
+
+  const fmtDate = d => d3.timeFormat('%b %Y')(new Date(d));
+  document.getElementById('meta-line').innerHTML = `
+    <span>${fmtDate(meta.case_start)} – ${fmtDate(meta.case_end)}</span>
+    <span><strong>${meta.case_duration_days}</strong> days</span>
+    <span><strong>${meta.total_editors}</strong> editors</span>
+    <span><strong>${events.filter(e=>e.type==='edit'||e.type==='revert').length}</strong> edits</span>
+    <span><strong>${nodes.filter(n=>n.sanctions.length>0).length}</strong> sanctioned</span>
+    <span><strong>${nodes.filter(n=>n.departed).length}</strong> departed</span>
+  `;
+
+  // ── Scales ──────────────────────────────────────────────
+  const timeExtent = [new Date(meta.case_start), new Date(meta.case_end)];
+  const chartWidth = Math.max(900, window.innerWidth - MARGIN.left - MARGIN.right - 40);
+  const xScale = d3.scaleTime().domain(timeExtent).range([0, chartWidth]);
+
+  // ── Node ordering ──────────────────────────────────────
+  // Sort: arbitrators → participants → arb_candidates → observers
+  // Within group: by first_active
+  const roleOrder = { arbitrator:0, participant:1, arbitrator_candidate:2, observer:3 };
+  const orderedNodes = [...nodes].sort((a,b) => {
+    const ro = (roleOrder[a.role]??9) - (roleOrder[b.role]??9);
+    if (ro !== 0) return ro;
+    return a.first_active < b.first_active ? -1 : 1;
+  });
+
+  const yIndex = {};
+  orderedNodes.forEach((n, i) => { yIndex[n.username] = i; });
+
+  const totalRows  = orderedNodes.length;
+  const svgHeight  = MARGIN.top + totalRows * (LANE_HEIGHT + LANE_PAD) + MARGIN.bottom + 20;
+  const svgWidth   = MARGIN.left + chartWidth + MARGIN.right;
+
+  // ── SVG setup ───────────────────────────────────────────
+  const wrapper = document.getElementById('chart-wrapper');
+  const svg = d3.select(wrapper)
+    .append('svg')
+    .attr('width', svgWidth)
+    .attr('height', svgHeight);
+
+  const g = svg.append('g').attr('transform', `translate(${MARGIN.left},${MARGIN.top})`);
+
+  // ── Stage bands ─────────────────────────────────────────
+  const stageBandData = meta.stages.filter(s => s.name !== 'outcome');
+  const bandG = g.append('g').attr('class', 'stage-bands');
+  stageBandData.forEach(stage => {
+    const x0 = xScale(new Date(stage.start));
+    const x1 = xScale(new Date(stage.end));
+    bandG.append('rect')
+      .attr('class', 'stage-band')
+      .attr('x', x0)
+      .attr('y', -MARGIN.top + 24)
+      .attr('width', Math.max(1, x1 - x0))
+      .attr('height', svgHeight)
+      .attr('fill', STAGE_COLOR[stage.name] || '#888');
+    // Label at top
+    bandG.append('text')
+      .attr('class', 'stage-label-text')
+      .attr('x', x0 + 4)
+      .attr('y', -MARGIN.top + 18)
+      .text(stage.name.replace('_', ' '));
+  });
+
+  // ── Time axis ───────────────────────────────────────────
+  const xAxis = d3.axisTop(xScale)
+    .ticks(d3.timeMonth.every(3))
+    .tickFormat(d3.timeFormat('%b %y'));
+
+  g.append('g')
+    .attr('class', 'axis')
+    .attr('transform', 'translate(0,0)')
+    .call(xAxis);
+
+  // Vertical grid lines
+  const ticks = xScale.ticks(d3.timeMonth.every(3));
+  g.selectAll('.grid-line')
+    .data(ticks)
+    .join('line')
+    .attr('class', 'grid-line')
+    .attr('x1', d => xScale(d))
+    .attr('x2', d => xScale(d))
+    .attr('y1', 0)
+    .attr('y2', totalRows * (LANE_HEIGHT + LANE_PAD));
+
+  // ── Lane rows ───────────────────────────────────────────
+  const laneG = g.append('g').attr('class', 'lanes');
+
+  // Role section dividers
+  let lastRole = null;
+  orderedNodes.forEach((node, i) => {
+    const y = i * (LANE_HEIGHT + LANE_PAD) + LANE_HEIGHT / 2;
+    if (node.role !== lastRole) {
+      lastRole = node.role;
+      laneG.append('text')
+        .attr('class', 'section-label')
+        .attr('x', -LABEL_WIDTH + 4)
+        .attr('y', y - LANE_HEIGHT / 2 - 2)
+        .text(node.role.replace('_', ' ').toUpperCase());
+    }
+
+    // Row background (for hover)
+    laneG.append('rect')
+      .attr('class', 'lane-bg')
+      .attr('x', -LABEL_WIDTH)
+      .attr('y', i * (LANE_HEIGHT + LANE_PAD))
+      .attr('width', LABEL_WIDTH + chartWidth + MARGIN.right)
+      .attr('height', LANE_HEIGHT + LANE_PAD - 1);
+
+    // Baseline (thin rule)
+    laneG.append('line')
+      .attr('x1', 0).attr('x2', chartWidth)
+      .attr('y1', y + LANE_HEIGHT/2 - 1)
+      .attr('y2', y + LANE_HEIGHT/2 - 1)
+      .attr('stroke', 'rgba(255,255,255,0.04)')
+      .attr('stroke-width', 0.5);
+
+    // Editor name label
+    laneG.append('text')
+      .attr('class', `lane-label ${node.role}`)
+      .attr('x', -6)
+      .attr('y', y)
+      .attr('text-anchor', 'end')
+      .style('fill', ROLE_COLOR[node.role] || '#6b7280')
+      .text(node.username);
+  });
+
+  // ── Edit dots ───────────────────────────────────────────
+  const editEvents = events.filter(e => e.type === 'edit' || e.type === 'revert');
+
+  const dotsG = g.append('g').attr('class', 'dots');
+  dotsG.selectAll('circle.edit-dot')
+    .data(editEvents)
+    .join('circle')
+    .attr('class', 'edit-dot')
+    .attr('cx', d => xScale(new Date(d.timestamp)))
+    .attr('cy', d => {
+      const i = yIndex[d.actor] ?? 0;
+      return i * (LANE_HEIGHT + LANE_PAD) + LANE_HEIGHT / 2;
+    })
+    .attr('r', d => d.type === 'revert' ? DOT_R + 1.5 : DOT_R)
+    .attr('fill', d => PAGE_COLOR[d.page_type] || '#888')
+    .attr('stroke', d => d.type === 'revert' ? '#f87171' : 'none')
+    .attr('stroke-width', d => d.type === 'revert' ? 1.5 : 0)
+    .on('mouseover', function(event, d) { showTooltip(event, d, 'event'); })
+    .on('mousemove', moveTooltip)
+    .on('mouseout', hideTooltip);
+
+  // ── Sanction markers ────────────────────────────────────
+  const sanctionEvents = events.filter(e => e.type === 'sanction');
+  const sanctionG = g.append('g').attr('class', 'sanctions');
+
+  // Also use the node's last_active as the visual "end" for sanctioned editors
+  nodes.filter(n => n.sanctions.length > 0).forEach(node => {
+    const i = yIndex[node.username];
+    if (i === undefined) return;
+    const y = i * (LANE_HEIGHT + LANE_PAD) + LANE_HEIGHT / 2;
+    // Place at case end
+    const x = xScale(new Date(meta.case_end)) + 8;
+
+    sanctionG.append('text')
+      .attr('class', 'sanction-marker')
+      .attr('x', x)
+      .attr('y', y + 5)
+      .attr('text-anchor', 'middle')
+      .text('⚖')
+      .on('mouseover', function(event) {
+        showTooltipRaw(event,
+          `<strong>${node.username}</strong> — Sanctioned<br>` +
+          node.sanctions.map(s =>
+            `<span class="muted">${s.sanction_type}</span>: ${s.description.slice(0,120)}…`
+          ).join('<br>')
+        );
+      })
+      .on('mousemove', moveTooltip)
+      .on('mouseout', hideTooltip);
+  });
+
+  // ── Departure markers ───────────────────────────────────
+  const departureG = g.append('g').attr('class', 'departures');
+  nodes.filter(n => n.departed && n.sanctions.length === 0).forEach(node => {
+    const i = yIndex[node.username];
+    if (i === undefined) return;
+    const y = i * (LANE_HEIGHT + LANE_PAD) + LANE_HEIGHT / 2;
+    const x = xScale(new Date(node.last_active)) + 8;
+
+    departureG.append('text')
+      .attr('class', 'departed-marker')
+      .attr('x', x)
+      .attr('y', y + 4)
+      .text('→∅')
+      .on('mouseover', function(event) {
+        showTooltipRaw(event,
+          `<strong>${node.username}</strong><br>` +
+          `<span class="muted">Last active: ${node.last_active.slice(0,10)}</span><br>` +
+          `Departed before case resolved`
+        );
+      })
+      .on('mousemove', moveTooltip)
+      .on('mouseout', hideTooltip);
+  });
+
+  // ── Revert arcs ─────────────────────────────────────────
+  // Draw arcs between editor lanes for revert events
+  const revertWithTargets = events.filter(e => e.type === 'revert' && e.reverted);
+  const arcG = g.append('g').attr('class', 'arcs');
+
+  revertWithTargets.forEach(e => {
+    const srcI = yIndex[e.actor];
+    const tgtI = yIndex[e.reverted];
+    if (srcI === undefined || tgtI === undefined) return;
+
+    const x  = xScale(new Date(e.timestamp));
+    const y1 = srcI * (LANE_HEIGHT + LANE_PAD) + LANE_HEIGHT / 2;
+    const y2 = tgtI * (LANE_HEIGHT + LANE_PAD) + LANE_HEIGHT / 2;
+    const cx = x + Math.abs(y2 - y1) * 0.3;  // control point
+
+    const path = `M${x},${y1} C${cx},${y1} ${cx},${y2} ${x},${y2}`;
+    arcG.append('path')
+      .attr('class', 'revert-arc')
+      .attr('d', path);
+  });
+
+  // Also draw links from the top-level links array
+  links.forEach(link => {
+    const srcName = link.source.replace('editor:', '');
+    const tgtName = link.target.replace('editor:', '');
+    const srcI = yIndex[srcName];
+    const tgtI = yIndex[tgtName];
+    if (srcI === undefined || tgtI === undefined) return;
+
+    // Place link arc at midpoint of case
+    const midDate = new Date((new Date(meta.case_start).getTime() + new Date(meta.case_end).getTime()) / 2);
+    const x  = xScale(midDate);
+    const y1 = srcI * (LANE_HEIGHT + LANE_PAD) + LANE_HEIGHT / 2;
+    const y2 = tgtI * (LANE_HEIGHT + LANE_PAD) + LANE_HEIGHT / 2;
+    const cx = x + Math.abs(y2 - y1) * 0.5;
+
+    arcG.append('path')
+      .attr('class', 'revert-arc')
+      .attr('d', `M${x},${y1} C${cx},${y1} ${cx},${y2} ${x},${y2}`)
+      .attr('stroke-width', Math.min(link.revert_count + 1, 4));
+  });
+
+  // ─────────────────────────────────────────────────────────
+  // Tooltip helpers
+  // ─────────────────────────────────────────────────────────
+  const tooltip = document.getElementById('tooltip');
+
+  function showTooltip(event, d, type) {
+    if (type === 'event') {
+      const node = nodes.find(n => n.username === d.actor) || {};
+      const fmtTs = new Date(d.timestamp).toLocaleDateString('en-US', {year:'numeric', month:'short', day:'numeric'});
+      tooltip.innerHTML = `
+        <strong>${d.actor}</strong>
+        <span class="muted" style="margin-left:6px;font-size:10px">${node.role || ''}</span><br>
+        <span class="muted">${fmtTs} · ${d.page_type.replace('_',' ')}</span><br>
+        ${d.section ? `<span class="muted">§ ${d.section}</span><br>` : ''}
+        ${d.comment ? `<span style="font-size:11px;color:#cbd5e1">${d.comment}</span>` : ''}
+        ${d.type === 'revert' ? `<br><span style="color:#f87171">⟳ revert${d.reverted ? ' of '+d.reverted : ''}</span>` : ''}
+      `;
+    }
+    tooltip.style.display = 'block';
+    moveTooltip(event);
+  }
+
+  function showTooltipRaw(event, html) {
+    tooltip.innerHTML = html;
+    tooltip.style.display = 'block';
+    moveTooltip(event);
+  }
+
+  function moveTooltip(event) {
+    const pad = 12;
+    let left = event.clientX + pad;
+    let top  = event.clientY + pad;
+    const tw = tooltip.offsetWidth;
+    const th = tooltip.offsetHeight;
+    if (left + tw > window.innerWidth - pad)  left = event.clientX - tw - pad;
+    if (top  + th > window.innerHeight - pad) top  = event.clientY - th - pad;
+    tooltip.style.left = left + 'px';
+    tooltip.style.top  = top  + 'px';
+  }
+
+  function hideTooltip() {
+    tooltip.style.display = 'none';
+  }
+}
+</script>
+</body>
+</html>
