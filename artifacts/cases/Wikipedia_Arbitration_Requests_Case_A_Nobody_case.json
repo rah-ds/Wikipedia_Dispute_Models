@@ -1,0 +1,186 @@
+{
+  "title": "A Nobody",
+  "case_url": "https://en.wikipedia.org/wiki/Wikipedia:Arbitration/Requests/Case/A_Nobody",
+  "case_type": "conduct",
+  "is_private": false,
+  "opened_date": "19 March 2010",
+  "closed_date": "14 March 2021",
+  "parties": [
+    "Flatscan",
+    "A Nobody"
+  ],
+  "accept_votes": 3,
+  "decline_votes": 2,
+  "recuse_votes": 1,
+  "abstain_votes": 1,
+  "net_votes": 1,
+  "accepted_by_rule": false,
+  "has_injunction": true,
+  "drafting_arbitrators": [],
+  "recused_arbitrators": [],
+  "pre_case_actions": [
+    {
+      "date": "2010-03-19",
+      "action": "Case held in abeyance",
+      "target_editor": "A Nobody",
+      "reason": "Case held in abeyance per ArbCom"
+    }
+  ],
+  "rule_invocations": {
+    "total_invocations": 2,
+    "unique_rules": 1,
+    "by_type": {
+      "policy": 0,
+      "guideline": 0,
+      "essay": 0,
+      "other": 2
+    },
+    "top_rules": [
+      {
+        "ref": "WP:SMERGE",
+        "count": 2,
+        "type": "other",
+        "first_section": "Preamble"
+      }
+    ],
+    "namespace_links": [
+      {
+        "namespace": "User",
+        "count": 36,
+        "meaning": "editor conduct \u2014 personal user page evidence"
+      },
+      {
+        "namespace": "Main",
+        "count": 23,
+        "meaning": "article content evidence"
+      },
+      {
+        "namespace": "User_talk",
+        "count": 20,
+        "meaning": "editor conduct \u2014 user-talk-page discussions"
+      },
+      {
+        "namespace": "Special",
+        "count": 4,
+        "meaning": "special-page / log evidence"
+      },
+      {
+        "namespace": "Help",
+        "count": 2,
+        "meaning": "help / documentation reference"
+      },
+      {
+        "namespace": "User_Talk",
+        "count": 1,
+        "meaning": "(unclassified namespace)"
+      },
+      {
+        "namespace": "Category",
+        "count": 1,
+        "meaning": "category / taxonomy evidence"
+      }
+    ]
+  },
+  "principles_raw": [
+    "Template"
+  ],
+  "findings_raw": [
+    "Template"
+  ],
+  "remedies_raw": [
+    "Template"
+  ],
+  "outcome": "Closed - No Decision",
+  "principles": [
+    {
+      "name": "Copying within Wikipedia",
+      "summary": "Editors must not copy content from other sources into Wikipedia articles.",
+      "policy_refs": [
+        "WP:Copying within Wikipedia"
+      ],
+      "support": 1,
+      "oppose": 0,
+      "abstain": 0,
+      "passed": true
+    },
+    {
+      "name": "Edit warring",
+      "summary": "Repeatedly reverting edits without discussion or consensus is discouraged.",
+      "policy_refs": [],
+      "support": 0,
+      "oppose": 0,
+      "abstain": 0,
+      "passed": false
+    },
+    {
+      "name": "Neutral point of view",
+      "summary": "Wikipedia articles must present information fairly and without bias.",
+      "policy_refs": [
+        "WP:NPOV"
+      ],
+      "support": 0,
+      "oppose": 0,
+      "abstain": 0,
+      "passed": false
+    },
+    {
+      "name": "Three reverts rule",
+      "summary": "Repeatedly reverting edits without discussion or consensus is discouraged.",
+      "policy_refs": [
+        "WP:3RR"
+      ],
+      "support": 0,
+      "oppose": 0,
+      "abstain": 0,
+      "passed": false
+    }
+  ],
+  "findings": [
+    {
+      "name": "User A Nobody engaged in copying edits.",
+      "target_editor": "A Nobody",
+      "conduct": "User A Nobody has persisted in making copying edits that introduce attribution dependencies and interfere with the deletion process.",
+      "evidence_refs": [
+        "http://en.wikipedia.org/w/index.php?title=Special:Contributions&dir=prev&offset=20100221163300&limit=23&target=A+Nobody",
+        "http://en.wikipedia.org/w/index.php?title=User_talk:A_Nobody&oldid=346114551#Copying_content",
+        "http://en.wikipedia.org/w/index.php?title=User_talk:A_Nobody&dir=prev&offset=20100224164600&limit=10&action=history",
+        "http://en.wikipedia.org/w/index.php?title=User_talk%3AA_Nobody&diff=346114892&oldid=346114551&diffonly=1",
+        "http://en.wikipedia.org/w/index.php?title=Special:Contributions&dir=prev&offset=20100307190100&limit=7&target=A+Nobody",
+        "http://en.wikipedia.org/w/index.php?title=Big_Boss_(C.O.P.S.)&action=historysubmit&diff=348475099&oldid=348373988",
+        "http://en.wikipedia.org/w/index.php?title=Tron_(film)&action=h"
+      ],
+      "policy_refs": [
+        "WP:Copying within Wikipedia"
+      ],
+      "support": 1,
+      "oppose": 0,
+      "abstain": 0,
+      "passed": true
+    }
+  ],
+  "remedies": [
+    {
+      "name": "No remedies proposed",
+      "target_editor": "A Nobody",
+      "target_article": "None",
+      "target_topic": "None",
+      "sanction_type": "admonishment",
+      "duration": "None",
+      "scope": "None",
+      "suspended": false,
+      "ongoing": false,
+      "support": 0,
+      "oppose": 0,
+      "abstain": 0,
+      "passed": false
+    }
+  ],
+  "enforcement_actions": [],
+  "amendments": [],
+  "clarifications": [],
+  "appeals": [],
+  "post_case_motions": [],
+  "inactive_arbitrators": [],
+  "trainee_clerks": [],
+  "clerks": []
+}
