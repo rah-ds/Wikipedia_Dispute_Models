@@ -18,6 +18,7 @@ This project maps and analyzes Wikipedia's dispute resolution system—tracking 
 │   ├── processed/        # Cleaned datasets
 │   └── external/         # Third-party data
 ├── docs/                 # Documentation
+├── final_paper/          # IEEE paper sources synced with Overleaf
 ├── notebooks/            # Exploratory analysis
 ├── scripts/              # Data collection scripts
 ├── src/                  # Source code
@@ -40,6 +41,19 @@ make fetch-drn
 ```
 
 See `make help` for all available targets.
+
+## Final Paper / Overleaf Sync
+
+The `RH_4_6/final_paper` branch keeps the paper source in `final_paper/` so collaborators can review it on GitHub, while `scripts/final_paper_overleaf_sync.sh` handles pull/push sync with the existing Overleaf Git project.
+
+```bash
+make paper-overleaf-status
+make paper-overleaf-diff
+make paper-overleaf-pull
+make paper-overleaf-push
+```
+
+See `docs/final_paper_overleaf_sync.md` for the workflow and the Overleaf-specific constraints behind it.
 
 ## Windows Start with WSL
 If you are working with Windows, follow here for WSL-friendly setup.

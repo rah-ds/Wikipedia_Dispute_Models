@@ -1,4 +1,7 @@
-.PHONY: install install-dev clean data-dirs help lint fetch-all fetch-full fetch-arb fetch-drn fetch-small test test-unit test-cov fetch-venues fetch-ani fetch-talk fetch-arb-dfs fetch-arb-dfs-sample fetch-arb-dfs-sample-full fetch-arb-dfs-all fetch-arb-dfs-all-full update-arb-cases-list fetch-lifecycle fetch-lifecycle-dry fetch-lifecycle-sample fetch-lifecycle-all setup pull pull-status pull-reset validate archive clear-results pull-full-arb pull-full-arb-estimate pull-full-arb-force
+.PHONY: install install-dev clean data-dirs help lint fetch-all fetch-full fetch-arb fetch-drn fetch-small test test-unit test-cov fetch-venues fetch-ani fetch-talk fetch-arb-dfs fetch-arb-dfs-sample fetch-arb-dfs-sample-full fetch-arb-dfs-all fetch-arb-dfs-all-full update-arb-cases-list fetch-lifecycle fetch-lifecycle-dry fetch-lifecycle-sample fetch-lifecycle-all setup pull pull-status pull-reset validate archive clear-results pull-full-arb pull-full-arb-estimate pull-full-arb-force paper-overleaf-status paper-overleaf-diff paper-overleaf-pull paper-overleaf-push
+
+OVERLEAF_FINAL_PAPER_URL ?= https://git@git.overleaf.com/69d7f5837aeb48de51af6f12
+OVERLEAF_FINAL_PAPER_BRANCH ?= master
 
 # =============================================================================
 # QUICK START - Three simple commands to get started
@@ -36,6 +39,12 @@ help:
 	@echo "  make archive         Archive results to timestamped zip file"
 	@echo "  make clear-results   Clear all results (data/raw, data/processed)"
 	@echo ""
+	@echo "Paper / Overleaf:"
+	@echo "  make paper-overleaf-status  Show the paper sync configuration"
+	@echo "  make paper-overleaf-diff    Diff final_paper/ against Overleaf"
+	@echo "  make paper-overleaf-pull    Pull Overleaf changes into final_paper/"
+	@echo "  make paper-overleaf-push    Push committed final_paper/ changes to Overleaf"
+	@echo ""
 	@echo "Development:"
 	@echo "  make install     Install base dependencies"
 	@echo "  make install-dev Install with dev dependencies + pre-commit hooks"
@@ -43,7 +52,7 @@ help:
 	@echo "  make test-unit   Run unit tests only (no network)"
 	@echo "  make test-cov    Run tests with coverage"
 	@echo "  make data-dirs   Create data directory structure"
-	@echo "  make clean       Remove generated files (cache, pycache)
+	@echo "  make clean       Remove generated files (cache, pycache)"
 	@echo ""
 	@echo "Legacy Data Collection (still supported):"
 	@echo "  fetch-small     Fetch sample dataset (10 articles, 5 arb cases)"
@@ -113,6 +122,18 @@ pull-reset:
 # Dry run - show what would be fetched
 pull-dry:
 	uv run python scripts/pull.py --config $(or $(CONFIG),sample) --dry-run
+
+paper-overleaf-status:
+	OVERLEAF_FINAL_PAPER_URL="$(OVERLEAF_FINAL_PAPER_URL)" OVERLEAF_FINAL_PAPER_BRANCH="$(OVERLEAF_FINAL_PAPER_BRANCH)" ./scripts/final_paper_overleaf_sync.sh status
+
+paper-overleaf-diff:
+	OVERLEAF_FINAL_PAPER_URL="$(OVERLEAF_FINAL_PAPER_URL)" OVERLEAF_FINAL_PAPER_BRANCH="$(OVERLEAF_FINAL_PAPER_BRANCH)" ./scripts/final_paper_overleaf_sync.sh diff-remote
+
+paper-overleaf-pull:
+	OVERLEAF_FINAL_PAPER_URL="$(OVERLEAF_FINAL_PAPER_URL)" OVERLEAF_FINAL_PAPER_BRANCH="$(OVERLEAF_FINAL_PAPER_BRANCH)" ./scripts/final_paper_overleaf_sync.sh pull
+
+paper-overleaf-push:
+	OVERLEAF_FINAL_PAPER_URL="$(OVERLEAF_FINAL_PAPER_URL)" OVERLEAF_FINAL_PAPER_BRANCH="$(OVERLEAF_FINAL_PAPER_BRANCH)" ./scripts/final_paper_overleaf_sync.sh push
 
 # =============================================================================
 # END QUICK START
