@@ -39,6 +39,51 @@ SKIP_PREFIXES = ("arb_dfs_", "arbitration_cases_")
 logger = logging.getLogger("export_d3_all")
 
 
+_SUBPAGE_MAP = {
+    "(main)": "main",
+    "evidence": "evidence",
+    "workshop": "workshop",
+    "proposed decision": "proposed_decision",
+    "proposed_decision": "proposed_decision",
+}
+
+
+def _normalize_new_format(raw: dict) -> dict:
+    """Convert lifecycle_stages format → pages-dict format expected by build_d3_payload."""
+    stages = raw.get("lifecycle_stages", {})
+    arbcom = stages.get("stage_5_arbcom", {})
+    pages_list = arbcom.get("pages", [])
+
+    pages = {}
+    for page in pages_list:
+        subpage = page.get("subpage", "(main)").strip().lstrip("/").lower()
+        key = _SUBPAGE_MAP.get(subpage, subpage.replace(" ", "_"))
+        pages[key] = {
+            "title": page.get("title", ""),
+            "url": page.get("url", ""),
+            "content": page.get("content", ""),
+            "content_length": page.get("content_length", 0),
+            "revisions": page.get("revisions", []),
+            "revision_count": page.get("revision_count", 0),
+        }
+
+    # participants: list of usernames → dict keyed by username
+    participants_raw = raw.get("participants", [])
+    if isinstance(participants_raw, list):
+        participants_meta = {u: {"username": u} for u in participants_raw}
+    else:
+        participants_meta = participants_raw
+
+    normalized = dict(raw)
+    normalized["pages"] = pages
+    normalized["participants"] = participants_meta
+    normalized.setdefault("all_participants", list(participants_meta.keys()))
+    normalized.setdefault("participant_blocks", {})
+    normalized.setdefault("outcome", {})
+    normalized.setdefault("article_revisions", {})
+    return normalized
+
+
 def _slug(case_name: str) -> str:
     return case_name.lower().replace(" ", "_").replace("/", "_").replace("–", "-")
 
@@ -67,12 +112,25 @@ def _process_one(args_tuple) -> dict:
             "error": f"JSON load failed: {exc}",
         }
 
+    # Normalize new lifecycle_stages format to pages-dict format
     if not isinstance(raw.get("pages"), dict):
+        if "lifecycle_stages" in raw:
+            raw = _normalize_new_format(raw)
+        else:
+            return {
+                "case_name": raw.get("case_name", path.stem),
+                "slug": _slug(raw.get("case_name", path.stem)),
+                "has_data": False,
+                "error": "Not an enriched file (no pages dict)",
+            }
+
+    # After normalization, still need at least one page with revisions
+    if not any(v.get("revisions") for v in raw.get("pages", {}).values()):
         return {
             "case_name": raw.get("case_name", path.stem),
             "slug": _slug(raw.get("case_name", path.stem)),
             "has_data": False,
-            "error": "Not an enriched file (no pages dict)",
+            "error": "No revisions found in any case page",
         }
 
     case_name = raw.get("case_name", path.stem)

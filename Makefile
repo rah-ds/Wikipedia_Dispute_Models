@@ -1,4 +1,4 @@
-.PHONY: install install-dev clean data-dirs help lint fetch-all fetch-full fetch-arb fetch-drn fetch-small test test-unit test-cov fetch-venues fetch-ani fetch-talk fetch-arb-dfs fetch-arb-dfs-sample fetch-arb-dfs-sample-full fetch-arb-dfs-all fetch-arb-dfs-all-full update-arb-cases-list fetch-lifecycle fetch-lifecycle-dry fetch-lifecycle-sample fetch-lifecycle-all setup pull pull-status pull-reset validate archive clear-results pull-full-arb pull-full-arb-estimate pull-full-arb-force rivanna-sync rivanna-setup rivanna-submit rivanna-status rivanna-logs rivanna-pull rivanna-clean rivanna-ssh rivanna-train enrich-diffs enrich-diffs-dry fetch-declined fetch-declined-dry build-features
+.PHONY: install install-dev clean data-dirs help lint fetch-all fetch-full fetch-arb fetch-drn fetch-small test test-unit test-cov fetch-venues fetch-ani fetch-talk fetch-arb-dfs fetch-arb-dfs-sample fetch-arb-dfs-sample-full fetch-arb-dfs-all fetch-arb-dfs-all-full update-arb-cases-list fetch-lifecycle fetch-lifecycle-dry fetch-lifecycle-sample fetch-lifecycle-all setup pull pull-status pull-reset validate archive clear-results pull-full-arb pull-full-arb-estimate pull-full-arb-force rivanna-sync rivanna-setup rivanna-submit rivanna-status rivanna-logs rivanna-pull rivanna-clean rivanna-ssh rivanna-train enrich-diffs enrich-diffs-dry fetch-declined fetch-declined-dry build-features fetch-missing viz-export viz-update
 
 # =============================================================================
 # QUICK START - Three simple commands to get started
@@ -91,6 +91,13 @@ help:
 	@echo "  make rivanna-clean   Cancel jobs and clear remote data"
 	@echo "  make rivanna-ssh     SSH into Rivanna interactively"
 	@echo "  make rivanna-train   Submit Gemma4 BPMN GPU job"
+	@echo ""
+	@echo "Visualization Pipeline:"
+	@echo "  make viz-update              Fetch missing cases + re-export dashboard data"
+	@echo "  make viz-update LIMIT=20     Fetch at most 20 missing cases this run"
+	@echo "  make fetch-missing           Fetch uncollected cases from arb_cases.txt"
+	@echo "  make fetch-missing DRY=1     List missing cases without fetching"
+	@echo "  make viz-export              Re-export D3 JSONs + update manifest only"
 	@echo ""
 
 # =============================================================================
@@ -393,6 +400,38 @@ clear-results-force:
 # Rebuild features.csv from raw data (arb_dfs + enriched + lifecycle)
 build-features:
 	uv run python scripts/build_features.py
+
+# =============================================================================
+# VISUALIZATION PIPELINE
+# =============================================================================
+
+# Fetch cases in artifacts/arb_cases.txt that are not yet on disk,
+# then re-export D3 JSONs and update the manifest for the dashboard.
+#
+# Usage:
+#   make viz-update              # fetch missing + re-export (recommended)
+#   make viz-update LIMIT=20     # fetch at most 20 missing cases this run
+#   make fetch-missing           # only identify and fetch missing cases
+#   make fetch-missing DRY=1     # list what would be fetched without API calls
+#   make viz-export              # only re-export D3 JSONs + update manifest
+
+fetch-missing: data-dirs
+	@echo "Checking for uncollected arbitration cases..."
+	$(if $(DRY), \
+		uv run python scripts/fetch_missing_cases.py --dry-run, \
+		uv run python scripts/fetch_missing_cases.py $(if $(LIMIT),--limit $(LIMIT),) --delay 1 \
+	)
+
+viz-export:
+	@echo "Exporting D3 JSONs and updating manifest..."
+	uv run python scripts/export_d3_all.py --workers 4
+	@echo "✓ Dashboard data updated → data/processed/d3/manifest.json"
+
+viz-update: fetch-missing viz-export
+	@echo ""
+	@echo "✓ Done. Serve the dashboard with:"
+	@echo "  python3 -m http.server 8765"
+	@echo "  open http://localhost:8765/viz/dashboard.html"
 # =============================================================================
 # FULL DISPUTE LIFECYCLE FETCHER (RECOMMENDED)
 # =============================================================================
