@@ -1,4 +1,4 @@
-.PHONY: install install-dev clean data-dirs help lint fetch-all fetch-full fetch-arb fetch-drn fetch-small test test-unit test-cov fetch-venues fetch-ani fetch-talk fetch-arb-dfs fetch-arb-dfs-sample fetch-arb-dfs-sample-full fetch-arb-dfs-all fetch-arb-dfs-all-full update-arb-cases-list fetch-lifecycle fetch-lifecycle-dry fetch-lifecycle-sample fetch-lifecycle-all setup pull pull-status pull-reset validate archive clear-results pull-full-arb pull-full-arb-estimate pull-full-arb-force rivanna-sync rivanna-setup rivanna-submit rivanna-status rivanna-logs rivanna-pull rivanna-clean rivanna-ssh rivanna-train enrich-diffs enrich-diffs-dry fetch-declined fetch-declined-dry build-features fetch-missing viz-export viz-update
+.PHONY: install install-dev clean data-dirs help lint fetch-all fetch-full fetch-arb fetch-drn fetch-small test test-unit test-cov fetch-venues fetch-ani fetch-talk fetch-arb-dfs fetch-arb-dfs-sample fetch-arb-dfs-sample-full fetch-arb-dfs-all fetch-arb-dfs-all-full update-arb-cases-list fetch-lifecycle fetch-lifecycle-dry fetch-lifecycle-sample fetch-lifecycle-all setup pull pull-status pull-reset validate archive clear-results pull-full-arb pull-full-arb-estimate pull-full-arb-force rivanna-sync rivanna-setup rivanna-submit rivanna-status rivanna-logs rivanna-pull rivanna-clean rivanna-ssh rivanna-train enrich-diffs enrich-diffs-dry fetch-declined fetch-declined-dry build-features fetch-missing viz-export viz-update viz-serve dashboard dashboard-build
 
 # =============================================================================
 # QUICK START - Three simple commands to get started
@@ -98,6 +98,10 @@ help:
 	@echo "  make fetch-missing           Fetch uncollected cases from arb_cases.txt"
 	@echo "  make fetch-missing DRY=1     List missing cases without fetching"
 	@echo "  make viz-export              Re-export D3 JSONs + update manifest only"
+	@echo "  make viz-serve               Serve D3 viz → http://localhost:8765/viz/dashboard.html"
+	@echo "  make viz-serve VIZ_PORT=9000 Serve on a custom port"
+	@echo "  make dashboard               Start the React dashboard (http://localhost:5173)"
+	@echo "  make dashboard-build         Build the React dashboard for production"
 	@echo ""
 
 # =============================================================================
@@ -429,9 +433,29 @@ viz-export:
 
 viz-update: fetch-missing viz-export
 	@echo ""
-	@echo "✓ Done. Serve the dashboard with:"
-	@echo "  python3 -m http.server 8765"
-	@echo "  open http://localhost:8765/viz/dashboard.html"
+	@echo "✓ Done. Serve the D3 viz with: make viz-serve"
+
+VIZ_PORT ?= 8765
+
+viz-serve:
+	@echo "Serving D3 viz → http://localhost:$(VIZ_PORT)/viz/dashboard.html"
+	@open "http://localhost:$(VIZ_PORT)/viz/dashboard.html" 2>/dev/null || true
+	python3 -m http.server $(VIZ_PORT)
+
+# =============================================================================
+# REACT DASHBOARD
+# =============================================================================
+
+DASH_PORT ?= 5173
+
+dashboard:
+	@echo "Starting React dashboard → http://localhost:$(DASH_PORT)"
+	cd dashboard && npm install --silent && npm run dev -- --port $(DASH_PORT)
+
+dashboard-build:
+	@echo "Building React dashboard..."
+	cd dashboard && npm install --silent && npm run build
+	@echo "✓ Built → dashboard/dist/"
 # =============================================================================
 # FULL DISPUTE LIFECYCLE FETCHER (RECOMMENDED)
 # =============================================================================

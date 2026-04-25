@@ -26,17 +26,28 @@ This project maps and analyzes Wikipedia's dispute resolution system—tracking 
 
 ---
 
+## Prerequisites
+
+- **Python 3.11+**
+- **[uv](https://docs.astral.sh/uv/)** — fast Python package manager (`curl -LsSf https://astral.sh/uv/install.sh | sh`)
+- **Node.js 18+** — only required to run the React dashboard
+- A [Wikimedia API token](https://api.wikimedia.org/wiki/Authentication) — optional but strongly recommended (raises rate limit from 500 to 5,000 req/hr)
+
+---
+
 ## Quick Start
 
 ```bash
 # Clone and install
 git clone https://github.com/rah-ds/Wikipedia_Dispute_Models.git
 cd Wikipedia_Dispute_Models
-make install-dev
+make setup          # install deps + validate environment
 
-# Fetch data
-make fetch-arb
-make fetch-drn
+# (Optional) set your Wikimedia token
+cp .env.example .env  # then fill in WIKI_API_KEY / WIKIPEDIA_ACCESS_TOKEN
+
+# Fetch a small sample dataset (5 arbitration cases, resumable)
+make pull
 ```
 
 See `make help` for all available targets.
@@ -108,6 +119,67 @@ python scripts/arbitration_bpmn_hf.py --no-ner
 
 The default output directory is `artifacts/bpmn/arb`.
 
+---
+
+## Testing
+
+```bash
+make test           # run full test suite
+make test-unit      # unit tests only (no network calls)
+make test-cov       # coverage report
+```
+
+The test suite lives in `tests/` and covers arbitration parsing, graph construction, outcome extraction, lifecycle tracing, and integration paths.
+
+---
+
+## Running the Dashboard
+
+```bash
+# Build the data payload first
+python scripts/process_arbitration_for_dashboard.py
+
+# Start the dev server
+cd dashboard
+npm install
+npm run dev
+```
+
+The dashboard reads from `dashboard/public/data/dashboard_data.json`. BPMN diagrams in `dashboard/public/bpmn/` are served statically and browsable in the **BPMN Viewer** screen.
+Standalone D3 exports in `dashboard/public/d3/` are available inside the dashboard's **D3 Visuals** tab.
+
+---
+
+## Rivanna HPC (UVA)
+
+Large-scale data collection runs on UVA's Rivanna cluster. Requires an SSH key configured for `login.hpc.virginia.edu` and `RIVANNA_ID` set in `.env`.
+
+```bash
+make rivanna-sync    # rsync source code to /scratch/<id>/Wikipedia_Dispute_Models
+make rivanna-setup   # one-time: install uv + deps on Rivanna, smoke test imports
+make rivanna-submit  # submit the full SLURM job pipeline
+make rivanna-status  # check running jobs and data collection progress
+make rivanna-logs    # tail the 5 most recent SLURM log files
+make rivanna-pull    # download collected data/raw, data/processed, slurmlogs
+make rivanna-clean   # (destructive) cancel jobs and clear remote data/raw
+```
+
+### SLURM Pipeline (`scripts/slurm/`)
+
+Five-stage dependency-ordered pipeline:
+
+| Job | Script | Wall Time | Memory |
+|-----|--------|-----------|--------|
+| 1 — Update case list | `update_arb_cases.slurm` | 15 min | 2 GB |
+| 2 — Full article fetch | `fetch_full.slurm` | 4 hrs | 8 GB |
+| 3 — Arb DFS (array) | `fetch_arb_dfs.slurm` | 2 hrs/case | 8 GB |
+| 4 — Lifecycle (array) | `fetch_lifecycle.slurm` | 3 hrs/case | 8 GB |
+| 5 — Summary email | `pipeline_summary.slurm` | — | — |
+
+Progress is logged to `slurmlogs/progress_*.csv` with quarter-milestone email alerts. See [`docs/rivanna_guide.md`](docs/rivanna_guide.md) for full setup.
+
+---
+
 ## Windows Start with WSL
 If you are working with Windows, follow here for WSL-friendly setup.
 First download WSL via your preferred IDE.
@@ -136,6 +208,9 @@ Run Python/tools via uv & no need to manually activate venv — uv handles it.
 | DRN Cases | Dispute Resolution Noticeboard threads | `src/fetchers.py` → `fetch_drn_page()` |
 | Dispute Lifecycle | Full escalation path: Talk → DRN → ANI → ArbCom | `scripts/fetch_dispute_lifecycle.py` |
 | Arb Case DFS | Depth-first collection of all related pages | `scripts/fetch_arb_dfs.py` |
+| Requests for Comments | RFC threads on Meta-Wikipedia | `scripts/fetch_rfc.py` |
+| Declined RFAs | Failed requests for adminship | `scripts/fetch_declined_rfas.py` |
+| Page Views | Wikimedia pageview statistics | `src/pageviews.py` |
 
 See [`docs/wikimedia_api.md`](docs/wikimedia_api.md) for full API documentation.
 
@@ -150,6 +225,16 @@ See [`docs/wikimedia_api.md`](docs/wikimedia_api.md) for full API documentation.
 | `src/lifecycle.py` | Traces disputes through all resolution stages (Talk → DRN → ANI → ArbCom). Extracts participants and disputed articles. |
 | `src/analysis.py` | Edit war detection, revert analysis, and 3RR violation detection from revision histories. |
 | `src/timeline.py` | Constructs chronological dispute timelines with escalation features for modeling. |
+| `src/graph.py` | NetworkX `MultiDiGraph` builder with editor, article, and case nodes; `REVERTS`, `EDITS_CASE`, and `CO_OCCURS` edges. |
+| `src/network.py` | Graph analysis utilities: centrality, community detection, co-occurrence summaries. |
+| `src/ores.py` | ORES (Wikimedia ML) integration for edit quality and damage scoring. |
+| `src/models.py` | Shared Pydantic/dataclass models for cases, revisions, and participants. |
+| `src/evidence.py` | Evidence diff extraction and enrichment from ArbCom case pages. |
+| `src/pageviews.py` | Wikimedia pageview API client for article traffic data. |
+| `src/xtools.py` | XTools API client for editor statistics and contribution summaries. |
+| `src/pull_config.py` | YAML config management for `pull.py` presets (`sample`, `full`, `dev`). |
+| `src/pull_state.py` | JSON state persistence enabling resumable multi-hour data pulls. |
+| `src/credentials.py` | API credential loading, validation, and warnings. |
 | `src/wiki.py` | Wikipedia API client wrapper with rate limiting, retry logic, and OAuth support. |
 | `src/cli_utils.py` | CLI utilities for graceful shutdown handling and memory monitoring in data fetch scripts. |
 
