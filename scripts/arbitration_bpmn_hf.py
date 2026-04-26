@@ -811,9 +811,18 @@ def select_case(cases: list[dict]) -> dict:
 def _write_outputs(
     spec: ProcessSpec, stem: str, output_dir: Path, dashboard_dir: Path | None = None
 ) -> None:
+    import shutil
+
+    xml_content = build_bpmn(spec).to_xml()
     bpmn_path = output_dir / f"{stem}.bpmn"
-    bpmn_path.write_text(build_bpmn(spec).to_xml(), encoding="utf-8")
+    bpmn_path.write_text(xml_content, encoding="utf-8")
     print(f"  BPMN XML → {bpmn_path}")
+
+    if dashboard_dir:
+        dashboard_dir.mkdir(parents=True, exist_ok=True)
+        dash_bpmn = dashboard_dir / f"{stem}.bpmn"
+        dash_bpmn.write_text(xml_content, encoding="utf-8")
+        print(f"  BPMN  ↗  → {dash_bpmn}")
 
     if PIPERFLOW_AVAILABLE:
         png_path = output_dir / f"{stem}.png"
@@ -821,9 +830,6 @@ def _write_outputs(
             render_piperflow(build_piperflow(spec), output_file=str(png_path))
             print(f"  PNG      → {png_path}")
             if dashboard_dir:
-                import shutil
-
-                dashboard_dir.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(png_path, dashboard_dir / f"{stem}.png")
                 print(f"  PNG   ↗  → {dashboard_dir / f'{stem}.png'}")
         except Exception as exc:
@@ -956,7 +962,7 @@ def main() -> None:
 
     project_root = Path(__file__).parent.parent
     output_dir = project_root / args.output_dir
-    dashboard_dir = project_root / "dashboard" / "public" / "bpmn" / "arbitration"
+    dashboard_dir = project_root / "dashboard" / "public" / "bpmn" / "arb"
     output_dir.mkdir(parents=True, exist_ok=True)
 
     data_file = select_data_file(project_root / "data" / "processed")

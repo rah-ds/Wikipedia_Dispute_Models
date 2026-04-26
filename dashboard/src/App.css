@@ -111,8 +111,8 @@
 /* ── Stat pill ───────────────────────────────── */
 .stat-pills {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
   margin-bottom: 24px;
 }
 
@@ -120,22 +120,25 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 20px 22px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .stat-pill__label {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-muted);
   font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .stat-pill__value {
-  font-size: 32px;
+  font-size: 24px;
   font-weight: 800;
   line-height: 1;
   background: linear-gradient(135deg, var(--accent), #a78bfa);
@@ -145,7 +148,7 @@
 }
 
 .stat-pill__sub {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-muted);
 }
 

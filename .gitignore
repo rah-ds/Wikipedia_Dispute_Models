@@ -40,10 +40,11 @@ package-lock.json
 .coverage
 .pytest_cache/
 .claude
+*:Zone.Identifier
 
 # Passwords
 user-conf.py
 user-password.py
 slurmlogs
 ..worktree
-*:Zone.Identifier
+

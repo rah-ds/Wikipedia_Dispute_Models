@@ -3,6 +3,10 @@ import { Maximize2, X } from 'lucide-react'
 
 const BpmnViewer = lazy(() => import('../components/BpmnViewer'))
 
+// ── Case definitions ────────────────────────────────────────────────────────
+// hfFile: optional second BPMN shown alongside (Abortion dual-viewer)
+// hfDescription: label for the companion viewer
+
 const SECTIONS = [
   {
     id: 'arbitration',
@@ -86,6 +90,15 @@ const SECTIONS = [
         file: '/bpmn/arb/arb_0010_Abortion.bpmn',
         url: null,
         description: 'Arbitration case for Abortion article dispute.',
+      },
+      {
+        id: 'arb-abortion-wikipedia',
+        label: 'Arbitration Case 10 - Abortion (HuggingFace XML)',
+        file: '/bpmn/arb/arb_Wikipedia_Arbitration_Requests_Case_Abortion.bpmn',
+        url: 'https://en.wikipedia.org/wiki/Wikipedia:Arbitration/Requests/Cases/Abortion',
+        description:
+          'Arbitration case for Abortion dispute, generated with the Hugging Face XML pipeline. ' +
+          'Swimlane model covering involved parties, clerk administration, committee deliberation, and enforcement.',
       },
       {
         id: 'arb-ril-wikipedia',
@@ -331,6 +344,84 @@ const SECTIONS = [
   },
 ]
 
+// ── Helpers ─────────────────────────────────────────────────────────────────
+
+/** Derive caseStats key from BPMN file path, e.g. "/bpmn/arb/arb_0010_Abortion.bpmn" → "arb_0010_Abortion" */
+function stemFromFile(filePath) {
+  return filePath.split('/').pop().replace('.bpmn', '')
+}
+
+/** Pill component for a single KPI — shrinks proportionally with the row */
+function KpiPill({ label, value }) {
+  return (
+    <div style={{
+      flex: '1 1 0',
+      minWidth: 0,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      background: 'var(--surface)',
+      border: '1px solid var(--border)',
+      borderRadius: 8,
+      padding: '5px 8px',
+    }}>
+      <span style={{
+        fontSize: 10,
+        color: 'var(--text-muted)',
+        marginBottom: 2,
+        textAlign: 'center',
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        width: '100%',
+        textTransform: 'uppercase',
+        letterSpacing: '0.03em',
+      }}>{label}</span>
+      <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--accent)', whiteSpace: 'nowrap' }}>{value}</span>
+    </div>
+  )
+}
+
+/** KPI row shown above the diagram — consistent labels across all case types */
+function CaseKpis({ stats, sectionId }) {
+  if (!stats) return null
+
+  const pills = []
+
+  if (sectionId === 'arbitration') {
+    if (stats.userLinks     != null) pills.push({ label: 'Unique User Refs',      value: stats.userLinks })
+    if (stats.userTalkLinks != null) pills.push({ label: 'Unique User Talk Refs', value: stats.userTalkLinks })
+    if (stats.wikiRefs      != null) pills.push({ label: 'Wikipedia (WP:) Refs',  value: stats.wikiRefs })
+    if (stats.wikiTalkRefs  != null) pills.push({ label: 'Wikipedia Talk Refs',   value: stats.wikiTalkRefs })
+  } else if (sectionId === 'drn') {
+    if (stats.userLinks     != null) pills.push({ label: 'Unique User Refs',      value: stats.userLinks })
+    if (stats.userTalkLinks != null) pills.push({ label: 'Unique User Talk Refs', value: stats.userTalkLinks })
+    if (stats.wikiRefs      != null) pills.push({ label: 'Wikipedia (WP:) Refs',  value: stats.wikiRefs })
+  } else if (sectionId === 'rfc') {
+    if (stats.userLinks     != null) pills.push({ label: 'Unique User Refs',      value: stats.userLinks })
+    if (stats.userTalkLinks != null) pills.push({ label: 'Unique User Talk Refs', value: stats.userTalkLinks })
+    if (stats.wikiRefs      != null) pills.push({ label: 'Wikipedia (WP:) Refs',  value: stats.wikiRefs })
+    if (stats.status)                pills.push({ label: 'Status',                value: stats.status })
+  }
+
+  if (pills.length === 0) return null
+
+  return (
+    <div style={{ display: 'flex', flexWrap: 'nowrap', gap: 6, margin: '10px 0 12px' }}>
+      {pills.map(p => <KpiPill key={p.label} label={p.label} value={p.value} />)}
+    </div>
+  )
+}
+
+/** Resolve URL to display for a case: prefer stats-derived URL, fall back to hardcoded */
+function resolveUrl(selected, stats, sectionId) {
+  if (sectionId === 'rfc')  return stats?.url  || selected.url
+  if (sectionId === 'drn')  return stats?.sourceUrl || selected.url
+  return stats?.url || selected.url
+}
+
+// ── Suspense wrapper ─────────────────────────────────────────────────────────
+
 function ViewerSuspense({ url }) {
   return (
     <Suspense fallback={
@@ -341,10 +432,21 @@ function ViewerSuspense({ url }) {
   )
 }
 
+// ── Main component ────────────────────────────────────────────────────────────
+
 export default function BpmnScreen() {
   const [activeSection, setActiveSection] = useState(SECTIONS[0])
   const [selected, setSelected]           = useState(SECTIONS[0].cases[0] ?? null)
   const [expanded, setExpanded]           = useState(false)
+  const [caseStats, setCaseStats]         = useState({})
+
+  // Fetch dashboard data for per-case stats
+  useEffect(() => {
+    fetch('/data/dashboard_data.json')
+      .then(r => r.ok ? r.json() : null)
+      .then(json => { if (json?.caseStats) setCaseStats(json.caseStats) })
+      .catch(() => {})
+  }, [])
 
   // Close overlay on Escape
   useEffect(() => {
@@ -359,6 +461,10 @@ export default function BpmnScreen() {
     setSelected(section.cases[0] ?? null)
     setExpanded(false)
   }
+
+  const stem    = selected ? stemFromFile(selected.file) : null
+  const stats   = stem ? caseStats[stem] : null
+  const caseUrl = selected ? resolveUrl(selected, stats, activeSection.id) : null
 
   return (
     <div className="bpmn-screen">
@@ -409,18 +515,24 @@ export default function BpmnScreen() {
                 <div style={{ minWidth: 0 }}>
                   <h2>{selected.label}</h2>
                   <div className="bpmn-viewer__desc">{selected.description}</div>
-                  {selected.url && (
+
+                  {/* URL link — under header, before KPIs */}
+                  {caseUrl && (
                     <a
                       className="bpmn-viewer__link"
-                      href={selected.url}
+                      href={caseUrl}
                       target="_blank"
                       rel="noreferrer"
+                      style={{ display: 'inline-block', marginTop: 4 }}
                     >
-                      {selected.url.startsWith('/bpmn/')
+                      {caseUrl.startsWith('/bpmn/')
                         ? 'Open BPMN file ↗'
                         : 'View on Wikipedia ↗'}
                     </a>
                   )}
+
+                  {/* Per-case KPI pills */}
+                  <CaseKpis stats={stats} sectionId={activeSection.id} />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
                   <span className="bpmn-badge">BPMN</span>
@@ -433,6 +545,7 @@ export default function BpmnScreen() {
                   </button>
                 </div>
               </div>
+
               <div className="bpmn-viewer__body bpmn-viewer__body--xml">
                 <ViewerSuspense url={selected.file} />
               </div>
