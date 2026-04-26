@@ -1,3 +1,887 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:5b90d5a76eff17b794c0cdf3be02e14d3fc8d6984df494a73d69108294df7d33
-size 31541
+{
+  "title": "Wikipedia:Dispute resolution noticeboard",
+  "url": "https://en.wikipedia.org/wiki/Wikipedia%3ADispute_resolution_noticeboard",
+  "fetched_at": "2026-02-16T16:37:10.321679",
+  "revisions": [
+    {
+      "revid": 1338714118,
+      "parentid": 1338698892,
+      "timestamp": "2026-02-16T20:25:36Z",
+      "user": "Pennine rambler",
+      "comment": "/* George V discussion */",
+      "size": 314976
+    },
+    {
+      "revid": 1338698892,
+      "parentid": 1338636748,
+      "timestamp": "2026-02-16T18:45:58Z",
+      "user": "Robert McClenon",
+      "comment": "/* Template:Vermont */   closed",
+      "size": 314804
+    },
+    {
+      "revid": 1338636748,
+      "parentid": 1338630856,
+      "timestamp": "2026-02-16T09:36:48Z",
+      "user": "DrKay",
+      "comment": "/* Summary of dispute by DrKay */",
+      "size": 314536
+    },
+    {
+      "revid": 1338630856,
+      "parentid": 1338607491,
+      "timestamp": "2026-02-16T08:27:01Z",
+      "user": "DrKay",
+      "comment": "/* Summary of dispute by DrKay */",
+      "size": 314516
+    },
+    {
+      "revid": 1338607491,
+      "parentid": 1338605205,
+      "timestamp": "2026-02-16T04:22:55Z",
+      "user": "ChompyTheGogoat",
+      "comment": "/* Summary of dispute by ChompyTheGogoat */",
+      "size": 312718
+    },
+    {
+      "revid": 1338605205,
+      "parentid": 1338603798,
+      "timestamp": "2026-02-16T03:58:50Z",
+      "user": "CSGinger14",
+      "comment": "/* Culpeper, Virginia */ Fixing link error. Assistance ensuring that this was done correctly would be greatly appreciated. Page could not be properly linked as it includes a comma",
+      "size": 312195
+    },
+    {
+      "revid": 1338603798,
+      "parentid": 1338563880,
+      "timestamp": "2026-02-16T03:45:37Z",
+      "user": "CSGinger14",
+      "comment": "/* Culpeper, Virginia */ new section",
+      "size": 312231
+    },
+    {
+      "revid": 1338563880,
+      "parentid": 1338531269,
+      "timestamp": "2026-02-15T22:48:47Z",
+      "user": "Pennine rambler",
+      "comment": "/* George V */ new section",
+      "size": 307849
+    },
+    {
+      "revid": 1338531269,
+      "parentid": 1338530257,
+      "timestamp": "2026-02-15T18:49:00Z",
+      "user": "Jonesey95",
+      "comment": "/* First statement by volunteer (Vermont Template) */ moved",
+      "size": 305193
+    },
+    {
+      "revid": 1338530257,
+      "parentid": 1338526762,
+      "timestamp": "2026-02-15T18:41:11Z",
+      "user": "Robert McClenon",
+      "comment": "/* first statements  (Vermont Template) */",
+      "size": 304924
+    },
+    {
+      "revid": 1338526762,
+      "parentid": 1338474801,
+      "timestamp": "2026-02-15T18:14:14Z",
+      "user": "81567518W",
+      "comment": "/* Zeroth statement by volunteer (Adam Milstein) */ Reply",
+      "size": 303754
+    },
+    {
+      "revid": 1338474801,
+      "parentid": 1338472776,
+      "timestamp": "2026-02-15T10:30:54Z",
+      "user": "Randy Kryn",
+      "comment": "/* Summary of dispute by Randy Kryn */ add",
+      "size": 303355
+    },
+    {
+      "revid": 1338472776,
+      "parentid": 1338444537,
+      "timestamp": "2026-02-15T10:14:02Z",
+      "user": "Randy Kryn",
+      "comment": "reply",
+      "size": 303323
+    },
+    {
+      "revid": 1338444537,
+      "parentid": 1338444497,
+      "timestamp": "2026-02-15T05:18:19Z",
+      "user": "Jonesey95",
+      "comment": "/* Summary of dispute by Randy Kryn */ no learning happening",
+      "size": 302779
+    },
+    {
+      "revid": 1338444497,
+      "parentid": 1338444005,
+      "timestamp": "2026-02-15T05:17:59Z",
+      "user": "Zackmann08",
+      "comment": "/* Zeroth statement by volunteer (Vermont Template) */ Reply",
+      "size": 302410
+    },
+    {
+      "revid": 1338444005,
+      "parentid": 1338441604,
+      "timestamp": "2026-02-15T05:12:30Z",
+      "user": "Robert McClenon",
+      "comment": "/* Template:Vermont discussion */   zeroth statements",
+      "size": 301982
+    },
+    {
+      "revid": 1338441604,
+      "parentid": 1338406159,
+      "timestamp": "2026-02-15T04:51:41Z",
+      "user": "Robert McClenon",
+      "comment": "/* Adam Milstein discussion */",
+      "size": 301022
+    },
+    {
+      "revid": 1338406159,
+      "parentid": 1338352226,
+      "timestamp": "2026-02-15T00:00:44Z",
+      "user": "TenshiBot",
+      "comment": "[[Wikipedia:Bots/Requests for approval/TenshiBot 10|Task 10]]: Remove do not archive tags from closed cases",
+      "size": 300058
+    },
+    {
+      "revid": 1338352226,
+      "parentid": 1338350218,
+      "timestamp": "2026-02-14T17:43:06Z",
+      "user": "Robert McClenon",
+      "comment": "/* List of video games considered the best */   failed",
+      "size": 300621
+    },
+    {
+      "revid": 1338350218,
+      "parentid": 1338349467,
+      "timestamp": "2026-02-14T17:27:39Z",
+      "user": "Robert McClenon",
+      "comment": "/* Act III:_This_City_Made_Us */   closed",
+      "size": 299781
+    },
+    {
+      "revid": 1338349467,
+      "parentid": 1338299272,
+      "timestamp": "2026-02-14T17:21:14Z",
+      "user": "Robert McClenon",
+      "comment": "/* Maire Tecnimont */   closed",
+      "size": 299565
+    },
+    {
+      "revid": 1338299272,
+      "parentid": 1338197626,
+      "timestamp": "2026-02-14T08:55:38Z",
+      "user": "Johnuniq",
+      "comment": "/* Template:Vermont discussion */ [[Wikipedia:Administrators' noticeboard/Incidents#Repeated disruptive editing and rule violations by user]]",
+      "size": 299349
+    },
+    {
+      "revid": 1338197626,
+      "parentid": 1338098629,
+      "timestamp": "2026-02-13T19:25:40Z",
+      "user": "Lowercase sigmabot III",
+      "comment": "Archiving 1 discussion(s) to [[Wikipedia:Dispute resolution noticeboard/Archive 267]]) (bot",
+      "size": 299089
+    },
+    {
+      "revid": 1338098629,
+      "parentid": 1338035290,
+      "timestamp": "2026-02-13T05:49:46Z",
+      "user": "Logoshimpo",
+      "comment": "/* Template:Vermont discussion */ Reply",
+      "size": 304686
+    },
+    {
+      "revid": 1338035290,
+      "parentid": 1337979989,
+      "timestamp": "2026-02-12T21:20:33Z",
+      "user": "Metallurgist",
+      "comment": "/* Adam Milstein discussion */",
+      "size": 304354
+    },
+    {
+      "revid": 1337979989,
+      "parentid": 1337979929,
+      "timestamp": "2026-02-12T14:38:36Z",
+      "user": "Randy Kryn",
+      "comment": "/* Summary of dispute by Randy Kryn */ edit",
+      "size": 302949
+    },
+    {
+      "revid": 1337979929,
+      "parentid": 1337923364,
+      "timestamp": "2026-02-12T14:38:03Z",
+      "user": "Randy Kryn",
+      "comment": "/* Template:Vermont */ add",
+      "size": 302949
+    },
+    {
+      "revid": 1337923364,
+      "parentid": 1337912991,
+      "timestamp": "2026-02-12T05:10:17Z",
+      "user": "Johnuniq",
+      "comment": "/* Template:Vermont */ not suitable for DR",
+      "size": 302116
+    },
+    {
+      "revid": 1337912991,
+      "parentid": 1337904984,
+      "timestamp": "2026-02-12T03:33:53Z",
+      "user": "Zackmann08",
+      "comment": "/* Summary of dispute by Zackmann08 */",
+      "size": 301825
+    },
+    {
+      "revid": 1337904984,
+      "parentid": 1337904897,
+      "timestamp": "2026-02-12T02:35:29Z",
+      "user": "Jonesey95",
+      "comment": "/* Kim Seon-ho */ reflist",
+      "size": 299602
+    },
+    {
+      "revid": 1337904897,
+      "parentid": 1337897294,
+      "timestamp": "2026-02-12T02:34:50Z",
+      "user": "Jonesey95",
+      "comment": "/* Template:Vermont */ CIR",
+      "size": 299584
+    },
+    {
+      "revid": 1337897294,
+      "parentid": 1337842237,
+      "timestamp": "2026-02-12T01:35:50Z",
+      "user": "Logoshimpo",
+      "comment": "/* Template:Vermont */ new section",
+      "size": 299048
+    },
+    {
+      "revid": 1337842237,
+      "parentid": 1337801905,
+      "timestamp": "2026-02-11T19:24:14Z",
+      "user": "Lowercase sigmabot III",
+      "comment": "Archiving 1 discussion(s) to [[Wikipedia:Dispute resolution noticeboard/Archive 267]]) (bot",
+      "size": 297178
+    },
+    {
+      "revid": 1337801905,
+      "parentid": 1337728184,
+      "timestamp": "2026-02-11T14:52:57Z",
+      "user": "81567518W",
+      "comment": "/* Adam Milstein discussion */ Reply",
+      "size": 300539
+    },
+    {
+      "revid": 1337728184,
+      "parentid": 1337713813,
+      "timestamp": "2026-02-11T03:31:14Z",
+      "user": "Robert McClenon",
+      "comment": "/* Talk:Armenia */   DR",
+      "size": 300355
+    },
+    {
+      "revid": 1337713813,
+      "parentid": 1337711337,
+      "timestamp": "2026-02-11T01:45:51Z",
+      "user": "Tenshi Hinanawi",
+      "comment": "Fix bot error",
+      "size": 300356
+    },
+    {
+      "revid": 1337711337,
+      "parentid": 1337596662,
+      "timestamp": "2026-02-11T01:30:17Z",
+      "user": "Robert McClenon",
+      "comment": "/* Kim Seon-ho */   closed",
+      "size": 300334
+    },
+    {
+      "revid": 1337596662,
+      "parentid": 1337533648,
+      "timestamp": "2026-02-10T12:00:46Z",
+      "user": "TenshiBot",
+      "comment": "[[Wikipedia:Bots/Requests for approval/TenshiBot 10|Task 10]]: Remove do not archive tags from closed cases",
+      "size": 300311
+    },
+    {
+      "revid": 1337533648,
+      "parentid": 1337530171,
+      "timestamp": "2026-02-10T01:28:48Z",
+      "user": "Robert McClenon",
+      "comment": "/* Adam Milstein discussion */   note",
+      "size": 300518
+    },
+    {
+      "revid": 1337530171,
+      "parentid": 1337529187,
+      "timestamp": "2026-02-10T01:01:56Z",
+      "user": "Robert McClenon",
+      "comment": "/* Kim Seon-ho */   closed",
+      "size": 299955
+    },
+    {
+      "revid": 1337529187,
+      "parentid": 1337514914,
+      "timestamp": "2026-02-10T00:54:24Z",
+      "user": "Robert McClenon",
+      "comment": "/* Kim Seon-ho */   correction",
+      "size": 299305
+    },
+    {
+      "revid": 1337514914,
+      "parentid": 1337486458,
+      "timestamp": "2026-02-09T23:11:22Z",
+      "user": "Kentuckyfriedtucker",
+      "comment": "/* Summary of dispute by Kentuckyfriedtucker */",
+      "size": 299315
+    },
+    {
+      "revid": 1337486458,
+      "parentid": 1337474007,
+      "timestamp": "2026-02-09T19:46:14Z",
+      "user": "Lowercase sigmabot III",
+      "comment": "Archiving 2 discussion(s) to [[Wikipedia:Dispute resolution noticeboard/Archive 267]]) (bot",
+      "size": 298742
+    },
+    {
+      "revid": 1337474007,
+      "parentid": 1337442747,
+      "timestamp": "2026-02-09T18:12:44Z",
+      "user": "Илона И",
+      "comment": "/* Summary of dispute by User:Илона И */Added sign",
+      "size": 306137
+    },
+    {
+      "revid": 1337442747,
+      "parentid": 1337430356,
+      "timestamp": "2026-02-09T13:59:46Z",
+      "user": "Paper9oll",
+      "comment": "/* Summary of dispute by User:Paper9oll */ Reply",
+      "size": 306037
+    },
+    {
+      "revid": 1337430356,
+      "parentid": 1337430091,
+      "timestamp": "2026-02-09T12:06:43Z",
+      "user": "~2026-77534-0",
+      "comment": "",
+      "size": 304716
+    },
+    {
+      "revid": 1337430091,
+      "parentid": 1337429798,
+      "timestamp": "2026-02-09T12:03:46Z",
+      "user": "~2026-77534-0",
+      "comment": "/* Kim Seon-ho */",
+      "size": 304727
+    },
+    {
+      "revid": 1337429798,
+      "parentid": 1337406338,
+      "timestamp": "2026-02-09T12:00:28Z",
+      "user": "TenshiBot",
+      "comment": "[[Wikipedia:Bots/Requests for approval/TenshiBot 10|Task 10]]: Remove do not archive tags from closed cases",
+      "size": 304544
+    },
+    {
+      "revid": 1337406338,
+      "parentid": 1337394044,
+      "timestamp": "2026-02-09T07:18:14Z",
+      "user": "Metallurgist",
+      "comment": "/* Summary of dispute by Metallurgist */",
+      "size": 304751
+    },
+    {
+      "revid": 1337394044,
+      "parentid": 1337393971,
+      "timestamp": "2026-02-09T05:23:48Z",
+      "user": "Илона И",
+      "comment": "/* Summary of dispute by User:Илона И */Fixed typo",
+      "size": 304216
+    },
+    {
+      "revid": 1337393971,
+      "parentid": 1337393926,
+      "timestamp": "2026-02-09T05:23:12Z",
+      "user": "Илона И",
+      "comment": "/* Summary of dispute by User:Илона И */Fixed typo",
+      "size": 304213
+    },
+    {
+      "revid": 1337393926,
+      "parentid": 1337393676,
+      "timestamp": "2026-02-09T05:22:45Z",
+      "user": "Илона И",
+      "comment": "/* Summary of dispute by User:Илона И */Fixed link",
+      "size": 304213
+    },
+    {
+      "revid": 1337393676,
+      "parentid": 1337393545,
+      "timestamp": "2026-02-09T05:20:07Z",
+      "user": "Илона И",
+      "comment": "/* Summary of dispute by User:Илона И */Fixed link",
+      "size": 304183
+    },
+    {
+      "revid": 1337393545,
+      "parentid": 1337373987,
+      "timestamp": "2026-02-09T05:18:51Z",
+      "user": "Илона И",
+      "comment": "/* Summary of dispute by User:Илона И */",
+      "size": 304176
+    },
+    {
+      "revid": 1337373987,
+      "parentid": 1337371172,
+      "timestamp": "2026-02-09T02:36:36Z",
+      "user": "~2026-77534-0",
+      "comment": "/* Kim Seon-ho */ new section",
+      "size": 303597
+    },
+    {
+      "revid": 1337371172,
+      "parentid": 1337225367,
+      "timestamp": "2026-02-09T02:12:43Z",
+      "user": "McClenon mobile",
+      "comment": "/* Talk:Armenia */Closed",
+      "size": 300685
+    },
+    {
+      "revid": 1337225367,
+      "parentid": 1337215078,
+      "timestamp": "2026-02-08T04:36:32Z",
+      "user": "Robert McClenon",
+      "comment": "/* Talk:Armenia */   closed",
+      "size": 300678
+    },
+    {
+      "revid": 1337215078,
+      "parentid": 1337146060,
+      "timestamp": "2026-02-08T03:10:22Z",
+      "user": "~2026-39690-1",
+      "comment": "/* Talk:Armenia */ new section",
+      "size": 299773
+    },
+    {
+      "revid": 1337146060,
+      "parentid": 1336931529,
+      "timestamp": "2026-02-07T19:24:01Z",
+      "user": "Lowercase sigmabot III",
+      "comment": "Archiving 2 discussion(s) to [[Wikipedia:Dispute resolution noticeboard/Archive 267]]) (bot",
+      "size": 297139
+    },
+    {
+      "revid": 1336931529,
+      "parentid": 1336876808,
+      "timestamp": "2026-02-06T14:29:35Z",
+      "user": "81567518W",
+      "comment": "/* Adam Milstein */ new section",
+      "size": 302522
+    },
+    {
+      "revid": 1336876808,
+      "parentid": 1336876008,
+      "timestamp": "2026-02-06T06:00:24Z",
+      "user": "DannyS712 bot",
+      "comment": "Task 69: Remove do not archive tags from closed cases",
+      "size": 300471
+    },
+    {
+      "revid": 1336876008,
+      "parentid": 1336875341,
+      "timestamp": "2026-02-06T05:55:00Z",
+      "user": "Robert McClenon",
+      "comment": "/* List of highest-grossing concert tours */   closed",
+      "size": 300841
+    },
+    {
+      "revid": 1336875341,
+      "parentid": 1336859238,
+      "timestamp": "2026-02-06T05:50:36Z",
+      "user": "Robert McClenon",
+      "comment": "/* Shenyang */   closed",
+      "size": 300422
+    },
+    {
+      "revid": 1336859238,
+      "parentid": 1336858524,
+      "timestamp": "2026-02-06T03:50:46Z",
+      "user": "Robert McClenon",
+      "comment": "/* Shenyang discussion */   note",
+      "size": 300082
+    },
+    {
+      "revid": 1336858524,
+      "parentid": 1336857073,
+      "timestamp": "2026-02-06T03:44:59Z",
+      "user": "Robert McClenon",
+      "comment": "/* Summary of dispute by Margarita byca */   hat",
+      "size": 299669
+    },
+    {
+      "revid": 1336857073,
+      "parentid": 1336750644,
+      "timestamp": "2026-02-06T03:30:41Z",
+      "user": "H2v5o68z",
+      "comment": "/* Shenyang */",
+      "size": 299374
+    },
+    {
+      "revid": 1336750644,
+      "parentid": 1336704481,
+      "timestamp": "2026-02-05T14:38:58Z",
+      "user": "Margarita byca",
+      "comment": "/* Summary of dispute by Margarita byca */",
+      "size": 299357
+    },
+    {
+      "revid": 1336704481,
+      "parentid": 1336699009,
+      "timestamp": "2026-02-05T06:43:31Z",
+      "user": "H2v5o68z",
+      "comment": "/* Shenyang */",
+      "size": 299041
+    },
+    {
+      "revid": 1336699009,
+      "parentid": 1336696087,
+      "timestamp": "2026-02-05T06:03:33Z",
+      "user": "H2v5o68z",
+      "comment": "/* Shenyang */",
+      "size": 299043
+    },
+    {
+      "revid": 1336696087,
+      "parentid": 1336610389,
+      "timestamp": "2026-02-05T05:35:29Z",
+      "user": "H2v5o68z",
+      "comment": "/* Shenyang */ new section",
+      "size": 299048
+    },
+    {
+      "revid": 1336610389,
+      "parentid": 1336513145,
+      "timestamp": "2026-02-04T19:38:29Z",
+      "user": "Lowercase sigmabot III",
+      "comment": "Archiving 1 discussion(s) to [[Wikipedia:Dispute resolution noticeboard/Archive 267]]) (bot",
+      "size": 296248
+    },
+    {
+      "revid": 1336513145,
+      "parentid": 1336512912,
+      "timestamp": "2026-02-04T06:00:26Z",
+      "user": "DannyS712 bot",
+      "comment": "Task 69: Remove do not archive tags from closed cases",
+      "size": 299304
+    },
+    {
+      "revid": 1336512912,
+      "parentid": 1336512301,
+      "timestamp": "2026-02-04T05:58:15Z",
+      "user": "Robert McClenon",
+      "comment": "/* Ainu language */   closed",
+      "size": 299674
+    },
+    {
+      "revid": 1336512301,
+      "parentid": 1336494637,
+      "timestamp": "2026-02-04T05:52:39Z",
+      "user": "Robert McClenon",
+      "comment": "/* Elliot Rodger */   closed",
+      "size": 298983
+    },
+    {
+      "revid": 1336494637,
+      "parentid": 1336488892,
+      "timestamp": "2026-02-04T03:07:58Z",
+      "user": "TarnishedPath",
+      "comment": "/* Summary of dispute by TarnishedPath */ cmt",
+      "size": 298419
+    },
+    {
+      "revid": 1336488892,
+      "parentid": 1336374822,
+      "timestamp": "2026-02-04T02:21:20Z",
+      "user": "Elevator Vending Machine",
+      "comment": "/* Ainu language */ new section",
+      "size": 298144
+    },
+    {
+      "revid": 1336374822,
+      "parentid": 1336268790,
+      "timestamp": "2026-02-03T12:28:30Z",
+      "user": "Athanelar",
+      "comment": "/* Elliot Rodger */ new section",
+      "size": 295888
+    },
+    {
+      "revid": 1336268790,
+      "parentid": 1336247591,
+      "timestamp": "2026-02-02T20:58:37Z",
+      "user": "Robert McClenon",
+      "comment": "/* List of highest-grossing concert tours */   notes",
+      "size": 293921
+    },
+    {
+      "revid": 1336247591,
+      "parentid": 1336175985,
+      "timestamp": "2026-02-02T18:51:22Z",
+      "user": "StatsFreak",
+      "comment": "/* List of highest-grossing concert tours */ new section",
+      "size": 293282
+    },
+    {
+      "revid": 1336175985,
+      "parentid": 1336121921,
+      "timestamp": "2026-02-02T08:54:19Z",
+      "user": "Msforzese",
+      "comment": "/* Seventh statement by moderator (Maire Tecnimont) */ Reply",
+      "size": 290749
+    },
+    {
+      "revid": 1336121921,
+      "parentid": 1335884082,
+      "timestamp": "2026-02-02T01:36:27Z",
+      "user": "Robert McClenon",
+      "comment": "/* ninth statements   (Maire Tecnimont) */",
+      "size": 290333
+    },
+    {
+      "revid": 1335884082,
+      "parentid": 1335870318,
+      "timestamp": "2026-01-31T19:21:32Z",
+      "user": "Lowercase sigmabot III",
+      "comment": "Archiving 1 discussion(s) to [[Wikipedia:Dispute resolution noticeboard/Archive 267]]) (bot",
+      "size": 289676
+    },
+    {
+      "revid": 1335870318,
+      "parentid": 1335851077,
+      "timestamp": "2026-01-31T17:56:43Z",
+      "user": "Robert McClenon",
+      "comment": "/* Draftification and content removal based on AI-detector claims */   closed",
+      "size": 329584
+    },
+    {
+      "revid": 1335851077,
+      "parentid": 1335850761,
+      "timestamp": "2026-01-31T15:47:28Z",
+      "user": "IrisChronomia",
+      "comment": "/* Maire Tecnimont */ make the entire discussion its own standalone section instead of hijacking another ongoing one",
+      "size": 328574
+    },
+    {
+      "revid": 1335850761,
+      "parentid": 1335850396,
+      "timestamp": "2026-01-31T15:44:45Z",
+      "user": "IrisChronomia",
+      "comment": "/* Draftification and content removal based on AI-detector claims */",
+      "size": 328458
+    },
+    {
+      "revid": 1335850396,
+      "parentid": 1335849117,
+      "timestamp": "2026-01-31T15:41:39Z",
+      "user": "IrisChronomia",
+      "comment": "/* Draftification and content removal based on AI-detector claims */ Reply",
+      "size": 328274
+    },
+    {
+      "revid": 1335849117,
+      "parentid": 1335848868,
+      "timestamp": "2026-01-31T15:30:47Z",
+      "user": "IrisChronomia",
+      "comment": "/* Draftification and content removal based on AI-detector claims */",
+      "size": 327838
+    },
+    {
+      "revid": 1335848868,
+      "parentid": 1335847774,
+      "timestamp": "2026-01-31T15:28:46Z",
+      "user": "IrisChronomia",
+      "comment": "/* Draftification and content removal based on AI-detector claims */ Reply",
+      "size": 327802
+    },
+    {
+      "revid": 1335847774,
+      "parentid": 1335778721,
+      "timestamp": "2026-01-31T15:19:54Z",
+      "user": "Wecklost23",
+      "comment": "",
+      "size": 327593
+    },
+    {
+      "revid": 1335778721,
+      "parentid": 1335712074,
+      "timestamp": "2026-01-31T04:29:21Z",
+      "user": "Robert McClenon",
+      "comment": "/* eighth statements   (Maire Tecnimont) */",
+      "size": 326529
+    },
+    {
+      "revid": 1335712074,
+      "parentid": 1335703954,
+      "timestamp": "2026-01-30T19:44:05Z",
+      "user": "TextGardener",
+      "comment": "/* Seventh statement by moderator (Maire Tecnimont) */ Reply",
+      "size": 326150
+    },
+    {
+      "revid": 1335703954,
+      "parentid": 1335641117,
+      "timestamp": "2026-01-30T18:57:59Z",
+      "user": "Robert McClenon",
+      "comment": "/*  seventh statements  (Maire Tecnimont) */",
+      "size": 325715
+    },
+    {
+      "revid": 1335641117,
+      "parentid": 1335613557,
+      "timestamp": "2026-01-30T09:54:27Z",
+      "user": "Msforzese",
+      "comment": "/* Sixth statement by moderator (Maire Tecnimont) */ Reply",
+      "size": 324840
+    },
+    {
+      "revid": 1335613557,
+      "parentid": 1335535637,
+      "timestamp": "2026-01-30T05:04:12Z",
+      "user": "Robert McClenon",
+      "comment": "/* sixth statements   (Maire Tecnimont) */",
+      "size": 323085
+    },
+    {
+      "revid": 1335535637,
+      "parentid": 1335495479,
+      "timestamp": "2026-01-29T19:32:28Z",
+      "user": "Lowercase sigmabot III",
+      "comment": "Archiving 1 discussion(s) to [[Wikipedia:Dispute resolution noticeboard/Archive 267]]) (bot",
+      "size": 322584
+    },
+    {
+      "revid": 1335495479,
+      "parentid": 1335472013,
+      "timestamp": "2026-01-29T15:13:24Z",
+      "user": "Perfecnot",
+      "comment": "/* Fourth statement by moderator (Maire Tecnimont) */ Reply",
+      "size": 325592
+    },
+    {
+      "revid": 1335472013,
+      "parentid": 1335465979,
+      "timestamp": "2026-01-29T11:43:09Z",
+      "user": "TextGardener",
+      "comment": "/* Fifth statement by moderator (Maire Tecnimont) */ Reply",
+      "size": 324533
+    },
+    {
+      "revid": 1335465979,
+      "parentid": 1335333809,
+      "timestamp": "2026-01-29T10:37:39Z",
+      "user": "Msforzese",
+      "comment": "/* Fifth statement by moderator (Maire Tecnimont) */ Reply",
+      "size": 324304
+    },
+    {
+      "revid": 1335333809,
+      "parentid": 1335280070,
+      "timestamp": "2026-01-28T17:41:49Z",
+      "user": "Robert McClenon",
+      "comment": "/* fifth statements   (Maire Tecnimont) */",
+      "size": 316577
+    },
+    {
+      "revid": 1335280070,
+      "parentid": 1335202429,
+      "timestamp": "2026-01-28T10:07:25Z",
+      "user": "Msforzese",
+      "comment": "/* Fourth statement by moderator (Maire Tecnimont) */ Reply",
+      "size": 315776
+    }
+  ],
+  "parsed_cases": [
+    {
+      "title": "List of video games considered the best",
+      "level": 2,
+      "content": "\n\n{{DR case status|failed}}\n{{drn filing editor|Andrzejbanas|00:45, 11 January 2026 (UTC)}}\n{{DRN archive top|Closed as failed.  Excessively lengthy discussion was unable to narrow the issues down to a limited number of alternatives.  A [[WP:RFC|Request for Comments]] with a large number of alternatives was then launched, but the responses were that the RFC would not be constructive, and the RFC is being cancelled.  It is clear that several editors are dissatisfied with the current methodology, but they have provided long statements that are too verbose to be a useful basis for formulating an RFC.  Resume discussion on the article talk page.  A new request can be made for discussion here leading to the formulation of a new RFC if the discussion identifies no more than two alternatives.  [[User:Robert McClenon|Robert McClenon]] ([[User talk:Robert McClenon|talk]]) 17:42, 14 February 2026 (UTC)}}\n<span style=\"font-size:110%\">'''Have you discussed this on a talk page?'''</span>\n\nYes, I have discussed this issue on a talk page already.\n\n<span style=\"font-size:110%\">'''Location of dispute'''</span>\n* {{pagelinks|List of video games considered the best}}\n<span style=\"font-size:110%\">'''Users involved'''</span>\n* {{User|Andrzejbanas}}\n* {{User|Pro translator}}\n* {{User|NegativeMP1}}\n* {{User|TompaDompa}}\n* {{User|Phediuk}}\n* {{User|Rollinginhisgrave}}\n* {{User|SnowFire}}\n* {{User|Shooterwalker}}\n<span style=\"font-size:110%\">'''Dispute overview'''</span>\n\nA discussion that initially involved suggesting changing the past \"List of video games considered the best\" to \"List of video games voted the best\". From there, the conversation has been expanded to the list being against various guidelines. The ones brought up were [[WP:LISTCRITERIA]] (\" Avoid original or arbitrary criteria that would synthesize a list that is not plainly verifiable in reliable sources.\"), [[WP:INTERPRETING]] (on how the data is interpreted to clarify \"considered the best\" games). Further discussion has come as discussion went further on clarify that if what \"best\" is meant to be, as sources put different figures on this or if even using the term \"best\" is appropriate here per [[MOS:WTW]]. All the editors can not seem to agree if the current format is following the guidelines or not.\n\n<span style=\"font-size:110%\">'''How have you tried to resolve this dispute before coming here?'''</span>\n\n[[Talk:List of video games considered the best#Changing title to \"List of video games voted the best\"]]\n\n<span style=\"font-size:110%\">'''How do you think we can help resolve the dispute?'''</span>\n\nThe discussion has come to us sort of continuously replying or re-iterating points to hope and convince each other. It's gotten to a point where it's unclear on what points we are all at and how to analyze rules and guidelines. Mediation on where we currently stand and fresh guidance to help us get our points across would help us move forward with how to handle the article.\n{{collapse top|Discussion taking place at [[Wikipedia:Dispute resolution noticeboard/List of video games]].  [[User:Robert McClenon|Robert McClenon]] ([[User talk:Robert McClenon|talk]]) 03:00, 22 January 2026 (UTC)}}\n",
+      "templates": [
+        "DR case status",
+        "drn filing editor",
+        "DRN archive top",
+        "pagelinks",
+        "User",
+        "User",
+        "User",
+        "User",
+        "User",
+        "User",
+        "User",
+        "User",
+        "collapse top"
+      ],
+      "links": [
+        "WP:LISTCRITERIA",
+        "WP:INTERPRETING",
+        "MOS:WTW",
+        "Talk:List of video games considered the best#Changing title to \"List of video games voted the best\""
+      ],
+      "status": "unknown",
+      "participants": [
+        "Robert McClenon"
+      ],
+      "participant_count": 1,
+      "disputed_articles": [
+        "WP:LISTCRITERIA",
+        "WP:INTERPRETING",
+        "MOS:WTW"
+      ]
+    },
+    {
+      "title": "Culpeper",
+      "level": 2,
+      "content": "\n\n{{DR case status}}\n<!-- [[User:DoNotArchiveUntil]] 03:45, 16 March 2026 (UTC) -->{{User:ClueBot III/DoNotArchiveUntil|1773632737}}<!-- REMEMBER TO REMOVE THE PREVIOUS COMMENT WHEN CLOSING THIS THREAD! -->\n{{drn filing editor|CSGinger14|03:45, 16 February 2026 (UTC)}}\n\n<span style=\"font-size:110%\">'''Have you discussed this on a talk page?'''</span>\n\nYes, I have discussed this issue on a talk page already.\n\n<span style=\"font-size:110%\">'''Location of dispute'''</span>\n* {{pagelinks|Culpeper}}\n<span style=\"font-size:110%\">'''Users involved'''</span>\n* {{User|CSGinger14}}\n* {{User|Magnolia677}}\n* {{User|Waypoint47}}\n* {{User|ChompyTheGogoat}}\n* {{User|Dgp4004}}\n* {{User|Traumnovelle}}\n* {{User|Sbmeirow}}\n* {{User|Nikkimaria}}\n* {{User|Moxy}}\n* {{User|Joy}}\n<span style=\"font-size:110%\">'''Dispute overview'''</span>\n\nDisagreement over the inclusion of several independent infobox components that are not directly addressed by written consensus at [[MOS:INFOBOXPURPOSE]] and example structuring at [[WP:USCITIES]].\n'\nDisputes over inclusion relevant to this DR request are as follows:\n|\n* Highway road signage (since removed from the page, but disagreement over that question persists nonetheless)\n|\n* The town's vice mayor (resolved on the page, but ultimately unaddressed by USCITIES guidelines)\n|\n* Transportation infrastructure (i.e airports, passenger rail connections (not addressed directly in discussion, but a.e.g. ports, bus services))\n|\n* More broadly directed, city area (land and water) and ZIP/FIPS/etc. codes. \n\n<span style=\"font-size:110%\">'''How have you tried to resolve this dispute before coming here?'''</span>\n\nExtensive discussion at the [[Talk:Culpeper, Virginia#Highways in infobox|talk page]] for the article in question\nUnofficial RfC which drew in users from [[Wikipedia talk:WikiProject Cities/US Guideline#Highways in infobox|WP:USCITIES]]\nUnanswered request for input posted at [[Template talk:Infobox settlement#Standardization of infoboxes|Template:Infobox settlement]]\n\n<span style=\"font-size:110%\">'''How do you think we can help resolve the dispute?'''</span>\n\nDetermine whether or not an RfC for guidelines at [[WP:USCITIES]] is necessary for outstanding disputes stemming from this discussion, given the fact that multiple disagreements over the correct path forward for content have now arisen from the original disagreement. Given that there is no clear consensus among editors, the two editors originally in dispute (Myself and Magnolia677) feel that such a discussion may be necessary. This will help to decide the ultimate fate of the page.\n\n",
+      "templates": [
+        "DR case status",
+        "User:ClueBot III/DoNotArchiveUntil",
+        "drn filing editor",
+        "pagelinks",
+        "User",
+        "User",
+        "User",
+        "User",
+        "User",
+        "User",
+        "User",
+        "User",
+        "User",
+        "User"
+      ],
+      "links": [
+        "MOS:INFOBOXPURPOSE",
+        "WP:USCITIES",
+        "Talk:Culpeper, Virginia#Highways in infobox",
+        "Wikipedia talk:WikiProject Cities/US Guideline#Highways in infobox",
+        "Template talk:Infobox settlement#Standardization of infoboxes",
+        "WP:USCITIES"
+      ],
+      "status": "unknown",
+      "participants": [
+        "DoNotArchiveUntil"
+      ],
+      "participant_count": 1,
+      "disputed_articles": [
+        "MOS:INFOBOXPURPOSE",
+        "WP:USCITIES",
+        "Wikipedia talk:WikiProject Cities/US Guideline#Highways in infobox",
+        "Template talk:Infobox settlement#Standardization of infoboxes",
+        "WP:USCITIES"
+      ]
+    }
+  ],
+  "case_count": 2
+}

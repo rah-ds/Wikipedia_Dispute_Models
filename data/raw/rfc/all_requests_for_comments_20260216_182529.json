@@ -1,3 +1,18 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:7c7301a4a14228876200cf1a3a1e0d2ae3cb7eb6b94d179c7a176a555bcbd87b
-size 522
+{
+  "source": "Meta-Wiki Requests for Comments",
+  "fetch_timestamp": "2026-02-16 18:25:29",
+  "categories_fetched": [
+    "Requests for comments (resolved)",
+    "Requests for comments (unsuccessful)",
+    "Requests for comments (invalid)",
+    "Requests for comments (inactive)"
+  ],
+  "category_counts": {
+    "Requests for comments (resolved)": 0,
+    "Requests for comments (unsuccessful)": 0,
+    "Requests for comments (invalid)": 0,
+    "Requests for comments (inactive)": 0
+  },
+  "total_rfcs": 0,
+  "rfcs": []
+}
