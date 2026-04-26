@@ -56,11 +56,11 @@ def get_arbitration_cases(
             # Fetch the latest revision only
             latest = client.get_latest_revision(page.title())
             if latest:
-                case_data["last_edit"] = latest["timestamp"]
+                case_data["last_edit"] = latest.get("timestamp", "")
                 case_data["revisions"] = [latest]
-                case_data["user"] = latest["user"]
-                case_data["comment"] = latest["comment"]
-                case_data["content"] = latest["text"]
+                case_data["user"] = latest.get("user", "")
+                case_data["comment"] = latest.get("comment", "")
+                case_data["content"] = latest.get("text", "")
         except Exception as e:
             print(f"  Error fetching {page.title()}: {e}")
             case_data["error"] = str(e)
@@ -71,14 +71,14 @@ def get_arbitration_cases(
     return all_cases
 
 
-def main():
+def main(limit: int | None = None):
     """Main entry point."""
     print("Fetching Wikipedia Arbitration Cases")
     print("=" * 40)
 
     client = WikiClient(use_oauth=True)
 
-    cases = get_arbitration_cases(client, limit=None, sleep_time=1.0)
+    cases = get_arbitration_cases(client, limit=limit, sleep_time=1.0)
 
     output_path = get_output_path("arbitration", prefix="arbitration_cases")
     save_json(cases, output_path)

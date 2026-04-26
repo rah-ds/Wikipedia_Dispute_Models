@@ -1,0 +1,619 @@
+{
+  "title": "A Man In Black",
+  "case_url": "https://en.wikipedia.org/wiki/Wikipedia:Arbitration/Requests/Case/A_Man_In_Black",
+  "case_type": "conduct",
+  "is_private": false,
+  "opened_date": "23 May 2009",
+  "closed_date": "30 June 2009",
+  "parties": [
+    "Ikip"
+  ],
+  "accept_votes": 11,
+  "decline_votes": 0,
+  "recuse_votes": 2,
+  "abstain_votes": 3,
+  "net_votes": 11,
+  "accepted_by_rule": true,
+  "has_injunction": false,
+  "drafting_arbitrators": [
+    "Rootology"
+  ],
+  "recused_arbitrators": [],
+  "pre_case_actions": [
+    {
+      "date": "July 17, 2006",
+      "action": "block",
+      "target_editor": "A Man In Black",
+      "reason": "3RR"
+    },
+    {
+      "date": "December 30, 2006",
+      "action": "block",
+      "target_editor": "A Man In Black",
+      "reason": "3RR"
+    },
+    {
+      "date": "February 9, 2007",
+      "action": "block",
+      "target_editor": "A Man In Black",
+      "reason": "3RR"
+    },
+    {
+      "date": "February 28, 2007",
+      "action": "block",
+      "target_editor": "A Man In Black",
+      "reason": "3RR"
+    },
+    {
+      "date": "March 5, 2007",
+      "action": "block",
+      "target_editor": "A Man In Black",
+      "reason": "3RR"
+    },
+    {
+      "date": "March 9, 2007",
+      "action": "block",
+      "target_editor": "A Man In Black",
+      "reason": "3RR"
+    },
+    {
+      "date": "March 12, 2007",
+      "action": "block",
+      "target_editor": "A Man In Black",
+      "reason": "3RR"
+    },
+    {
+      "date": "March 30, 2007",
+      "action": "block",
+      "target_editor": "A Man In Black",
+      "reason": "edit warring"
+    },
+    {
+      "date": "November 19, 2007",
+      "action": "block",
+      "target_editor": "A Man In Black",
+      "reason": "3RR"
+    },
+    {
+      "date": "September 13, 2008",
+      "action": "block",
+      "target_editor": "A Man In Black",
+      "reason": "3RR"
+    },
+    {
+      "date": "February 5, 2009",
+      "action": "block",
+      "target_editor": "A Man In Black",
+      "reason": "3RR"
+    },
+    {
+      "date": "May 20, 2009",
+      "action": "block",
+      "target_editor": "A Man In Black",
+      "reason": "3RR"
+    }
+  ],
+  "rule_invocations": {
+    "total_invocations": 249,
+    "unique_rules": 53,
+    "by_type": {
+      "policy": 34,
+      "guideline": 27,
+      "essay": 30,
+      "other": 158
+    },
+    "top_rules": [
+      {
+        "ref": "WP:POINT",
+        "count": 25,
+        "type": "essay",
+        "first_section": "Preamble"
+      },
+      {
+        "ref": "WP:BATTLE",
+        "count": 21,
+        "type": "other",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:CANVASS",
+        "count": 16,
+        "type": "other",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:ARS",
+        "count": 15,
+        "type": "other",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:ANI",
+        "count": 13,
+        "type": "other",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:UNINVOLVED",
+        "count": 10,
+        "type": "other",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:NFCC",
+        "count": 8,
+        "type": "other",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:AGF",
+        "count": 8,
+        "type": "guideline",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:INVOLVED",
+        "count": 8,
+        "type": "policy",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:SOCK",
+        "count": 7,
+        "type": "policy",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:FICT",
+        "count": 6,
+        "type": "other",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:BATTLEGROUND",
+        "count": 6,
+        "type": "guideline",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:EW",
+        "count": 6,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:PRESERVE",
+        "count": 5,
+        "type": "other",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:RFPP",
+        "count": 4,
+        "type": "other",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:CIVIL",
+        "count": 4,
+        "type": "policy",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:BITE",
+        "count": 4,
+        "type": "essay",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:LAME",
+        "count": 4,
+        "type": "other",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:CIV",
+        "count": 4,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:WINNER",
+        "count": 4,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:OFFICE",
+        "count": 4,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:DR",
+        "count": 4,
+        "type": "guideline",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:BLP",
+        "count": 4,
+        "type": "policy",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:RFA",
+        "count": 4,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:V",
+        "count": 3,
+        "type": "policy",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:GUNDAM",
+        "count": 3,
+        "type": "other",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:NFCR",
+        "count": 2,
+        "type": "other",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:POLICY",
+        "count": 2,
+        "type": "other",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:TRIVIA",
+        "count": 2,
+        "type": "other",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:CANVAS",
+        "count": 2,
+        "type": "guideline",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:BEANS",
+        "count": 2,
+        "type": "other",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:OWN",
+        "count": 2,
+        "type": "guideline",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:AE",
+        "count": 2,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:AN",
+        "count": 2,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:RFAR",
+        "count": 2,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:COPYVIO",
+        "count": 2,
+        "type": "policy",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:TINC",
+        "count": 2,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:GIANTDICK",
+        "count": 2,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:RS",
+        "count": 2,
+        "type": "guideline",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:IPBE",
+        "count": 2,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:ADMIN",
+        "count": 2,
+        "type": "policy",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:VANDAL",
+        "count": 2,
+        "type": "policy",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:NPOV",
+        "count": 2,
+        "type": "policy",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:BP",
+        "count": 2,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:CSD",
+        "count": 2,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:PP",
+        "count": 2,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:DP",
+        "count": 2,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:RFC",
+        "count": 2,
+        "type": "guideline",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:N",
+        "count": 1,
+        "type": "guideline",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:SCHOOL",
+        "count": 1,
+        "type": "other",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:WAF",
+        "count": 1,
+        "type": "other",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:CANVASSING",
+        "count": 1,
+        "type": "other",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:IAR",
+        "count": 1,
+        "type": "essay",
+        "first_section": "Proposed_decision"
+      }
+    ],
+    "namespace_links": [
+      {
+        "namespace": "User",
+        "count": 849,
+        "meaning": "editor conduct \u2014 personal user page evidence"
+      },
+      {
+        "namespace": "User_talk",
+        "count": 660,
+        "meaning": "editor conduct \u2014 user-talk-page discussions"
+      },
+      {
+        "namespace": "Main",
+        "count": 461,
+        "meaning": "article content evidence"
+      },
+      {
+        "namespace": "Special",
+        "count": 186,
+        "meaning": "special-page / log evidence"
+      },
+      {
+        "namespace": "User_Talk",
+        "count": 30,
+        "meaning": "(unclassified namespace)"
+      },
+      {
+        "namespace": "WT",
+        "count": 12,
+        "meaning": "(unclassified namespace)"
+      },
+      {
+        "namespace": "Talk",
+        "count": 4,
+        "meaning": "article talk \u2014 content discussion evidence"
+      },
+      {
+        "namespace": "Template",
+        "count": 3,
+        "meaning": "template-usage evidence"
+      },
+      {
+        "namespace": "Category",
+        "count": 1,
+        "meaning": "category / taxonomy evidence"
+      },
+      {
+        "namespace": "Help",
+        "count": 1,
+        "meaning": "help / documentation reference"
+      }
+    ]
+  },
+  "principles_raw": [
+    "Editor conduct",
+    "Editorial process",
+    "Edit warring",
+    "Good faith and disruption",
+    "Recidivism",
+    "Administrators",
+    "Disruption by administrators",
+    "Administrators involved in disputes",
+    "Baiting",
+    "Canvassing",
+    "Arbitration in dispute resolution"
+  ],
+  "findings_raw": [
+    "A Man In Black\u2019s edit-warring and block log",
+    "Disputes between A Man In Black and Ikip",
+    "A Man In Black\u2019s block of Ikip",
+    "A Man in Black's blocks of Jtrainor and MalikCarr",
+    "A Man In Black has engaged in sockpuppetry",
+    "A Man In Black has used his tools inappropriately",
+    "A Man In Black has a history of edit-warring",
+    "Ikip and A Man In Black have edit-warred",
+    "Ikip has engaged in uncivil conduct"
+  ],
+  "remedies_raw": [
+    "A Man In Black desysopped",
+    "A Man in Black topic-banned",
+    "A Man in Black restricted",
+    "Ikip warned"
+  ],
+  "outcome": "Remedies Imposed",
+  "principles": [
+    {
+      "name": "Edit warring",
+      "summary": "Repeatedly editing another user's work without their consent.",
+      "policy_refs": [
+        "WP:3RR"
+      ],
+      "support": 2,
+      "oppose": 0,
+      "abstain": 0,
+      "passed": true
+    },
+    {
+      "name": "Administrator conduct",
+      "summary": "The behavior of administrators should be acceptable and not unhelpful.",
+      "policy_refs": [],
+      "support": 1,
+      "oppose": 0,
+      "abstain": 0,
+      "passed": true
+    }
+  ],
+  "findings": [
+    {
+      "name": "User A Man In Black engaged in edit warring.",
+      "target_editor": "A Man In Black",
+      "conduct": "User A Man In Black has been blocked 12 times for edit warring since 2005.",
+      "evidence_refs": [
+        "http://en.wikipedia.org/w/index.php?title=User_talk:A_Man_In_Black&oldid=291108314",
+        "http://en.wikipedia.org/w/index.php?title=Special:Log&type=block&page=User:A_Man_In_Black"
+      ],
+      "policy_refs": [
+        "WP:3RR",
+        "WP:No edit warring"
+      ],
+      "support": 3,
+      "oppose": 0,
+      "abstain": 0,
+      "passed": true
+    },
+    {
+      "name": "User A Man In Black exhibits an unrelenting tone and views.",
+      "target_editor": "A Man In Black",
+      "conduct": "User A Man In Black is unrelenting in his positions and views, which is unhelpful and likely not acceptable administrative behavior.",
+      "evidence_refs": [
+        "09:31, March 30, 2007 A Man In Black (talk | contribs | block) unblocked \"A Man In Black (talk | contribs)\" (Leaving)",
+        "09:04, March 30, "
+      ],
+      "policy_refs": [],
+      "support": 0,
+      "oppose": 1,
+      "abstain": 1,
+      "passed": false
+    }
+  ],
+  "remedies": [
+    {
+      "name": "Indefinitely blocked",
+      "target_editor": "A Man In Black",
+      "target_article": "",
+      "target_topic": "",
+      "sanction_type": "block",
+      "duration": "indefinite",
+      "scope": "",
+      "suspended": false,
+      "ongoing": false,
+      "support": 0,
+      "oppose": 0,
+      "abstain": 0,
+      "passed": true
+    },
+    {
+      "name": "Forced to take a 0RR or 1RR restriction from the community or Arbitration Committee",
+      "target_editor": "A Man In Black",
+      "target_article": "",
+      "target_topic": "",
+      "sanction_type": "interaction_ban",
+      "duration": "indefinite",
+      "scope": "",
+      "suspended": false,
+      "ongoing": false,
+      "support": 0,
+      "oppose": 0,
+      "abstain": 0,
+      "passed": true
+    },
+    {
+      "name": "Be facing some edit restrictions",
+      "target_editor": "A Man In Black",
+      "target_article": "",
+      "target_topic": "",
+      "sanction_type": "revert_restriction",
+      "duration": "indefinite",
+      "scope": "",
+      "suspended": false,
+      "ongoing": false,
+      "support": 0,
+      "oppose": 0,
+      "abstain": 0,
+      "passed": true
+    }
+  ],
+  "enforcement_actions": [],
+  "amendments": [],
+  "clarifications": [],
+  "appeals": [],
+  "post_case_motions": [],
+  "inactive_arbitrators": [],
+  "trainee_clerks": [],
+  "clerks": []
+}
