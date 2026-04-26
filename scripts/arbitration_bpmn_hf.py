@@ -8,8 +8,8 @@ builds BPMN 2.0 XML with swimlanes + PNG diagrams.
 
 Swimlanes
 ---------
-  Involved Parties     — disputing users / requestors
-  ArbCom Clerk         — administrative tasks (open, close, notify)
+  Involved Parties      — disputing users / requestors
+  ArbCom Clerk          — administrative tasks (open, close, notify)
   Arbitration Committee — review, deliberation, findings, decision
   Administrator         — enforcement of remedies / sanctions
 
@@ -24,29 +24,28 @@ Usage
   python scripts/arbitration_bpmn_hf.py --case "Wikipedia:Requests_for_arbitration/-Ril-"
   python scripts/arbitration_bpmn_hf.py --aggregate
   python scripts/arbitration_bpmn_hf.py --aggregate --sample 50
-  python scripts/arbitration_bpmn_hf.py --output-dir artifacts/bpmn/arb
+  python scripts/arbitration_bpmn_hf.py --output-dir artifacts/bpmn_hf
 
 Requirements
 ------------
   pip install transformers torch processpiper
-  (torch not strictly required; transformers will use CPU by default)
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import random
 import re
 import sys
 import uuid
 from collections import Counter, defaultdict
+from dataclasses import dataclass
 from pathlib import Path
 from xml.dom import minidom
 from xml.etree import ElementTree as ET
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Optional deps — graceful fallbacks so the script still works without them
-# ─────────────────────────────────────────────────────────────────────────────
+# ── Optional deps ─────────────────────────────────────────────────────────────
 
 try:
     from transformers import pipeline as hf_pipeline
@@ -67,66 +66,33 @@ try:
 except ImportError:
     PIPERFLOW_AVAILABLE = False
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Constants
-# ─────────────────────────────────────────────────────────────────────────────
+# ── Constants ─────────────────────────────────────────────────────────────────
 
 HF_NER_MODEL = "jtlicardo/bpmn-information-extraction"
 
-# Swimlane order (top → bottom in the diagram)
-LANES = [
-    "Involved Parties",
-    "ArbCom Clerk",
-    "Arbitration Committee",
-    "Administrator",
-]
+LANES = ["Involved Parties", "ArbCom Clerk", "Arbitration Committee", "Administrator"]
 
-# Which lane "owns" each section heading (partial-match keys)
-SECTION_LANE: dict[str, str] = {
-    "Case Opened": "ArbCom Clerk",
-    "Case Closed": "ArbCom Clerk",
-    "Involved Parties": "Involved Parties",
-    "Statement by": "Involved Parties",
-    "Confirmation that all parties": "Involved Parties",
-    "Confirmation that other steps": "Involved Parties",
-    "Requests for comment": "Arbitration Committee",
-    "Preliminary decisions": "Arbitration Committee",
-    "Findings of Fact": "Arbitration Committee",
-    "Final decision": "Arbitration Committee",
-    "Remedies": "Arbitration Committee",
-    "Enforcement": "Administrator",
-}
-
-# Keywords that indicate active remedies / enforcement
-ENFORCEMENT_KEYWORDS = re.compile(
+ENFORCEMENT_RE = re.compile(
     r"\b(ban(ned)?|block(ed)?|topic.ban|desysop(ped)?|sanction(ed)?|"
     r"restrict(ed)?|prohibit(ed)?|suspend(ed)?|remov(ed)?|revok(ed)?)\b",
     re.IGNORECASE,
 )
 
-# BPMN 2.0 XML namespaces
 NS_BPMN = "http://www.omg.org/spec/BPMN/20100524/MODEL"
 NS_BPMNDI = "http://www.omg.org/spec/BPMN/20100524/DI"
 NS_DC = "http://www.omg.org/spec/DD/20100524/DC"
 NS_DI = "http://www.omg.org/spec/DD/20100524/DI"
 
-# Swimlane / diagram layout
-POOL_X = 100
-POOL_Y = 80
-POOL_HEADER_W = 30  # width of the pool label strip on the left
-LANE_H = 160  # vertical height of each lane
-TASK_W = 130
-TASK_H = 60
-GW_W = 50
-GW_H = 50
-EVT_W = 36
-EVT_H = 36
-STEP_GAP = 160  # horizontal gap between element centres
-FIRST_X = POOL_X + POOL_HEADER_W + 80  # x-coord of first element
+POOL_X, POOL_Y = 100, 80
+POOL_HEADER_W = 30
+LANE_H = 160
+TASK_W, TASK_H = 130, 60
+GW_W, GW_H = 50, 50
+EVT_W, EVT_H = 36, 36
+STEP_GAP = 160
+FIRST_X = POOL_X + POOL_HEADER_W + 80
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Utilities
-# ─────────────────────────────────────────────────────────────────────────────
+# ── Utilities ─────────────────────────────────────────────────────────────────
 
 
 def _uid(prefix: str = "id") -> str:
@@ -135,35 +101,39 @@ def _uid(prefix: str = "id") -> str:
 
 def safe_filename(title: str, max_len: int = 60) -> str:
     s = re.sub(r"[^\w\-]", "_", title)
-    s = re.sub(r"_+", "_", s).strip("_")
-    return s[:max_len] if s else "unnamed"
+    return re.sub(r"_+", "_", s).strip("_")[:max_len] or "unnamed"
 
 
-def section_matches(key: str, sections: dict) -> str:
-    """Return text of first section whose heading contains *key* (case-insensitive)."""
-    key_lo = key.lower()
-    for heading, text in sections.items():
-        if key_lo in heading.lower():
-            return text or ""
-    return ""
+def _dedup(items: list[str]) -> list[str]:
+    seen: set[str] = set()
+    return [v for v in items if not (v.lower() in seen or seen.add(v.lower()))]
 
 
-def has_section(key: str, sections: dict) -> bool:
-    return bool(section_matches(key, sections).strip())
+def _lower_sections(sections: dict[str, str]) -> dict[str, str]:
+    """Precompute {heading.lower(): text} once per case; avoids re-lowercasing on every lookup."""
+    return {k.lower(): v or "" for k, v in sections.items()}
 
 
-def needs_enforcement(sections: dict) -> bool:
-    """True if Remedies / Final decision text implies active sanctions."""
+def section_match(key: str, lower_secs: dict[str, str]) -> str:
+    """Return text of first section whose lowercased heading contains key (already lowercased)."""
+    return next((v for k, v in lower_secs.items() if key in k), "")
+
+
+def has_section(key: str, lower_secs: dict[str, str]) -> bool:
+    return bool(section_match(key, lower_secs).strip())
+
+
+def needs_enforcement(lower_secs: dict[str, str]) -> bool:
     text = (
-        section_matches("Remedies", sections)
+        section_match("remedies", lower_secs)
         + " "
-        + section_matches("Final decision", sections)
+        + section_match("final decision", lower_secs)
     )
-    return bool(ENFORCEMENT_KEYWORDS.search(text))
+    return bool(ENFORCEMENT_RE.search(text))
 
 
 def chunk_text(text: str, max_chars: int = 1400) -> list[str]:
-    """Split long text into chunks at paragraph boundaries."""
+    """Split long text into chunks at paragraph then sentence boundaries."""
     if len(text) <= max_chars:
         return [text]
     chunks: list[str] = []
@@ -171,48 +141,116 @@ def chunk_text(text: str, max_chars: int = 1400) -> list[str]:
     for para in text.split("\n\n"):
         if len(current) + len(para) + 2 <= max_chars:
             current = (current + "\n\n" + para).strip()
+        elif len(para) > max_chars:
+            if current:
+                chunks.append(current)
+            current = ""  # reset before sentence loop to avoid carry-over
+            for sent in re.split(r"(?<=[.!?])\s+", para):
+                if len(current) + len(sent) + 1 <= max_chars:
+                    current = (current + " " + sent).strip()
+                else:
+                    if current:
+                        chunks.append(current)
+                    current = sent
         else:
             if current:
                 chunks.append(current)
-            if len(para) > max_chars:
-                # Fall back to sentence splitting
-                for sent in re.split(r"(?<=[.!?])\s+", para):
-                    if len(current) + len(sent) + 1 <= max_chars:
-                        current = (current + " " + sent).strip()
-                    else:
-                        if current:
-                            chunks.append(current)
-                        current = sent
-            else:
-                current = para
+            current = para
     if current:
         chunks.append(current)
     return chunks
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# HuggingFace NER Extractor
-# ─────────────────────────────────────────────────────────────────────────────
+# ── Process Specification — single source of truth for diagram shape ──────────
+
+
+@dataclass
+class ProcessSpec:
+    """
+    Captures all decisions about process shape in one place.
+    Both build_bpmn() and build_piperflow() consume this object exclusively —
+    the conditional logic lives here, not scattered across parallel builders.
+    """
+
+    title: str
+    has_rfc: bool
+    has_prelim: bool
+    has_fof: bool
+    has_enforce: bool
+    is_aggregate: bool = False
+    enforce_label: str = "Enforce Remedies / Sanctions"
+    # Aggregate-only percentage annotations (0 for specific cases)
+    rfc_pct: int = 0
+    prelim_pct: int = 0
+    fof_pct: int = 0
+    enforcement_pct: int = 0
+    total_cases: int = 0
+    sample_cases: int = 0
+
+    def annotated(self, base: str, pct: int) -> str:
+        """Append '(N% of cases)' annotation for aggregate specs only."""
+        return f"{base} ({pct}% of cases)" if self.is_aggregate and pct else base
+
+
+def spec_from_case(
+    title: str, sections: dict[str, str], ner: dict[str, list[str]]
+) -> ProcessSpec:
+    """Build ProcessSpec for a specific arbitration case."""
+    ls = _lower_sections(sections)
+    enforce_label = next(
+        (t for t in ner.get("TASK", []) if ENFORCEMENT_RE.search(t)),
+        "Enforce Remedies / Sanctions",
+    )[:50]
+    return ProcessSpec(
+        title=title,
+        has_rfc=has_section("requests for comment", ls),
+        has_prelim=has_section("preliminary decisions", ls),
+        has_fof=has_section("findings of fact", ls),
+        has_enforce=needs_enforcement(ls) or has_section("enforcement", ls),
+        enforce_label=enforce_label,
+    )
+
+
+def spec_from_aggregate(
+    section_counts: Counter, total: int, enforcement_pct: int, sample: int
+) -> ProcessSpec:
+    """Build ProcessSpec for the generalised aggregate model."""
+
+    def pct(key: str) -> int:
+        return round(section_counts.get(key, 0) * 100 / max(total, 1))
+
+    rfc_pct = pct("Requests for comment")
+    prelim_pct = pct("Preliminary decisions")
+    return ProcessSpec(
+        title="Wikipedia ArbCom — Standard Arbitration Process",
+        has_rfc=rfc_pct > 20,
+        has_prelim=prelim_pct > 30,
+        has_fof=True,  # always shown in aggregate
+        has_enforce=True,
+        is_aggregate=True,
+        rfc_pct=rfc_pct,
+        prelim_pct=prelim_pct,
+        fof_pct=pct("Findings of Fact"),
+        enforcement_pct=enforcement_pct,
+        total_cases=total,
+        sample_cases=sample,
+    )
+
+
+# ── NER Extractor ─────────────────────────────────────────────────────────────
 
 
 class NERExtractor:
     """
     Wraps jtlicardo/bpmn-information-extraction (BERT token classifier).
-
-    Output labels
-    -------------
-    AGENT        — person / role performing an action
-    TASK         — specific activity or process step
-    TASK_INFO    — qualifying detail about a task
-    PROCESS_INFO — process-level context
-    CONDITION    — conditional branch trigger
+    Labels: AGENT, TASK, TASK_INFO, PROCESS_INFO, CONDITION
     """
 
     _LABELS = ("AGENT", "TASK", "TASK_INFO", "PROCESS_INFO", "CONDITION")
 
-    def __init__(self, model_name: str = HF_NER_MODEL):
+    def __init__(self, model_name: str = HF_NER_MODEL, load_model: bool = True):
         self._pipe = None
-        if not HF_AVAILABLE:
+        if not load_model or not HF_AVAILABLE:
             return
         print(f"  Loading HuggingFace model: {model_name}")
         print("  (First run downloads ~400 MB — subsequent runs use local cache)")
@@ -227,11 +265,9 @@ class NERExtractor:
             print(f"  WARNING: Could not load model ({exc}). Rule-based flow only.\n")
 
     def extract(self, text: str) -> dict[str, list[str]]:
-        """Return {label: [entity, ...]} for the given text."""
         results: dict[str, list[str]] = {lbl: [] for lbl in self._LABELS}
         if not self._pipe or not text.strip():
             return results
-
         for chunk in chunk_text(text):
             try:
                 raw = self._pipe(chunk, truncation=True, max_length=512)
@@ -244,72 +280,41 @@ class NERExtractor:
                     ent.get("entity_group", ent.get("entity", "")).upper(),
                 )
                 word = ent.get("word", "").strip()
-                if label in results and word and len(word) > 2:
+                if label in results and len(word) > 2:
                     results[label].append(word)
-
-        # Deduplicate preserving order
-        for key in results:
-            seen: set[str] = set()
-            deduped = []
-            for v in results[key]:
-                if v.lower() not in seen:
-                    seen.add(v.lower())
-                    deduped.append(v)
-            results[key] = deduped
-        return results
+        return {k: _dedup(v) for k, v in results.items()}
 
     def extract_sections(
         self, sections: dict[str, str], keys: list[str]
     ) -> dict[str, list[str]]:
-        """Extract from multiple sections and merge."""
+        """Extract NER from multiple sections (partial-key matched) and merge."""
+        ls = _lower_sections(sections)
         merged: dict[str, list[str]] = {lbl: [] for lbl in self._LABELS}
         for key in keys:
-            text = section_matches(key, sections)
-            if text:
-                for lbl, vals in self.extract(text).items():
-                    merged[lbl].extend(vals)
-        # Final dedup
-        for key in merged:
-            seen: set[str] = set()
-            deduped = []
-            for v in merged[key]:
-                if v.lower() not in seen:
-                    seen.add(v.lower())
-                    deduped.append(v)
-            merged[key] = deduped
-        return merged
+            for lbl, vals in self.extract(section_match(key.lower(), ls)).items():
+                merged[lbl].extend(vals)
+        return {k: _dedup(v) for k, v in merged.items()}
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Swimlane BPMN 2.0 XML Builder
-# ─────────────────────────────────────────────────────────────────────────────
+# ── BPMN 2.0 XML Builder ──────────────────────────────────────────────────────
 
 
 class SwimlaneBpmnBuilder:
-    """
-    Constructs a BPMN 2.0 XML document with a Collaboration (pool) whose
-    process contains horizontally-oriented swimlanes (lanes).
-
-    Elements are positioned automatically: each call to add_* increments a
-    global step counter that controls the x-coordinate; the lane assignment
-    determines the y-coordinate.
-    """
+    """Builds a BPMN 2.0 XML document with horizontally-oriented swimlanes."""
 
     def __init__(self, process_name: str, lanes: list[str] = LANES):
         self.process_name = process_name
         self.lanes = lanes
+        self._lane_index = {name: i for i, name in enumerate(lanes)}  # O(1) lookup
         self._lane_ids = {name: _uid("Lane") for name in lanes}
         self._collab_id = _uid("Collab")
         self._part_id = _uid("Participant")
         self._proc_id = _uid("Process")
-
-        # (eid, label, elem_type, lane_name, step)
-        self._elements: list[tuple[str, str, str, str, int]] = []
-        # (fid, source_id, target_id, label)
-        self._flows: list[tuple[str, str, str, str]] = []
+        self._elements: list[
+            tuple[str, str, str, str, int]
+        ] = []  # (eid, label, etype, lane, step)
+        self._flows: list[tuple[str, str, str, str]] = []  # (fid, src, tgt, label)
         self._step = 0
-
-    # ── element adders ───────────────────────────────────────────────────────
 
     def _add(self, label: str, etype: str, lane: str) -> str:
         eid = _uid(etype.replace("Event", "Evt").replace("Gateway", "GW")[:6])
@@ -320,41 +325,32 @@ class SwimlaneBpmnBuilder:
     def start(self, label: str, lane: str = "Involved Parties") -> str:
         return self._add(label, "startEvent", lane)
 
-    def end(self, label: str, lane: str = "Administrator") -> str:
+    def end(self, label: str, lane: str = "ArbCom Clerk") -> str:
         return self._add(label, "endEvent", lane)
 
     def task(self, label: str, lane: str, user: bool = False) -> str:
-        etype = "userTask" if user else "task"
-        return self._add(label, etype, lane)
+        return self._add(label, "userTask" if user else "task", lane)
 
     def gateway(self, label: str, lane: str, exclusive: bool = True) -> str:
-        etype = "exclusiveGateway" if exclusive else "parallelGateway"
-        return self._add(label, etype, lane)
+        return self._add(
+            label, "exclusiveGateway" if exclusive else "parallelGateway", lane
+        )
 
     def flow(self, src: str, tgt: str, label: str = "") -> str:
         fid = _uid("Flow")
         self._flows.append((fid, src, tgt, label))
         return fid
 
-    # ── layout helpers ───────────────────────────────────────────────────────
-
     def _bounds(self, etype: str, lane: str, step: int) -> tuple[int, int, int, int]:
-        """Return (x, y, width, height) for an element."""
-        lane_idx = self.lanes.index(lane)
-        lane_top = POOL_Y + lane_idx * LANE_H
+        lane_top = POOL_Y + self._lane_index[lane] * LANE_H  # O(1) dict lookup
         cx = FIRST_X + step * STEP_GAP
-
         if etype in ("startEvent", "endEvent"):
             w, h = EVT_W, EVT_H
         elif "Gateway" in etype:
             w, h = GW_W, GW_H
         else:
             w, h = TASK_W, TASK_H
-
-        y = lane_top + (LANE_H - h) // 2
-        return cx, y, w, h
-
-    # ── XML serialisation ────────────────────────────────────────────────────
+        return cx, lane_top + (LANE_H - h) // 2, w, h
 
     def to_xml(self) -> str:
         for prefix, uri in (
@@ -375,7 +371,6 @@ class SwimlaneBpmnBuilder:
             },
         )
 
-        # ── Collaboration ────────────────────────────────────────────────────
         collab = ET.SubElement(
             root, f"{{{NS_BPMN}}}collaboration", {"id": self._collab_id}
         )
@@ -389,34 +384,36 @@ class SwimlaneBpmnBuilder:
             },
         )
 
-        # ── Process ──────────────────────────────────────────────────────────
         process = ET.SubElement(
             root,
             f"{{{NS_BPMN}}}process",
-            {"id": self._proc_id, "isExecutable": "false"},
+            {
+                "id": self._proc_id,
+                "isExecutable": "false",
+            },
         )
 
-        # LaneSet with flowNodeRefs
         lane_set = ET.SubElement(process, f"{{{NS_BPMN}}}laneSet", {"id": _uid("LS")})
         for lane_name in self.lanes:
             lane_el = ET.SubElement(
                 lane_set,
                 f"{{{NS_BPMN}}}lane",
-                {"id": self._lane_ids[lane_name], "name": lane_name},
+                {
+                    "id": self._lane_ids[lane_name],
+                    "name": lane_name,
+                },
             )
-            for eid, _lbl, _et, elane, _step in self._elements:
+            for eid, _, _, elane, _ in self._elements:
                 if elane == lane_name:
                     ET.SubElement(lane_el, f"{{{NS_BPMN}}}flowNodeRef").text = eid
 
-        # Build incoming/outgoing lookup
         incoming: dict[str, list[str]] = defaultdict(list)
         outgoing: dict[str, list[str]] = defaultdict(list)
-        for fid, src, tgt, _lbl in self._flows:
+        for fid, src, tgt, _ in self._flows:
             outgoing[src].append(fid)
             incoming[tgt].append(fid)
 
-        # Flow nodes
-        for eid, label, etype, _lane, _step in self._elements:
+        for eid, label, etype, _, _ in self._elements:
             el = ET.SubElement(
                 process, f"{{{NS_BPMN}}}{etype}", {"id": eid, "name": label}
             )
@@ -425,14 +422,12 @@ class SwimlaneBpmnBuilder:
             for fid in outgoing.get(eid, []):
                 ET.SubElement(el, f"{{{NS_BPMN}}}outgoing").text = fid
 
-        # Sequence flows
         for fid, src, tgt, label in self._flows:
             attrs: dict[str, str] = {"id": fid, "sourceRef": src, "targetRef": tgt}
             if label:
                 attrs["name"] = label
             ET.SubElement(process, f"{{{NS_BPMN}}}sequenceFlow", attrs)
 
-        # ── Diagram ──────────────────────────────────────────────────────────
         max_step = max((e[4] for e in self._elements), default=0)
         pool_w = FIRST_X - POOL_X + (max_step + 1) * STEP_GAP + 80
         pool_h = LANE_H * len(self.lanes)
@@ -443,10 +438,12 @@ class SwimlaneBpmnBuilder:
         plane = ET.SubElement(
             diagram,
             f"{{{NS_BPMNDI}}}BPMNPlane",
-            {"id": _uid("Plane"), "bpmnElement": self._collab_id},
+            {
+                "id": _uid("Plane"),
+                "bpmnElement": self._collab_id,
+            },
         )
 
-        # Pool shape
         ps = ET.SubElement(
             plane,
             f"{{{NS_BPMNDI}}}BPMNShape",
@@ -467,16 +464,19 @@ class SwimlaneBpmnBuilder:
             },
         )
 
-        # Lane shapes
         for i, lane_name in enumerate(self.lanes):
             lid = self._lane_ids[lane_name]
-            ls = ET.SubElement(
+            ls_el = ET.SubElement(
                 plane,
                 f"{{{NS_BPMNDI}}}BPMNShape",
-                {"id": f"{lid}_di", "bpmnElement": lid, "isHorizontal": "true"},
+                {
+                    "id": f"{lid}_di",
+                    "bpmnElement": lid,
+                    "isHorizontal": "true",
+                },
             )
             ET.SubElement(
-                ls,
+                ls_el,
                 f"{{{NS_DC}}}Bounds",
                 {
                     "x": str(POOL_X + POOL_HEADER_W),
@@ -486,7 +486,6 @@ class SwimlaneBpmnBuilder:
                 },
             )
 
-        # Element shapes
         bounds_cache: dict[str, tuple[int, int, int, int]] = {}
         for eid, label, etype, lane, step in self._elements:
             x, y, w, h = self._bounds(etype, lane, step)
@@ -494,7 +493,10 @@ class SwimlaneBpmnBuilder:
             shape = ET.SubElement(
                 plane,
                 f"{{{NS_BPMNDI}}}BPMNShape",
-                {"id": f"{eid}_di", "bpmnElement": eid},
+                {
+                    "id": f"{eid}_di",
+                    "bpmnElement": eid,
+                },
             )
             ET.SubElement(
                 shape,
@@ -506,7 +508,6 @@ class SwimlaneBpmnBuilder:
                     "height": str(h),
                 },
             )
-            # Explicit label bounds for events / gateways
             if etype in ("startEvent", "endEvent") or "Gateway" in etype:
                 lbl_el = ET.SubElement(shape, f"{{{NS_BPMNDI}}}BPMNLabel")
                 ET.SubElement(
@@ -516,442 +517,240 @@ class SwimlaneBpmnBuilder:
                         "x": str(x - 10),
                         "y": str(y + h + 4),
                         "width": str(w + 20),
-                        "height": str(40),
+                        "height": "40",
                     },
                 )
 
-        # Sequence flow edges
         for fid, src, tgt, label in self._flows:
             edge = ET.SubElement(
                 plane,
                 f"{{{NS_BPMNDI}}}BPMNEdge",
-                {"id": f"{fid}_di", "bpmnElement": fid},
+                {
+                    "id": f"{fid}_di",
+                    "bpmnElement": fid,
+                },
             )
+            sx, sy, sw, sh = bounds_cache.get(src, (0, 0, 0, 0))
+            tx, ty, tw, th = bounds_cache.get(tgt, (0, 0, 0, 0))
             if label:
                 le = ET.SubElement(edge, f"{{{NS_BPMNDI}}}BPMNLabel")
-                sx, sy, sw, sh = bounds_cache.get(src, (0, 0, 0, 0))
-                tx, ty, tw, th = bounds_cache.get(tgt, (0, 0, 0, 0))
                 ET.SubElement(
                     le,
                     f"{{{NS_DC}}}Bounds",
                     {
-                        "x": str((sx + sw / 2 + tx + tw / 2) / 2 - 20),
-                        "y": str((sy + sh / 2 + ty + th / 2) / 2 - 10),
+                        "x": str(int((sx + sw / 2 + tx + tw / 2) / 2) - 20),
+                        "y": str(int((sy + sh / 2 + ty + th / 2) / 2) - 10),
                         "width": "60",
                         "height": "20",
                     },
                 )
-
-            sx, sy, sw, sh = bounds_cache.get(src, (0, 0, 0, 0))
-            tx, ty, tw, th = bounds_cache.get(tgt, (0, 0, 0, 0))
-            # waypoints: right-centre of source → left-centre of target
             ET.SubElement(
                 edge,
                 f"{{{NS_DI}}}waypoint",
-                {
-                    "x": str(sx + sw),
-                    "y": str(sy + sh / 2),
-                },
+                {"x": str(sx + sw), "y": str(int(sy + sh / 2))},
             )
             ET.SubElement(
-                edge,
-                f"{{{NS_DI}}}waypoint",
-                {
-                    "x": str(tx),
-                    "y": str(ty + th / 2),
-                },
+                edge, f"{{{NS_DI}}}waypoint", {"x": str(tx), "y": str(int(ty + th / 2))}
             )
 
-        xml_str = ET.tostring(root, encoding="unicode")
-        return minidom.parseString(xml_str).toprettyxml(indent="  ")
+        return minidom.parseString(ET.tostring(root, encoding="unicode")).toprettyxml(
+            indent="  "
+        )
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# PNG generation via PiperFlow (processpiper)
-# ─────────────────────────────────────────────────────────────────────────────
+# ── Diagram builders — both consume ProcessSpec ───────────────────────────────
 
 
-def _piperflow_case(
-    title: str,
-    sections: dict[str, str],
-    ner: dict[str, list[str]],
-) -> str:
-    """Build piperflow DSL string for a specific case."""
+def build_bpmn(spec: ProcessSpec) -> SwimlaneBpmnBuilder:
+    """
+    Construct BPMN XML builder from a ProcessSpec.
+    This is the authoritative representation of process logic.
+    build_piperflow() must mirror any changes made here.
+    """
+    lanes = LANES if spec.has_enforce else LANES[:-1]
+    b = SwimlaneBpmnBuilder(f"ArbCom: {spec.title[:60]}", lanes)
 
-    has_prelim = has_section("Preliminary decisions", sections)
-    has_fof = has_section("Findings of Fact", sections)
-    has_rfc = has_section("Requests for comment", sections)
-    has_enforce = needs_enforcement(sections) or has_section("Enforcement", sections)
+    start = b.start("Dispute Arises", "Involved Parties")
+    file_req = b.task("File Arbitration Request", "Involved Parties", user=True)
+    open_case = b.task("Open Case & Notify Parties", "ArbCom Clerk")
+    submit = b.task("Submit Statements & Evidence", "Involved Parties", user=True)
+    review = b.task("Review Submissions", "Arbitration Committee")
 
-    # Remedy label from NER tasks (first matching task, or default)
-    remedy_tasks = ner.get("TASK", [])
-    remedy_label = next(
-        (t for t in remedy_tasks if ENFORCEMENT_KEYWORDS.search(t)),
-        "Enforce Remedies",
-    )[:40]
+    prelim = rfc_issue = rfc_resp = fof = None
 
-    # ── Lane: Involved Parties ───────────────────────────────────────────────
-    parties_elems = [
+    if spec.has_prelim:
+        prelim = b.task(
+            spec.annotated("Issue Preliminary Decisions", spec.prelim_pct),
+            "Arbitration Committee",
+        )
+    if spec.has_rfc:
+        rfc_issue = b.task(
+            spec.annotated("Issue Request for Comment", spec.rfc_pct),
+            "Arbitration Committee",
+        )
+        if not spec.is_aggregate:
+            rfc_resp = b.task(
+                "Respond to External Comment", "Involved Parties", user=True
+            )
+
+    deliberate = b.task("Deliberate & Workshop", "Arbitration Committee")
+
+    if spec.has_fof:
+        fof = b.task(
+            spec.annotated("Compile Findings of Fact", spec.fof_pct),
+            "Arbitration Committee",
+        )
+
+    vote = b.task("Vote on Final Decision", "Arbitration Committee")
+    final_dec = b.task("Publish Final Decision", "Arbitration Committee")
+    remedy_gw = b.gateway("Sanctions\nImposed?", "Arbitration Committee")
+
+    enforce = end_yes = None
+    if spec.has_enforce:
+        enforce = b.task(
+            spec.annotated(spec.enforce_label, spec.enforcement_pct), "Administrator"
+        )
+        end_yes = b.end("Sanctions Applied", "Administrator")
+    close_case = b.task("Close Case", "ArbCom Clerk")
+    end_no = b.end("Case Closed", "ArbCom Clerk")
+
+    b.flow(start, file_req)
+    b.flow(file_req, open_case)
+    b.flow(open_case, submit)
+    b.flow(submit, review)
+
+    prev = review
+    if prelim:
+        b.flow(prev, prelim)
+        prev = prelim
+    if rfc_issue:
+        b.flow(prev, rfc_issue)
+        prev = rfc_resp if rfc_resp else rfc_issue
+    b.flow(prev, deliberate)
+    prev = deliberate
+    if fof:
+        b.flow(prev, fof)
+        prev = fof
+    b.flow(prev, vote)
+    b.flow(vote, final_dec)
+    b.flow(final_dec, remedy_gw)
+
+    yes_lbl = f"Yes ({spec.enforcement_pct}%)" if spec.is_aggregate else "Yes"
+    no_lbl = f"No ({100 - spec.enforcement_pct}%)" if spec.is_aggregate else "No"
+    if enforce:
+        b.flow(remedy_gw, enforce, yes_lbl)
+        b.flow(enforce, end_yes)
+    b.flow(remedy_gw, close_case, no_lbl)
+    b.flow(close_case, end_no)
+
+    return b
+
+
+def build_piperflow(spec: ProcessSpec) -> str:
+    """
+    Build processpiper DSL string from a ProcessSpec.
+    Mirrors build_bpmn() — if you change process logic in one, update the other.
+    """
+    parties = [
         "        (start) as start",
         "        [File Arbitration Request] as file_req",
         "        [Submit Statements & Evidence] as submit",
     ]
-    if has_rfc:
-        parties_elems.append("        [Respond to RFC] as rfc_respond")
+    if spec.has_rfc and not spec.is_aggregate:
+        parties.append("        [Respond to RFC] as rfc_respond")
 
-    # ── Lane: ArbCom Clerk — open + close in one lane (no duplicates) ────────
-    clerk_elems = [
+    clerk = [
         "        [Open Case & Notify Parties] as open_case",
+        "        [Close Case] as close_case",
         "        (end) as end_closed",
     ]
 
-    # ── Lane: Arbitration Committee ──────────────────────────────────────────
-    arbcom_elems = ["        [Review Submissions] as review"]
-    if has_rfc:
-        arbcom_elems.append("        [Issue Request for Comment] as rfc_issue")
-    if has_prelim:
-        arbcom_elems.append("        [Issue Preliminary Decisions] as prelim")
-    arbcom_elems.append("        [Deliberate & Workshop] as deliberate")
-    if has_fof:
-        arbcom_elems.append("        [Compile Findings of Fact] as fof")
-    arbcom_elems += [
+    arbcom = ["        [Review Submissions] as review"]
+    if spec.has_prelim:
+        arbcom.append(
+            f"        [{spec.annotated('Issue Preliminary Decisions', spec.prelim_pct)}] as prelim"
+        )
+    if spec.has_rfc:
+        arbcom.append(
+            f"        [{spec.annotated('Issue Request for Comment', spec.rfc_pct)}] as rfc_issue"
+        )
+    arbcom.append("        [Deliberate & Workshop] as deliberate")
+    if spec.has_fof:
+        arbcom.append(
+            f"        [{spec.annotated('Compile Findings of Fact', spec.fof_pct)}] as fof"
+        )
+    arbcom += [
         "        [Vote on Final Decision] as vote",
         "        [Publish Final Decision] as final_dec",
-        "        <Remedies Required?> as remedy_gw",
+        "        <Sanctions Imposed?> as remedy_gw",
     ]
 
-    # ── Lane: Administrator ──────────────────────────────────────────────────
-    admin_elems = []
-    if has_enforce:
-        admin_elems += [
-            f"        [{remedy_label}] as enforce",
+    admin = []
+    if spec.has_enforce:
+        admin += [
+            f"        [{spec.annotated(spec.enforce_label, spec.enforcement_pct)[:40]}] as enforce",
             "        (end) as end_enforced",
         ]
 
-    # ── Assemble pool ────────────────────────────────────────────────────────
-    lines = (
-        [
-            f"title: {title[:60]}",
-            "colourtheme: BLUEMOUNTAIN",
-            "",
-            "pool: Wikipedia Arbitration Process",
-            "    lane: Involved Parties",
-        ]
-        + parties_elems
-        + [
-            "    lane: ArbCom Clerk",
-        ]
-        + clerk_elems
-        + [
-            "    lane: Arbitration Committee",
-        ]
-        + arbcom_elems
-    )
-
-    if admin_elems:
-        lines += ["    lane: Administrator"] + admin_elems
-
-    lines.append("")  # blank line ends the pool block
-
-    # ── Flow connections ─────────────────────────────────────────────────────
-    lines.append("start->file_req->open_case->submit->review")
-
-    if has_rfc:
-        lines.append("review->rfc_issue->rfc_respond->deliberate")
-    elif has_prelim:
-        lines.append("review->prelim->deliberate")
-    else:
-        lines.append("review->deliberate")
-
-    if has_fof:
-        lines.append("deliberate->fof->vote->final_dec->remedy_gw")
-    else:
-        lines.append("deliberate->vote->final_dec->remedy_gw")
-
-    if has_enforce:
-        lines += ["remedy_gw->enforce: Yes", "enforce->end_enforced"]
-    lines.append("remedy_gw->end_closed: No")
-
-    lines.append(f"\nfooter: ArbCom case: {title[:50]}")
-
-    return "\n".join(lines)
-
-
-def _piperflow_aggregate(
-    section_counts: dict[str, int],
-    total: int,
-    enforcement_pct: int,
-    sample: int,
-) -> str:
-    """Build piperflow DSL for the generalised aggregate model."""
-
-    def pct(section: str) -> int:
-        return round(section_counts.get(section, 0) * 100 / max(total, 1))
-
-    has_rfc_common = pct("Requests for comment") > 20
-    has_prelim_common = pct("Preliminary decisions") > 30
-
     lines = [
-        "title: Wikipedia ArbCom — Generalised Arbitration Process",
+        f"title: {spec.title[:60]}",
         "colourtheme: BLUEMOUNTAIN",
         "",
         "pool: Wikipedia Arbitration Process",
         "    lane: Involved Parties",
-        "        (start) as start",
-        "        [File Arbitration Request] as file_req",
-        "        [Submit Statements & Evidence] as submit",
+        *parties,
         "    lane: ArbCom Clerk",
-        "        [Open Case & Notify Parties] as open_case",
-        "        [Close Case] as close_case",
-        "        (end) as end_admin",
+        *clerk,
         "    lane: Arbitration Committee",
-        "        [Review Submissions] as review",
+        *arbcom,
     ]
+    if admin:
+        lines += ["    lane: Administrator", *admin]
+    lines.append("")
 
-    if has_prelim_common:
-        lines += [
-            f"        [Issue Preliminary Decisions ({pct('Preliminary decisions')}%)] as prelim"
-        ]
+    # Build main flow chain — mirrors the sequence flows in build_bpmn()
+    chain = ["review"]
+    if spec.has_prelim:
+        chain.append("prelim")
+    if spec.has_rfc:
+        chain.append("rfc_issue")
+        if not spec.is_aggregate:
+            chain.append("rfc_respond")
+    chain.append("deliberate")
+    if spec.has_fof:
+        chain.append("fof")
+    chain += ["vote", "final_dec", "remedy_gw"]
 
-    if has_rfc_common:
-        lines += [
-            f"        [Issue Request for Comment ({pct('Requests for comment')}%)] as rfc_issue"
-        ]
+    lines.append("start->file_req->open_case->submit->" + "->".join(chain))
 
-    lines += [
-        "        [Deliberate & Workshop] as deliberate",
-        f"        [Compile Findings of Fact ({pct('Findings of Fact')}%)] as fof",
-        "        [Vote on Final Decision] as vote",
-        "        [Publish Final Decision] as final_dec",
-        "        <Remedies Imposed?> as remedy_gw",
-        "    lane: Administrator",
-        f"        [Enforce Remedies / Sanctions ({enforcement_pct}%)] as enforce",
-        "        (end) as end_enforced",
-        "",
-    ]
+    yes_lbl = f": Yes ({spec.enforcement_pct}%)" if spec.is_aggregate else ": Yes"
+    no_lbl = f": No ({100 - spec.enforcement_pct}%)" if spec.is_aggregate else ": No"
+    if spec.has_enforce:
+        lines += [f"remedy_gw->enforce{yes_lbl}", "enforce->end_enforced"]
+    lines += [f"remedy_gw->close_case{no_lbl}", "close_case->end_closed"]
 
-    lines += ["start->file_req->open_case->submit->review"]
-
-    if has_prelim_common and has_rfc_common:
-        lines += ["review->prelim->rfc_issue->deliberate"]
-    elif has_prelim_common:
-        lines += ["review->prelim->deliberate"]
-    elif has_rfc_common:
-        lines += ["review->rfc_issue->deliberate"]
-    else:
-        lines += ["review->deliberate"]
-
-    lines += [
-        "deliberate->fof->vote->final_dec->remedy_gw",
-        f"remedy_gw->enforce: Yes ({enforcement_pct}%)",
-        "enforce->end_enforced",
-        f"remedy_gw->close_case: No ({100 - enforcement_pct}%)",
-        "close_case->end_admin",
-    ]
-
-    lines += [
-        f"\nfooter: Derived from {sample} of {total} ArbCom cases",
-    ]
-
+    footer = (
+        f"Derived from {spec.sample_cases} of {spec.total_cases} ArbCom cases"
+        if spec.is_aggregate
+        else f"ArbCom case: {spec.title[:50]}"
+    )
+    lines.append(f"\nfooter: {footer}")
     return "\n".join(lines)
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# BPMN flow construction — case-specific
-# ─────────────────────────────────────────────────────────────────────────────
-
-
-def build_case_bpmn(
-    title: str,
-    sections: dict[str, str],
-    ner: dict[str, list[str]],
-) -> SwimlaneBpmnBuilder:
-    """Build a SwimlaneBpmnBuilder for one arbitration case."""
-
-    b = SwimlaneBpmnBuilder(f"ArbCom: {title[:60]}")
-
-    has_prelim = has_section("Preliminary decisions", sections)
-    has_fof = has_section("Findings of Fact", sections)
-    has_rfc = has_section("Requests for comment", sections)
-    has_enforce = needs_enforcement(sections) or has_section("Enforcement", sections)
-
-    # ── Base flow ────────────────────────────────────────────────────────────
-    start = b.start("Dispute Arises", "Involved Parties")
-    file_req = b.task("File Arbitration Request", "Involved Parties", user=True)
-    open_case = b.task("Open Case & Notify Parties", "ArbCom Clerk")
-    submit = b.task("Submit Statements & Evidence", "Involved Parties", user=True)
-    review = b.task("Review Submissions", "Arbitration Committee")
-
-    # ── Optional: RFC ────────────────────────────────────────────────────────
-    if has_rfc:
-        rfc_issue = b.task("Issue Request for Comment", "Arbitration Committee")
-        rfc_resp = b.task("Respond to External Comment", "Involved Parties", user=True)
-
-    # ── Optional: preliminary decisions ─────────────────────────────────────
-    if has_prelim:
-        prelim = b.task("Issue Preliminary Decisions", "Arbitration Committee")
-
-    # ── Core deliberation ────────────────────────────────────────────────────
-    deliberate = b.task("Deliberate & Workshop", "Arbitration Committee")
-
-    if has_fof:
-        fof = b.task("Compile Findings of Fact", "Arbitration Committee")
-
-    vote = b.task("Vote on Final Decision", "Arbitration Committee")
-    final_dec = b.task("Publish Final Decision", "Arbitration Committee")
-    close_admin = b.task("Close Case (Administrative)", "ArbCom Clerk")
-
-    # ── Enforcement gateway ──────────────────────────────────────────────────
-    remedy_gw = b.gateway("Remedies\nRequired?", "Arbitration Committee")
-
-    # remedy label from NER (e.g. "blocked", "topic-banned")
-    remedy_tasks = ner.get("TASK", [])
-    enforce_label = next(
-        (t for t in remedy_tasks if ENFORCEMENT_KEYWORDS.search(t)),
-        "Enforce Remedies / Sanctions",
-    )[:50]
-
-    if has_enforce:
-        enforce = b.task(enforce_label, "Administrator")
-        end_yes = b.end("Case Resolved", "Administrator")
-    end_no = b.end("Case Closed", "ArbCom Clerk")
-
-    # ── Sequence flows ────────────────────────────────────────────────────────
-    b.flow(start, file_req)
-    b.flow(file_req, open_case)
-    b.flow(open_case, submit)
-    b.flow(submit, review)
-
-    prev = review
-    if has_rfc:
-        b.flow(prev, rfc_issue)
-        b.flow(rfc_issue, rfc_resp)
-        prev = rfc_resp
-    if has_prelim:
-        b.flow(prev, prelim)
-        prev = prelim
-    b.flow(prev, deliberate)
-    prev = deliberate
-
-    if has_fof:
-        b.flow(prev, fof)
-        prev = fof
-
-    b.flow(prev, vote)
-    b.flow(vote, final_dec)
-    b.flow(final_dec, close_admin)
-    b.flow(close_admin, remedy_gw)
-
-    if has_enforce:
-        b.flow(remedy_gw, enforce, "Yes")
-        b.flow(enforce, end_yes)
-    b.flow(remedy_gw, end_no, "No")
-
-    return b
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# BPMN flow construction — aggregate
-# ─────────────────────────────────────────────────────────────────────────────
-
-
-def build_aggregate_bpmn(
-    section_counts: dict[str, int],
-    total: int,
-    enforcement_pct: int,
-    sample: int,
-) -> SwimlaneBpmnBuilder:
-    """Build the generalised BPMN showing all common process paths."""
-
-    def pct(section: str) -> int:
-        return round(section_counts.get(section, 0) * 100 / max(total, 1))
-
-    b = SwimlaneBpmnBuilder("Wikipedia ArbCom — Standard Arbitration Process")
-
-    start = b.start("Dispute Arises", "Involved Parties")
-    file_req = b.task("File Arbitration Request", "Involved Parties", user=True)
-    open_case = b.task("Open Case & Notify Parties", "ArbCom Clerk")
-    submit = b.task("Submit Statements & Evidence", "Involved Parties", user=True)
-    review = b.task("Review Submissions", "Arbitration Committee")
-
-    # Optional RFC
-    if pct("Requests for comment") > 20:
-        rfc = b.task(
-            f"Issue RFC ({pct('Requests for comment')}% of cases)",
-            "Arbitration Committee",
-        )
-
-    # Optional preliminary decisions
-    if pct("Preliminary decisions") > 30:
-        prelim = b.task(
-            f"Preliminary Decisions ({pct('Preliminary decisions')}% of cases)",
-            "Arbitration Committee",
-        )
-
-    deliberate = b.task("Deliberate & Workshop", "Arbitration Committee")
-    fof = b.task(
-        f"Compile Findings of Fact ({pct('Findings of Fact')}% of cases)",
-        "Arbitration Committee",
-    )
-    vote = b.task("Vote on Final Decision", "Arbitration Committee")
-    final_dec = b.task("Publish Final Decision", "Arbitration Committee")
-    close_case = b.task("Close Case", "ArbCom Clerk")
-    remedy_gw = b.gateway("Sanctions\nImposed?", "Arbitration Committee")
-    enforce = b.task(
-        f"Enforce Remedies / Sanctions ({enforcement_pct}% of cases)",
-        "Administrator",
-    )
-    end_yes = b.end("Sanctions Applied", "Administrator")
-    end_no = b.end("Case Closed (No Sanctions)", "ArbCom Clerk")
-
-    # Flows
-    b.flow(start, file_req)
-    b.flow(file_req, open_case)
-    b.flow(open_case, submit)
-    b.flow(submit, review)
-
-    prev = review
-    if pct("Requests for comment") > 20:
-        b.flow(prev, rfc)
-        prev = rfc
-    if pct("Preliminary decisions") > 30:
-        b.flow(prev, prelim)
-        prev = prelim
-    b.flow(prev, deliberate)
-    b.flow(deliberate, fof)
-    b.flow(fof, vote)
-    b.flow(vote, final_dec)
-    b.flow(final_dec, close_case)
-    b.flow(close_case, remedy_gw)
-    b.flow(remedy_gw, enforce, f"Yes ({enforcement_pct}%)")
-    b.flow(enforce, end_yes)
-    b.flow(remedy_gw, end_no, f"No ({100 - enforcement_pct}%)")
-
-    return b
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# File / case selection helpers
-# ─────────────────────────────────────────────────────────────────────────────
+# ── File / case selection ─────────────────────────────────────────────────────
 
 
 def select_data_file(data_dir: Path) -> Path:
-    """Let the user pick from clean_arbitration_cases*.json files."""
     candidates = sorted(data_dir.glob("clean_arbitration_cases*.json"))
     if not candidates:
         sys.exit(f"ERROR: No 'clean_arbitration_cases*.json' files found in {data_dir}")
-
-    print(f"\n{'=' * 60}")
-    print("Available arbitration case files:")
-    print("=" * 60)
+    print(f"\n{'=' * 60}\nAvailable arbitration case files:\n{'=' * 60}")
     for i, p in enumerate(candidates, 1):
-        size_kb = p.stat().st_size // 1024
-        print(f"  [{i}] {p.name}  ({size_kb} KB)")
-
+        print(f"  [{i}] {p.name}  ({p.stat().st_size // 1024} KB)")
     if len(candidates) == 1:
-        print(f"\n  Auto-selecting only file: {candidates[0].name}")
+        print(f"\n  Auto-selecting: {candidates[0].name}")
         return candidates[0]
-
     while True:
         raw = input(f"\nSelect file [1–{len(candidates)}] (default 1): ").strip()
         if raw == "":
@@ -966,24 +765,16 @@ def select_data_file(data_dir: Path) -> Path:
 
 
 def select_case(cases: list[dict]) -> dict:
-    """Interactively pick one case from the list by search or index."""
-    print(f"\n{'=' * 60}")
-    print(f"Found {len(cases)} arbitration cases.")
-    print("=" * 60)
-    print("Search by title fragment (e.g. 'Ril') or enter case number.")
-    print("Type 'list' to show all titles (may be long).\n")
-
+    print(f"\n{'=' * 60}\nFound {len(cases)} arbitration cases.\n{'=' * 60}")
+    print("Search by title fragment or enter case number. Type 'list' to show all.\n")
     while True:
         raw = input("Case name / number: ").strip()
         if not raw:
             continue
-
         if raw.lower() == "list":
             for i, c in enumerate(cases, 1):
                 print(f"  [{i:4d}] {c.get('title', '?')}")
             continue
-
-        # Try numeric
         try:
             idx = int(raw) - 1
             if 0 <= idx < len(cases):
@@ -992,16 +783,14 @@ def select_case(cases: list[dict]) -> dict:
             continue
         except ValueError:
             pass
-
-        # Search by fragment
         matches = [c for c in cases if raw.lower() in c.get("title", "").lower()]
         if not matches:
-            print(f"  No cases matching '{raw}'. Try a different fragment.")
+            print(f"  No cases matching '{raw}'.")
         elif len(matches) == 1:
             print(f"  Found: {matches[0]['title']}")
             return matches[0]
         else:
-            print(f"  Multiple matches ({len(matches)}):")
+            print(f"  {len(matches)} matches:")
             for i, m in enumerate(matches[:20], 1):
                 print(f"    [{i}] {m.get('title', '?')}")
             while True:
@@ -1016,9 +805,34 @@ def select_case(cases: list[dict]) -> dict:
                     pass
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Main entry points
-# ─────────────────────────────────────────────────────────────────────────────
+# ── Shared output writer ──────────────────────────────────────────────────────
+
+
+def _write_outputs(
+    spec: ProcessSpec, stem: str, output_dir: Path, dashboard_dir: Path | None = None
+) -> None:
+    bpmn_path = output_dir / f"{stem}.bpmn"
+    bpmn_path.write_text(build_bpmn(spec).to_xml(), encoding="utf-8")
+    print(f"  BPMN XML → {bpmn_path}")
+
+    if PIPERFLOW_AVAILABLE:
+        png_path = output_dir / f"{stem}.png"
+        try:
+            render_piperflow(build_piperflow(spec), output_file=str(png_path))
+            print(f"  PNG      → {png_path}")
+            if dashboard_dir:
+                import shutil
+
+                dashboard_dir.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(png_path, dashboard_dir / f"{stem}.png")
+                print(f"  PNG   ↗  → {dashboard_dir / f'{stem}.png'}")
+        except Exception as exc:
+            print(f"  PNG generation failed: {exc}")
+    else:
+        print("  PNG skipped (processpiper not installed).")
+
+
+# ── Run modes ─────────────────────────────────────────────────────────────────
 
 
 def run_specific_case(
@@ -1026,31 +840,22 @@ def run_specific_case(
     case_title: str | None,
     ner: NERExtractor,
     output_dir: Path,
+    dashboard_dir: Path | None = None,
 ) -> None:
-    # Pick case
     if case_title:
         matches = [c for c in cases if case_title.lower() in c.get("title", "").lower()]
         if not matches:
             sys.exit(f"ERROR: No case matching '{case_title}'")
         case = matches[0]
         if len(matches) > 1:
-            print(
-                f"WARNING: {len(matches)} cases match '{case_title}'; using first: {case['title']}"
-            )
+            print(f"WARNING: {len(matches)} matches; using first: {case['title']}")
     else:
         case = select_case(cases)
 
     title = case.get("title", "Unnamed")
     sections = case.get("sections", {}) or {}
+    print(f"\n{'=' * 60}\nGenerating BPMN for: {title}\n{'=' * 60}")
 
-    print(f"\n{'=' * 60}")
-    print(f"Generating BPMN for: {title}")
-    print(
-        f"Sections present:    {[k for k in sections if (sections.get(k) or '').strip()]}"
-    )
-    print("=" * 60)
-
-    # Run NER on key sections
     print("\nRunning NER extraction...")
     ner_result = ner.extract_sections(
         sections,
@@ -1062,33 +867,13 @@ def run_specific_case(
             "Preliminary decisions",
         ],
     )
-    if ner_result.get("AGENT"):
-        print(f"  Agents found:  {ner_result['AGENT'][:6]}")
-    if ner_result.get("TASK"):
-        print(f"  Tasks found:   {ner_result['TASK'][:6]}")
-    if ner_result.get("CONDITION"):
-        print(f"  Conditions:    {ner_result['CONDITION'][:4]}")
+    for lbl, limit in (("AGENT", 6), ("TASK", 6), ("CONDITION", 4)):
+        if ner_result.get(lbl):
+            print(f"  {lbl:12s}: {ner_result[lbl][:limit]}")
 
-    # Build BPMN XML
-    bpmn = build_case_bpmn(title, sections, ner_result)
-    fname = safe_filename(title)
-    bpmn_path = output_dir / f"arb_{fname}.bpmn"
-    bpmn_path.write_text(bpmn.to_xml(), encoding="utf-8")
-    print(f"\n  BPMN XML → {bpmn_path}")
-
-    # Build PNG
-    png_path = output_dir / f"arb_{fname}.png"
-    if PIPERFLOW_AVAILABLE:
-        try:
-            piperflow_src = _piperflow_case(title, sections, ner_result)
-            render_piperflow(piperflow_src, output_file=str(png_path))
-            print(f"  PNG      → {png_path}")
-        except Exception as exc:
-            print(f"  PNG generation failed: {exc}")
-    else:
-        print("  PNG skipped (processpiper not installed).")
-
-    print(f"\nDone. Open {bpmn_path.name} in Camunda Modeler or bpmn.io to view.")
+    spec = spec_from_case(title, sections, ner_result)
+    _write_outputs(spec, f"arb_{safe_filename(title)}", output_dir, dashboard_dir)
+    print("\nDone. Open the .bpmn file in Camunda Modeler or bpmn.io to view.")
 
 
 def run_aggregate(
@@ -1096,22 +881,22 @@ def run_aggregate(
     sample: int | None,
     ner: NERExtractor,
     output_dir: Path,
+    dashboard_dir: Path | None = None,
 ) -> None:
-    working = cases if not sample else cases[:sample]
+    working = random.sample(cases, sample) if sample and sample < len(cases) else cases
+    print(
+        f"\n{'=' * 60}\nBuilding aggregate BPMN from {len(working)} of {len(cases)} cases...\n{'=' * 60}"
+    )
 
-    print(f"\n{'=' * 60}")
-    print(f"Building aggregate BPMN from {len(working)} of {len(cases)} cases...")
-    print("=" * 60)
-
-    # Count section occurrences
     section_counts: Counter = Counter()
     enforcement_count = 0
     for case in working:
         secs = case.get("sections", {}) or {}
+        ls = _lower_sections(secs)
         for heading, text in secs.items():
             if text and text.strip():
                 section_counts[heading] += 1
-        if needs_enforcement(secs):
+        if needs_enforcement(ls):
             enforcement_count += 1
 
     total = len(working)
@@ -1124,32 +909,12 @@ def run_aggregate(
         f"  Cases with active enforcement: {enforcement_count}/{total} ({enforcement_pct}%)"
     )
 
-    # Build BPMN XML
-    bpmn = build_aggregate_bpmn(section_counts, total, enforcement_pct, len(working))
-    bpmn_path = output_dir / "arb_aggregate_workflow.bpmn"
-    bpmn_path.write_text(bpmn.to_xml(), encoding="utf-8")
-    print(f"\n  BPMN XML → {bpmn_path}")
-
-    # Build PNG
-    png_path = output_dir / "arb_aggregate_workflow.png"
-    if PIPERFLOW_AVAILABLE:
-        try:
-            piperflow_src = _piperflow_aggregate(
-                section_counts, total, enforcement_pct, len(working)
-            )
-            render_piperflow(piperflow_src, output_file=str(png_path))
-            print(f"  PNG      → {png_path}")
-        except Exception as exc:
-            print(f"  PNG generation failed: {exc}")
-    else:
-        print("  PNG skipped (processpiper not installed).")
-
-    print(f"\nDone. Open {bpmn_path.name} in Camunda Modeler or bpmn.io to view.")
+    spec = spec_from_aggregate(section_counts, total, enforcement_pct, len(working))
+    _write_outputs(spec, "arb_aggregate_workflow", output_dir, dashboard_dir)
+    print("\nDone. Open the .bpmn file in Camunda Modeler or bpmn.io to view.")
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# CLI
-# ─────────────────────────────────────────────────────────────────────────────
+# ── CLI ───────────────────────────────────────────────────────────────────────
 
 
 def parse_args() -> argparse.Namespace:
@@ -1160,25 +925,23 @@ def parse_args() -> argparse.Namespace:
     )
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument(
-        "--case",
-        metavar="TITLE",
-        help="Title fragment of the case to model (interactive if omitted).",
+        "--case", metavar="TITLE", help="Title fragment of the case to model."
     )
     mode.add_argument(
         "--aggregate",
         action="store_true",
-        help="Build a generalised model from all (or --sample N) cases.",
+        help="Build a generalised model from all cases.",
     )
     parser.add_argument(
         "--sample",
         type=int,
         metavar="N",
-        help="For --aggregate: use only the first N cases (default: all).",
+        help="For --aggregate: random sample of N cases (default: all).",
     )
     parser.add_argument(
         "--output-dir",
         default="artifacts/bpmn/arb",
-        help="Directory to write .bpmn and .png files (default: artifacts/bpmn/arb).",
+        help="Directory for .bpmn and .png output (default: artifacts/bpmn/arb).",
     )
     parser.add_argument(
         "--no-ner",
@@ -1192,40 +955,38 @@ def main() -> None:
     args = parse_args()
 
     project_root = Path(__file__).parent.parent
-    data_dir = project_root / "data" / "processed"
     output_dir = project_root / args.output_dir
+    dashboard_dir = project_root / "dashboard" / "public" / "bpmn" / "arbitration"
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # ── Load data ────────────────────────────────────────────────────────────
-    data_file = select_data_file(data_dir)
+    data_file = select_data_file(project_root / "data" / "processed")
     print(f"\nLoading {data_file.name}...")
     with open(data_file, encoding="utf-8") as fh:
         cases = json.load(fh)
     print(f"Loaded {len(cases)} cases.")
 
-    # ── Initialise NER ───────────────────────────────────────────────────────
-    ner = NERExtractor() if not args.no_ner else NERExtractor.__new__(NERExtractor)
-    if args.no_ner:
-        ner._pipe = None  # noqa: SLF001
+    ner = NERExtractor(load_model=not args.no_ner)
 
-    # ── Dispatch ─────────────────────────────────────────────────────────────
     if args.aggregate:
-        run_aggregate(cases, args.sample, ner, output_dir)
+        run_aggregate(cases, args.sample, ner, output_dir, dashboard_dir)
     elif args.case:
-        run_specific_case(cases, args.case, ner, output_dir)
+        run_specific_case(cases, args.case, ner, output_dir, dashboard_dir)
     else:
-        # Interactive: ask user what they want
-        print(f"\n{'=' * 60}")
-        print("What would you like to generate?")
-        print("  [1] BPMN for a specific arbitration case")
-        print("  [2] Generalised aggregate BPMN (all cases)")
+        print(
+            f"\n{'=' * 60}\nWhat would you like to generate?\n  [1] BPMN for a specific case\n  [2] Generalised aggregate BPMN"
+        )
         choice = input("Choice [1/2, default 1]: ").strip()
         if choice == "2":
-            sample_raw = input("Sample how many cases? (Enter for all): ").strip()
-            sample = int(sample_raw) if sample_raw.isdigit() else None
-            run_aggregate(cases, sample, ner, output_dir)
+            raw = input("Sample how many cases? (Enter for all): ").strip()
+            run_aggregate(
+                cases,
+                int(raw) if raw.isdigit() else None,
+                ner,
+                output_dir,
+                dashboard_dir,
+            )
         else:
-            run_specific_case(cases, None, ner, output_dir)
+            run_specific_case(cases, None, ner, output_dir, dashboard_dir)
 
 
 if __name__ == "__main__":

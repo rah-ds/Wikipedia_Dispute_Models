@@ -26,10 +26,13 @@ from processpiper.text2diagram import render as render_piperflow
 # Helper function for writing to both artifacts and dashboard
 # =============================================================================
 
-def _write_bpmn_to_both_locations(bpmn_path: Path, xml_content: str, dashboard_type: str = "drn") -> None:
+
+def _write_bpmn_to_both_locations(
+    bpmn_path: Path, xml_content: str, dashboard_type: str = "drn"
+) -> None:
     """
     Write BPMN XML to both artifacts and dashboard folders.
-    
+
     Args:
         bpmn_path: Path to write in artifacts folder
         xml_content: BPMN XML content
@@ -37,10 +40,16 @@ def _write_bpmn_to_both_locations(bpmn_path: Path, xml_content: str, dashboard_t
     """
     # Write to primary location (artifacts)
     bpmn_path.write_text(xml_content, encoding="utf-8")
-    
+
     # Also write to dashboard if the project structure includes it
     try:
-        dashboard_dir = bpmn_path.resolve().parent.parent.parent / "dashboard" / "public" / "bpmn" / dashboard_type
+        dashboard_dir = (
+            bpmn_path.resolve().parent.parent.parent
+            / "dashboard"
+            / "public"
+            / "bpmn"
+            / dashboard_type
+        )
         if dashboard_dir.parent.parent.exists():  # Check if dashboard/public exists
             dashboard_dir.mkdir(parents=True, exist_ok=True)
             dashboard_path = dashboard_dir / bpmn_path.name
@@ -601,7 +610,7 @@ def create_aggregate_bpmn(cases: list[dict], output_dir: Path) -> None:
     top2_pcts[-1] = 100 - other_pct - sum(top2_pcts[:-1])  # adjust so sum == 100%
 
     other_detail = ", ".join(
-        f"{cat_labels.get(cat, cat)} {round(100*n/total)}%"
+        f"{cat_labels.get(cat, cat)} {round(100 * n / total)}%"
         for cat, n in remainder
         if n > 0
     )
@@ -647,9 +656,7 @@ def create_aggregate_bpmn(cases: list[dict], output_dir: Path) -> None:
         bpmn.flow(escalate_t, escalated)
 
     _write_bpmn_to_both_locations(
-        output_dir / "drn_aggregate_workflow.bpmn",
-        bpmn.to_xml(),
-        "drn"
+        output_dir / "drn_aggregate_workflow.bpmn", bpmn.to_xml(), "drn"
     )
 
     # --- PNG via PiperFlow ---
@@ -739,7 +746,7 @@ def create_aggregate_bpmn(cases: list[dict], output_dir: Path) -> None:
 
 
 def get_user_file_selection(files: list[Path]) -> list[Path]:
-    print(f"\n{'='*60}\nAvailable DRN data files:\n{'='*60}")
+    print(f"\n{'=' * 60}\nAvailable DRN data files:\n{'=' * 60}")
     for i, f in enumerate(files, 1):
         print(f"  [{i}] {f.name}")
     print("\nWhich files? (numbers, range e.g. 1-3, or 'all') [Default: all]\n")
@@ -860,11 +867,11 @@ def main():
 
     # Aggregate always uses the full dataset regardless of how many individual diagrams were made
     print(
-        f"\n{'='*60}\nCreating aggregate workflow ({len(all_cases)} cases)...\n{'='*60}"
+        f"\n{'=' * 60}\nCreating aggregate workflow ({len(all_cases)} cases)...\n{'=' * 60}"
     )
     create_aggregate_bpmn(all_cases, output_dir)
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("✓ COMPLETE")
     print(f"  Individual diagrams : {len(selected_indices)} of {len(all_cases)} cases")
     print(f"  Aggregate           : full dataset ({len(all_cases)} cases)")

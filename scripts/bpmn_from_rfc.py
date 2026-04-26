@@ -38,10 +38,13 @@ from processpiper.text2diagram import render as render_piperflow
 # Helper function for writing to both artifacts and dashboard
 # ---------------------------------------------------------------------------
 
-def _write_bpmn_to_both_locations(bpmn_path: Path, xml_content: str, dashboard_type: str = "rfc") -> None:
+
+def _write_bpmn_to_both_locations(
+    bpmn_path: Path, xml_content: str, dashboard_type: str = "rfc"
+) -> None:
     """
     Write BPMN XML to both artifacts and dashboard folders.
-    
+
     Args:
         bpmn_path: Path to write in artifacts folder
         xml_content: BPMN XML content
@@ -49,10 +52,16 @@ def _write_bpmn_to_both_locations(bpmn_path: Path, xml_content: str, dashboard_t
     """
     # Write to primary location (artifacts)
     bpmn_path.write_text(xml_content, encoding="utf-8")
-    
+
     # Also write to dashboard if the project structure includes it
     try:
-        dashboard_dir = bpmn_path.resolve().parent.parent.parent / "dashboard" / "public" / "bpmn" / dashboard_type
+        dashboard_dir = (
+            bpmn_path.resolve().parent.parent.parent
+            / "dashboard"
+            / "public"
+            / "bpmn"
+            / dashboard_type
+        )
         if dashboard_dir.parent.parent.exists():  # Check if dashboard/public exists
             dashboard_dir.mkdir(parents=True, exist_ok=True)
             dashboard_path = dashboard_dir / bpmn_path.name
@@ -851,12 +860,12 @@ def main():
     )
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("RFC -> BPMN + PNG Generator")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(f"Input : {input_path}")
     print(f"Output: {output_dir}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     raw_data = load_rfc_data(input_path)
     rfcs_raw = raw_data.get("rfcs", [])
@@ -902,7 +911,7 @@ def main():
     total_bpmn = len(bpmn_files) + (1 if agg_bpmn else 0)
     total_png = len(png_files) + (1 if agg_png else 0)
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("Done!")
     print(f"  Individual diagrams : {len(selected_indices)} of {len(all_parsed)} cases")
     print(f"  Aggregate           : full dataset ({len(all_parsed)} cases)")
@@ -912,7 +921,7 @@ def main():
     print("\nTo view:")
     print("  PNG  -- open any .png directly")
     print("  BPMN -- drag & drop at https://demo.bpmn.io")
-    print(f"{'='*60}\n")
+    print(f"{'=' * 60}\n")
 
 
 if __name__ == "__main__":
