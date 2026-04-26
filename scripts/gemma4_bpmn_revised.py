@@ -3770,7 +3770,6 @@ def _build_aggregate_svg(m: dict) -> str:
     # Coordinate cursor for the main flow
     x = left_pad + 90
 
-
     def _task(
         label: str, lane_idx: int, w: int = 150, h: int = 60, annot: str = ""
     ) -> tuple[float, float]:

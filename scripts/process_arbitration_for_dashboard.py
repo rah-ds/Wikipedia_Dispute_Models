@@ -36,6 +36,7 @@ BPMN_RFC_DIR = BASE / "dashboard" / "public" / "bpmn" / "rfc"
 # Data file discovery
 # ──────────────────────────────────────────────
 
+
 def find_raw_json() -> Path:
     if DEFAULT_RAW_JSON.exists():
         return DEFAULT_RAW_JSON
@@ -52,9 +53,7 @@ def find_raw_json() -> Path:
 
 
 def find_drn_json() -> Path | None:
-    candidates = sorted(
-        BASE.glob("data/raw/drn/drn_all_cases_*.json"), reverse=True
-    )
+    candidates = sorted(BASE.glob("data/raw/drn/drn_all_cases_*.json"), reverse=True)
     return candidates[0] if candidates else None
 
 
@@ -80,18 +79,19 @@ ACTION_VERBS = re.compile(
 )
 
 # Wikilink patterns
-USER_RE       = re.compile(r"\[\[User:([^\]|/\n]+)",           re.IGNORECASE)
-USER_PIPE_RE  = re.compile(r"\{\{[Uu]ser\|([^}|]+)")
-USER_TALK_RE  = re.compile(r"\[\[User[ _]talk:([^\]|/\n]+)",   re.IGNORECASE)
-WIKI_REF_RE   = re.compile(r"\[\[(?:Wikipedia|WP):",           re.IGNORECASE)
-WIKI_TALK_RE  = re.compile(r"\[\[Wikipedia[ _]talk:",          re.IGNORECASE)
-RFC_STATUS_RE    = re.compile(r"\|[ \t]*status[ \t]*=[ \t]*(\w+)", re.IGNORECASE)
+USER_RE = re.compile(r"\[\[User:([^\]|/\n]+)", re.IGNORECASE)
+USER_PIPE_RE = re.compile(r"\{\{[Uu]ser\|([^}|]+)")
+USER_TALK_RE = re.compile(r"\[\[User[ _]talk:([^\]|/\n]+)", re.IGNORECASE)
+WIKI_REF_RE = re.compile(r"\[\[(?:Wikipedia|WP):", re.IGNORECASE)
+WIKI_TALK_RE = re.compile(r"\[\[Wikipedia[ _]talk:", re.IGNORECASE)
+RFC_STATUS_RE = re.compile(r"\|[ \t]*status[ \t]*=[ \t]*(\w+)", re.IGNORECASE)
 CASE_OPENED_YEAR = re.compile(r"Case Opened.*?(\d{4})", re.IGNORECASE | re.DOTALL)
 
 
 # ──────────────────────────────────────────────
 # Extraction helpers
 # ──────────────────────────────────────────────
+
 
 def extract_case_year(full_text: str) -> int | None:
     """Extract the year from the 'Case Opened' line in full_text."""
@@ -167,6 +167,7 @@ def drn_source_url(source: str) -> str | None:
 # Case matching (BPMN stem → raw data entry)
 # ──────────────────────────────────────────────
 
+
 def _normalize(s: str) -> str:
     return re.sub(r"[\s_\-]+", " ", s).lower().strip()
 
@@ -227,43 +228,47 @@ def match_rfc_case(stem: str, rfcs: list[dict]) -> dict | None:
 # Per-case stat builders
 # ──────────────────────────────────────────────
 
+
 def arb_case_stats(case: dict) -> dict:
-    text = (case.get("full_text") or "") + " " + " ".join(
-        v for v in (case.get("sections") or {}).values() if v
+    text = (
+        (case.get("full_text") or "")
+        + " "
+        + " ".join(v for v in (case.get("sections") or {}).values() if v)
     )
     return {
-        "userLinks":    len(extract_users(text)),
+        "userLinks": len(extract_users(text)),
         "userTalkLinks": len(extract_user_talk(text)),
-        "wikiRefs":     count_wiki_refs(text),
+        "wikiRefs": count_wiki_refs(text),
         "wikiTalkRefs": count_wiki_talk_refs(text),
-        "url":          case.get("url"),
+        "url": case.get("url"),
     }
 
 
 def drn_case_stats(case: dict) -> dict:
     content = case.get("content") or ""
     return {
-        "userLinks":    len(extract_drn_users(content)),
+        "userLinks": len(extract_drn_users(content)),
         "userTalkLinks": len(extract_user_talk(content)),
-        "wikiRefs":     count_wiki_refs(content),
-        "sourceUrl":    drn_source_url(case.get("source", "")),
+        "wikiRefs": count_wiki_refs(content),
+        "sourceUrl": drn_source_url(case.get("source", "")),
     }
 
 
 def rfc_case_stats(rfc: dict) -> dict:
     content = rfc.get("content") or ""
     return {
-        "userLinks":    len(extract_drn_users(content)),
+        "userLinks": len(extract_drn_users(content)),
         "userTalkLinks": len(extract_user_talk(content)),
-        "wikiRefs":     count_wiki_refs(content),
-        "status":       extract_rfc_status(content),
-        "url":          rfc.get("url"),
+        "wikiRefs": count_wiki_refs(content),
+        "status": extract_rfc_status(content),
+        "url": rfc.get("url"),
     }
 
 
 # ──────────────────────────────────────────────
 # Main
 # ──────────────────────────────────────────────
+
 
 def main() -> None:
     # ── Load data ─────────────────────────────
@@ -288,7 +293,7 @@ def main() -> None:
 
     # ── Overview stats (all arb cases) ────────
     total_cases = len(arb_cases)
-    all_users:      set[str] = set()
+    all_users: set[str] = set()
     all_user_talks: set[str] = set()
     stmt_distribution: Counter = Counter()
     durations: list[int] = []
@@ -321,8 +326,7 @@ def main() -> None:
 
     avg_duration = round(sum(durations) / len(durations), 1) if durations else None
     stmt_dist_list = [
-        {"statementCount": k, "cases": v}
-        for k, v in sorted(stmt_distribution.items())
+        {"statementCount": k, "cases": v} for k, v in sorted(stmt_distribution.items())
     ]
     top_verbs = [
         {"verb": word, "count": cnt} for word, cnt in remedy_verbs.most_common(15)
@@ -334,7 +338,11 @@ def main() -> None:
     # ── Per-case stats from BPMN folders ──────
     case_stats: dict[str, dict] = {}
 
-    SKIP = {"arb_aggregate_workflow", "drn_aggregate_workflow", "rfc_aggregate_workflow"}
+    SKIP = {
+        "arb_aggregate_workflow",
+        "drn_aggregate_workflow",
+        "rfc_aggregate_workflow",
+    }
 
     if BPMN_ARB_DIR.exists():
         print("\nMatching ARB cases …")
@@ -377,17 +385,17 @@ def main() -> None:
 
     # ── Build output ──────────────────────────
     dashboard = {
-        "totalCases":              total_cases,
-        "totalUserLinks":          len(all_users),
-        "totalUserTalkLinks":      len(all_user_talks),
-        "totalInvolvedParties":    len(all_users) + len(all_user_talks),
-        "totalWikipediaRefs":      total_wiki_refs,
-        "averageDurationDays":     avg_duration,
-        "casesWithDuration":       len(durations),
+        "totalCases": total_cases,
+        "totalUserLinks": len(all_users),
+        "totalUserTalkLinks": len(all_user_talks),
+        "totalInvolvedParties": len(all_users) + len(all_user_talks),
+        "totalWikipediaRefs": total_wiki_refs,
+        "averageDurationDays": avg_duration,
+        "casesWithDuration": len(durations),
         "statementByDistribution": stmt_dist_list,
-        "topRemedyVerbs":          top_verbs,
-        "casesPerYear":            cases_per_year,
-        "caseStats":               case_stats,
+        "topRemedyVerbs": top_verbs,
+        "casesPerYear": cases_per_year,
+        "caseStats": case_stats,
     }
 
     OUT_JSON.parent.mkdir(parents=True, exist_ok=True)
