@@ -3702,7 +3702,7 @@ def _build_aggregate_svg(m: dict) -> str:
     top_pad = 70  # title bar
     footer_h = 190  # stats/rules/namespaces
     left_pad = 40
-    right_pad = 260  # extra room for outcome branches
+
     width = 1800
     lanes_y = top_pad
     total_lane_h = lane_h * len(lane_names)
@@ -3769,7 +3769,7 @@ def _build_aggregate_svg(m: dict) -> str:
 
     # Coordinate cursor for the main flow
     x = left_pad + 90
-    nodes: list[tuple] = []  # (x, y, kind, label, doc)
+
 
     def _task(
         label: str, lane_idx: int, w: int = 150, h: int = 60, annot: str = ""
@@ -3852,7 +3852,6 @@ def _build_aggregate_svg(m: dict) -> str:
                 f'text-anchor="middle" fill="{style["text_fill"]}">'
                 f"{_xml_escape(annot)}</text>"
             )
-        left = (cx_ - r, cy)
         x = cx_ + r + 50
         return (cx_ + r, cy)
 
@@ -3950,7 +3949,6 @@ def _build_aggregate_svg(m: dict) -> str:
     _flow(final, enforce)
 
     # Outcome gateway — one end event per outcome class, with percentages
-    outcome_gw_x = x
     outcome_gw = _gateway("Case Outcome?", 4)
     _flow(enforce, outcome_gw)
 
