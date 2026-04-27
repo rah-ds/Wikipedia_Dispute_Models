@@ -1,114 +1,148 @@
 #!/usr/bin/env python3
 """
-gemma4_bpmn.py — Detailed BPMN generator for Wikipedia ARB cases via Gemma
+gemma4_bpmn.py — BPMN diagram generator for Wikipedia dispute resolution
+
+Supports three venues, each with its own extraction recipe and lane layout:
+  • ArbCom (--arb)         — Wikipedia Arbitration Committee cases
+  • DRN    (--drn)         — Dispute Resolution Noticeboard cases
+  • RFC    (--rfc)         — Request for Comment discussions
 
 Two complementary pipelines in one script:
 
-  (A) Per-case extraction — ingests ONE Wikipedia arbitration case (or a
-      batch of them) and emits:
-        • <case>_case.json   — structured extraction
+  (A) Per-case extraction — ingests ONE case from any venue and emits:
+        • <case>_case.json   — structured extraction (with a `venue` field)
         • <case>.bpmn        — BPMN 2.0 XML (open in bpmn.io / Camunda)
         • <case>.svg         — vector diagram (no browser needed)
         • <case>.png         — raster diagram (if cairosvg installed)
 
-  (B) Aggregate analysis — ingests a directory of *_case.json files from
-      (A) and emits ONE corpus-level diagram:
-        • arb_aggregate_workflow.svg   — all cases summarised
-        • arb_aggregate_workflow.png   — raster (if cairosvg installed)
-      with outcome percentages, top invoked rules, namespace distribution,
-      case-type mix, and element averages rendered in-diagram.
+  (B) Aggregate analysis — ingests a directory of *_case.json files and
+      emits ONE corpus-level diagram. Aggregation is per-venue:
+        • --aggregate DIR        → arbcom_aggregate_workflow.svg
+        • --aggregate-drn DIR    → drn_aggregate_workflow.svg
+        • --aggregate-rfc DIR    → rfc_aggregate_workflow.svg
+      Each command filters the input directory by the `venue` field, so
+      ARB / DRN / RFC JSONs can be mixed in one folder safely.
 
-Hybrid per-case pipeline
-------------------------
-  Phase 1 (deterministic) — Regex extraction of reliable structural facts:
-    dates, parties, vote tallies, section counts, outcome classification,
-    rule invocations, namespace link distribution.
+Hybrid per-case pipeline (same shape across all 3 venues)
+---------------------------------------------------------
+  Phase 1 (deterministic) — Regex extraction of venue-agnostic facts:
+    rule invocations, namespace link distribution. ARB also parses dates,
+    parties, vote tallies, section counts, outcome classification.
 
-  Phase 2 (LLM — 5-pass Gemma extraction) — Gemma enriches structural
-    facts with detailed content: individual principles, findings of fact,
-    proposed remedies, lifecycle (enforcement / amendments / appeals /
-    clarifications / post-case motions), and arbitrator identities. Each
-    item becomes its own BPMN element with a pass/fail gateway.
+  Phase 2 (LLM) — Gemma multi-pass extraction:
+    • ArbCom — 5 passes (principles, findings, remedies, lifecycle, arbs)
+    • DRN    — 3 passes (parties, discussion, closure)
+    • RFC    — 3 passes (proposal, votes, closure)
 
-  Phase 3 (assembly) — SwimlaneBpmnBuilder emits BPMN 2.0 XML with proper
+  Phase 3 (assembly) — Venue-specific BPMN builder emits BPMN 2.0 XML with
     DI coordinates. A pure-Python SVG renderer converts the BPMN to SVG
     using the DI coordinates directly (no browser required).
 
-Input modes (choose exactly one)
---------------------------------
-  --text FILE      Process a single plain-text / wikitext dispute document
-  --arb  CASE      Fetch an ARB case from Wikipedia — including all of its
-                   subpages (/Evidence, /Workshop, /Proposed_decision,
-                   /Enforcement_log) — to capture the FULL lifecycle
-  --json FILE      Process a pre-scraped ARB JSON file (bpmn_from_arb format)
-  --batch DIR      Process all *.txt files in a directory
-  --aggregate DIR  Aggregate mode — read all *_case.json files in the
-                   directory and produce ONE corpus-level SVG. Does NOT
-                   call Gemma; runs in milliseconds regardless of corpus
-                   size. Re-run any time the corpus grows.
+Per-case input modes (choose exactly one)
+-----------------------------------------
+  --text FILE          Plain-text / wikitext file. Use --text-venue to
+                       choose which venue's extraction recipe to apply.
+  --arb CASE           Fetch ArbCom case from Wikipedia by title — pulls
+                       the main case page plus all subpages (/Evidence,
+                       /Workshop, /Proposed_decision, /Enforcement_log,
+                       etc.) so the full lifecycle is captured.
+  --drn CASE           Fetch a DRN case. Use either a full archive page
+                       title ("Wikipedia:Dispute_resolution_noticeboard/
+                       Archive_233") or a specific section by anchor
+                       ("Archive_233#Talk:Tetris").
+  --drn-archive N      Fetch every case section from DRN Archive N at
+                       once. ~30 cases per archive.
+  --rfc PAGE           Fetch an RFC. Most live on article talk pages as
+                       a section ("Talk:Article#RfC_question") and a few
+                       in Wikipedia: namespace.
+  --json FILE          Pre-scraped ARB JSON (legacy bpmn_from_arb format)
+  --batch DIR          Process all *.txt files in a directory.
 
-Model options (ignored in --aggregate mode)
--------------------------------------------
-  --model-dir DIR  Gemma model path or HuggingFace ID
-                   (default: $MODEL_DIR env var, or google/gemma-3-4b-it)
-  --quantize MODE  Load with bitsandbytes quantization to reduce VRAM.
-                     4bit  — ~7 GB VRAM for gemma-3-12b-it
-                     8bit  — ~14 GB VRAM for gemma-3-12b-it
-                   Requires: pip install bitsandbytes
-  --max-new-tokens N
-                   Cap on generated tokens per LLM pass (default 2048).
-  --no-llm         Skip Gemma entirely — regex-only pipeline.
-                   Useful for smoke-testing without a GPU.
+Aggregate input modes (each builds ONE corpus-level diagram)
+------------------------------------------------------------
+  --aggregate     DIR  ArbCom corpus from all *_case.json files
+  --aggregate-drn DIR  DRN corpus from DRN-tagged *_case.json files
+  --aggregate-rfc DIR  RFC corpus from RFC-tagged *_case.json files
+
+  All three are venue-filtered, so dropping ARB / DRN / RFC JSONs in
+  one folder and running each command is safe — only the right subset
+  is consumed. Aggregate modes do NOT call Gemma; runs in milliseconds.
+
+Model options (ignored in any --aggregate mode)
+-----------------------------------------------
+  --model-dir DIR      Gemma model path or HuggingFace ID
+                       (default: $MODEL_DIR env var, or google/gemma-3-4b-it)
+  --quantize MODE      Load with bitsandbytes quantization to reduce VRAM.
+                         4bit — ~7 GB VRAM for gemma-3-12b-it
+                         8bit — ~14 GB VRAM for gemma-3-12b-it
+                       Requires: pip install bitsandbytes
+  --max-new-tokens N   Cap on generated tokens per LLM pass (default 2048).
+  --no-llm             Skip Gemma — regex-only pipeline.
+                       Useful for smoke-testing without a GPU.
 
 Output options
 --------------
   --output-dir DIR     Where to save artifact files
                        (default: artifacts/bpmn/gemma4)
-  --simple-lanes       Use the 4-lane layout (Requesting Party / Clerk /
-                       Arbitrators / Enforcement) instead of the richer
-                       6-lane default. Per-case mode only.
+  --simple-lanes       Use the 4-lane ARB layout (Requesting Party /
+                       Clerk / Arbitrators / Enforcement) instead of the
+                       6-lane default. ARB only — DRN and RFC have their
+                       own fixed lane layouts.
+  --text-venue VENUE   With --text or --batch, which venue's extraction
+                       recipe to use. One of: arb, drn, rfc.
+                       Default: arb.  (Ignored for --arb / --drn / --rfc
+                       which set the venue automatically.)
   --dry-run            Print extracted case JSON to stdout; write no files.
 
 Fetch options (only used with --arb)
 ------------------------------------
-  --no-subpages    Fetch only the main case page (faster, but misses
-                   principle/finding/remedy votes which live on the
-                   /Proposed_decision subpage).
+  --no-subpages        Fetch only the main case page (faster, but misses
+                       principle/finding/remedy votes which live on the
+                       /Proposed_decision subpage).
 
-Batch options (only used with --json or --batch)
-------------------------------------------------
-  --max-cases N    Process at most N cases from the input.
+Batch options (only used with --json / --batch / --drn-archive)
+---------------------------------------------------------------
+  --max-cases N        Process at most N cases from the input.
 
-***Typical two-step workflow - USE THIS FIRST ONE AS THE BASIC USAGE EXAMPLE***
--------------------------
-  # Step 1 — extract each case (expensive, do once per case)
+Typical workflows
+-----------------
+
+  # ArbCom workflow — fetch + aggregate
   python scripts/gemma4_bpmn.py \\
       --arb "Wikipedia:Arbitration/Requests/Case/A Man In Black" \\
       --output-dir artifacts/cases/
-
   python scripts/gemma4_bpmn.py \\
       --arb "Wikipedia:Arbitration/Requests/Case/Abortion" \\
       --output-dir artifacts/cases/
-
-  # … repeat for every case in the corpus, or use --json / --batch …
-
-  # Step 2 — build one aggregate diagram from all extracted JSON
   python scripts/gemma4_bpmn.py \\
-      --aggregate artifacts/cases/ \\
-      --output-dir artifacts/
+      --aggregate artifacts/cases/ --output-dir artifacts/
 
-  # Re-run step 2 any time the corpus grows — it's fast and idempotent.
+  # DRN workflow — entire archive at once + aggregate
+  python scripts/gemma4_bpmn.py \\
+      --drn-archive 233 --max-cases 5 \\
+      --output-dir artifacts/drn/
+  python scripts/gemma4_bpmn.py \\
+      --aggregate-drn artifacts/drn/ --output-dir artifacts/
+
+  # RFC workflow — specific RFC section + aggregate
+  python scripts/gemma4_bpmn.py \\
+      --rfc "Talk:Climate_change#RfC_about_lead_section" \\
+      --output-dir artifacts/rfc/
+  python scripts/gemma4_bpmn.py \\
+      --aggregate-rfc artifacts/rfc/ --output-dir artifacts/
 
 More usage examples
 -------------------
   # Use the larger 12b model with 4-bit quantization (better extraction)
   python scripts/gemma4_bpmn.py \\
       --arb "Wikipedia:Arbitration/Requests/Case/Abortion" \\
-      --model-dir google/gemma-3-12b-it \\
-      --quantize 4bit
+      --model-dir google/gemma-3-12b-it --quantize 4bit
 
   # Regex-only smoke test (no GPU, no Gemma download)
   python scripts/gemma4_bpmn.py --text case.txt --no-llm
+
+  # Process a saved DRN case from disk
+  python scripts/gemma4_bpmn.py --text my_drn_case.txt --text-venue drn
 
   # Batch-process scraped JSON, cap at 5 cases
   python scripts/gemma4_bpmn.py --json arb_part_1.json --max-cases 5
@@ -129,15 +163,35 @@ Output artifacts per case
 Output artifacts per aggregate
 ------------------------------
   artifacts/
-    arb_aggregate_workflow.svg         ← corpus diagram (always)
-    arb_aggregate_workflow.png         ← raster (if cairosvg installed)
+    arbcom_aggregate_workflow.svg     ← from --aggregate
+    drn_aggregate_workflow.svg        ← from --aggregate-drn
+    rfc_aggregate_workflow.svg        ← from --aggregate-rfc
+    *.png                             ← raster (if cairosvg installed)
+
+Finding cases to process
+------------------------
+  ARB cases — listed at https://en.wikipedia.org/wiki/Wikipedia:Arbitration/
+              Index/Cases. Pass the full title with the
+              "Wikipedia:Arbitration/Requests/Case/" prefix.
+
+  DRN cases — find archive numbers at https://en.wikipedia.org/wiki/
+              Wikipedia:Dispute_resolution_noticeboard/Archive_index.
+              Use --drn-archive N for batch, or browse a specific
+              archive page in your browser to find a case section
+              and pass it via --drn "Page#Section_anchor".
+
+  RFCs     — currently-active RFCs are listed at https://en.wikipedia.org/
+              wiki/Wikipedia:Requests_for_comment/All. Closed historical
+              RFCs are NOT centrally indexed — you'll need to know which
+              talk page they lived on. Talk-page archives often contain
+              multiple RFCs; pass the section anchor for the specific one.
 
 Requirements
 ------------
   # Core (needed for any LLM extraction)
   pip install transformers torch accelerate huggingface_hub
 
-  # Gemma license acceptance — visit these pages in a browser and accept:
+  # Gemma license acceptance — visit the model page in a browser and accept:
   #   https://huggingface.co/google/gemma-3-4b-it
   #   (or the model size you chose via --model-dir)
   # Then authenticate once in your shell:
@@ -145,7 +199,7 @@ Requirements
 
   # Optional extras
   pip install bitsandbytes  # only for --quantize
-  pip install pywikibot     # only for --arb mode
+  pip install pywikibot     # only for --arb / --drn / --drn-archive / --rfc
   pip install cairosvg      # enables .png output alongside .svg (no sudo needed)
 
   # Optional alternative PNG renderer (higher quality, requires Node.js +
@@ -216,6 +270,25 @@ ARB_LANES_DETAILED = [
 
 # The classic 4-lane layout from bpmn_from_arb.py — simpler but less detailed.
 ARB_LANES_SIMPLE = ["Requesting Party", "Clerk", "Arbitrators", "Enforcement"]
+
+# DRN lanes — reflects the actual roles in DRN's volunteer-mediated process.
+# Source: WP:DRN, WP:DRN/Volunteering. DRN has no formal voting or enforcement;
+# the volunteer mediator's role is to facilitate, not adjudicate.
+DRN_LANES = [
+    "Filing Party",
+    "Other Parties",
+    "Volunteer Mediator",
+    "Closer",  # Often the same person as the mediator, but conceptually distinct
+]
+
+# RFC lanes — reflects the open community-discussion model. There is no
+# central process role; the closer (uninvolved editor or admin) reads the
+# discussion and writes a closing summary determining consensus.
+RFC_LANES = [
+    "Proposer",
+    "Participants",  # Editors who !vote support / oppose / neutral
+    "Closer",  # Uninvolved editor / admin who reads consensus
+]
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Gemma prompts — multi-pass extraction
@@ -425,7 +498,254 @@ PROMPT_ARBITRATORS = textwrap.dedent("""\
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Deterministic regex parsers  (ported from bpmn_from_arb.py)
+# DRN-specific prompts (Dispute Resolution Noticeboard — content disputes)
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# DRN cases have a totally different shape from ArbCom cases:
+#   - No formal voting; volunteers mediate to consensus
+#   - No findings of fact, no remedies, no enforcement
+#   - Outcomes are closure types: resolved / failed / closed (unsuitable)
+#   - Key data: filing party, other parties, volunteer mediator(s),
+#     content question being disputed, closing reason
+
+DRN_SYSTEM_PROMPT = textwrap.dedent("""\
+    You are an expert analyst of Wikipedia's Dispute Resolution Noticeboard
+    (DRN) process. You read raw DRN case text and extract structured data
+    about the parties, the article(s) being disputed, the volunteer
+    mediator's facilitation, and the case closure.
+
+    Output ONLY valid JSON. No prose. No markdown fences. No comments.
+    Follow the requested schema exactly. If a field is unknown leave it
+    as an empty string or empty list.
+""")
+
+DRN_PROMPT_PARTIES = textwrap.dedent("""\
+    Extract the parties and dispute subject from this DRN case.
+    Output JSON in this exact shape:
+    {{
+      "filing_party": "<username of editor who opened the case>",
+      "other_parties": ["<username>", ...],
+      "article_subject": "<article or page being disputed>",
+      "talk_page_url": "<url of the talk-page discussion that led here, or empty>",
+      "dispute_summary": "<1-2 sentence summary of the content disagreement>",
+      "filing_date": "<YYYY-MM-DD if extractable, else free-form>"
+    }}
+
+    DRN case text:
+    --- START ---
+    {text}
+    --- END ---
+
+    JSON:
+""")
+
+DRN_PROMPT_DISCUSSION = textwrap.dedent("""\
+    Extract the moderated-discussion structure from this DRN case.
+    Output JSON in this exact shape:
+    {{
+      "volunteer_mediators": ["<username>", ...],
+      "opening_statements": [
+        {{"editor": "<username>", "summary": "<1-2 sentence position>"}}
+      ],
+      "discussion_phases": [
+        "<short label for each phase the mediator framed, e.g. 'first opening statements', 'discuss source X', 'compromise text proposal'>"
+      ],
+      "compromise_proposed": true if any compromise text or solution was floated,
+      "compromise_accepted": true if all parties agreed to the compromise,
+      "off_topic_warnings": <integer count of times the mediator warned about conduct/off-topic>,
+      "policies_discussed": ["WP:NPOV", "WP:RS", ...]
+    }}
+
+    DRN case text:
+    --- START ---
+    {text}
+    --- END ---
+
+    JSON:
+""")
+
+DRN_PROMPT_CLOSURE = textwrap.dedent("""\
+    Extract the closure / outcome of this DRN case.
+    Output JSON in this exact shape:
+    {{
+      "closure_type": "<one of: resolved | failed | closed-unsuitable | withdrawn | bot-archived | premature | unknown>",
+      "closer": "<username, or empty>",
+      "closure_reason": "<the reason given in the archive top template, or empty>",
+      "closure_date": "<YYYY-MM-DD if extractable, else free-form>",
+      "next_venue_recommended": "<RFC | Mediation | ANI | None | (other), if the closer recommended escalation>",
+      "duration_days": <integer if extractable, else 0>
+    }}
+
+    Closure conventions used at DRN:
+      - resolved: parties reached agreement
+      - failed: process attempted but stalled or one party refused to engage
+      - closed-unsuitable: case was outside DRN scope from the start
+      - withdrawn: filer pulled the request
+      - bot-archived: 14 days elapsed with no progress, EarwigBot auto-closed
+      - premature: insufficient prior talk-page discussion
+
+    DRN case text:
+    --- START ---
+    {text}
+    --- END ---
+
+    JSON:
+""")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# RFC-specific prompts (Request for Comment — community consensus on a question)
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# RFCs are open community discussions with structured !votes:
+#   - Proposer asks a yes/no/multi-option question
+#   - Editors !vote Support / Oppose / Neutral with rationales
+#   - 30-day default duration (auto-handled by Legobot)
+#   - Uninvolved editor or admin reads the discussion and writes a
+#     closing summary stating consensus
+#
+# RFC outcomes are nuanced — closers often write rough consensus / no
+# consensus / strong consensus determinations rather than a binary count.
+
+RFC_SYSTEM_PROMPT = textwrap.dedent("""\
+    You are an expert analyst of Wikipedia's Request for Comment (RFC)
+    process. You read raw RFC discussion text (proposer's question,
+    !votes, threaded discussion, closer's summary) and extract structured
+    data about the proposal, the participation, and the outcome.
+
+    Output ONLY valid JSON. No prose. No markdown fences. No comments.
+    Follow the requested schema exactly. If a field is unknown leave it
+    as an empty string or empty list.
+""")
+
+RFC_PROMPT_PROPOSAL = textwrap.dedent("""\
+    Extract the proposal that opened this RFC.
+    Output JSON in this exact shape:
+    {{
+      "proposer": "<username>",
+      "rfc_id": "<the RFC id assigned by Legobot, e.g. '2A1B3C4', or empty>",
+      "page": "<page or article on which the RFC sits>",
+      "proposal_question": "<the exact question the proposer asked, paraphrased to one sentence>",
+      "proposal_options": ["<option label>", ...],
+      "rfc_categories": ["<category tag the proposer chose, e.g. 'policy', 'biography', 'science'>", ...],
+      "open_date": "<YYYY-MM-DD if extractable, else free-form>",
+      "policies_invoked": ["WP:NPOV", "WP:RS", ...]
+    }}
+
+    RFC text:
+    --- START ---
+    {text}
+    --- END ---
+
+    JSON:
+""")
+
+RFC_PROMPT_VOTES = textwrap.dedent("""\
+    Extract the !votes and discussion structure from this RFC.
+    Output JSON in this exact shape:
+    {{
+      "support_count": <integer>,
+      "oppose_count": <integer>,
+      "neutral_count": <integer>,
+      "alternative_count": <integer of editors who proposed an alternative>,
+      "support_voters": ["<username>", ...],
+      "oppose_voters": ["<username>", ...],
+      "key_arguments_for": ["<short summary>", ...],
+      "key_arguments_against": ["<short summary>", ...],
+      "uninvolved_voters": <integer of clearly-uninvolved editors who weighed in>,
+      "involved_voters": <integer of editors clearly involved with the underlying topic>
+    }}
+
+    Treat any line starting with bolded "Support", "Oppose", or "Neutral"
+    (or *'''Support''' / *'''Oppose''' wikitext) as a !vote. The numeric
+    counts must reflect what actually appears in the text, not assumptions.
+
+    RFC text:
+    --- START ---
+    {text}
+    --- END ---
+
+    JSON:
+""")
+
+RFC_PROMPT_CLOSURE = textwrap.dedent("""\
+    Extract the closing of this RFC.
+    Output JSON in this exact shape:
+    {{
+      "closer": "<username, or empty>",
+      "closer_is_admin": true if the closer is identified as an admin / sysop,
+      "consensus_finding": "<one of: strong-consensus-support | rough-consensus-support | no-consensus | rough-consensus-oppose | strong-consensus-oppose | withdrawn | speedy-close | unknown>",
+      "closing_summary": "<2-3 sentence paraphrase of the closer's reasoning>",
+      "close_date": "<YYYY-MM-DD if extractable, else free-form>",
+      "duration_days": <integer if extractable, else 0>,
+      "appealed": true if the close was challenged at Wikipedia:Administrators' noticeboard or similar,
+      "next_actions": "<what the closer instructed should happen, e.g. 'implement the change', 'no action', 'discuss further'>"
+    }}
+
+    RFC text:
+    --- START ---
+    {text}
+    --- END ---
+
+    JSON:
+""")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Venue registry — single source of truth for ARB / DRN / RFC differences.
+# Adding a new venue = adding one entry to this dict.
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# Each entry pairs the venue's identity (label, lane layout) with its
+# extraction recipe (system prompt + ordered list of pass prompts). The
+# regex extractors are venue-agnostic (rule invocations, namespaces,
+# etc.) so they're not in here.
+
+VENUES = {
+    "arb": {
+        "label": "ArbCom",
+        "lanes_detailed": ARB_LANES_DETAILED,
+        "lanes_simple": ARB_LANES_SIMPLE,
+        "url_prefix": "Wikipedia:Arbitration/Requests/Case/",
+        "system_prompt": SYSTEM_PROMPT,
+        "passes": [
+            ("principles", "PROMPT_PRINCIPLES"),
+            ("findings", "PROMPT_FINDINGS"),
+            ("remedies", "PROMPT_REMEDIES"),
+            ("lifecycle", "PROMPT_LIFECYCLE"),
+            ("arbitrators", "PROMPT_ARBITRATORS"),
+        ],
+    },
+    "drn": {
+        "label": "DRN",
+        "lanes_detailed": DRN_LANES,
+        "lanes_simple": DRN_LANES,  # DRN has no "simple" variant
+        "url_prefix": "Wikipedia:Dispute_resolution_noticeboard",
+        "system_prompt": DRN_SYSTEM_PROMPT,
+        "passes": [
+            ("parties", "DRN_PROMPT_PARTIES"),
+            ("discussion", "DRN_PROMPT_DISCUSSION"),
+            ("closure", "DRN_PROMPT_CLOSURE"),
+        ],
+    },
+    "rfc": {
+        "label": "RFC",
+        "lanes_detailed": RFC_LANES,
+        "lanes_simple": RFC_LANES,
+        "url_prefix": "Wikipedia:Requests_for_comment/",  # may also be talk-page based
+        "system_prompt": RFC_SYSTEM_PROMPT,
+        "passes": [
+            ("proposal", "RFC_PROMPT_PROPOSAL"),
+            ("votes", "RFC_PROMPT_VOTES"),
+            ("closure", "RFC_PROMPT_CLOSURE"),
+        ],
+    },
+}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Deterministic regex parsers  (ported from bpmn_from_arb.py, plus venue-
+# agnostic helpers for rule invocations and namespace links)
 # ─────────────────────────────────────────────────────────────────────────────
 
 
@@ -1414,6 +1734,16 @@ class SwimlaneBpmnBuilder:
                     },
                 )
 
+        # Pre-count outgoing edges per source so we can vertically stagger
+        # the label of each fan-out branch. Without staggering, all branch
+        # labels of "gateway → N end events" land at the same Y because
+        # their midpoints share the same Y.
+        outgoing_counts: dict[str, int] = {}
+        for _fid, src, _tgt, _lbl in self._flows:
+            outgoing_counts[src] = outgoing_counts.get(src, 0) + 1
+        # Per-source running index, incremented as we emit each edge from that source
+        outgoing_seen: dict[str, int] = {}
+
         for fid, src, tgt, label in self._flows:
             edge = ET.SubElement(
                 plane,
@@ -1424,12 +1754,24 @@ class SwimlaneBpmnBuilder:
             tx, ty, tw, th = bounds_cache.get(tgt, (0, 0, 0, 0))
             if label:
                 le = ET.SubElement(edge, f"{{{_NS_BPMNDI}}}BPMNLabel")
+                # Default label position: midpoint of source and target
+                base_x = (sx + sw / 2 + tx + tw / 2) / 2 - 20
+                base_y = (sy + sh / 2 + ty + th / 2) / 2 - 10
+                # If this source fans out to multiple edges, stagger this
+                # label vertically by 18px per sibling so they don't stack.
+                # The center of the stack stays at base_y.
+                n_out = outgoing_counts.get(src, 1)
+                if n_out > 1:
+                    idx = outgoing_seen.get(src, 0)
+                    outgoing_seen[src] = idx + 1
+                    stagger = (idx - (n_out - 1) / 2) * 18
+                    base_y += stagger
                 ET.SubElement(
                     le,
                     f"{{{_NS_DC}}}Bounds",
                     {
-                        "x": str(int((sx + sw / 2 + tx + tw / 2) / 2 - 20)),
-                        "y": str(int((sy + sh / 2 + ty + th / 2) / 2 - 10)),
+                        "x": str(int(base_x)),
+                        "y": str(int(base_y)),
                         "width": "60",
                         "height": "20",
                     },
@@ -2689,6 +3031,606 @@ def fetch_arb_case_full(case_title: str, include_subpages: bool = True) -> str:
     return combined
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# DRN fetcher — single case by title, OR all cases in one archive
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def fetch_drn_case(case_title: str) -> str:
+    """Fetch a single DRN case from Wikipedia.
+
+    DRN cases are normally sections within a numbered archive page (e.g.
+    'Wikipedia:Dispute_resolution_noticeboard/Archive_233#Section_Name').
+    The caller can pass either the full URL with anchor or just the
+    archive page title — in which case all sections are returned.
+    """
+    try:
+        import pywikibot  # type: ignore[import-untyped]
+    except ImportError as exc:
+        raise RuntimeError(
+            "pywikibot not installed. Run: pip install pywikibot"
+        ) from exc
+
+    # Split off any "#anchor" or "#section-id" — pywikibot fetches the
+    # whole page, then we slice out the section if a fragment was given.
+    if "#" in case_title:
+        page_title, anchor = case_title.split("#", 1)
+        anchor = anchor.replace("_", " ")
+    else:
+        page_title, anchor = case_title, None
+
+    site = pywikibot.Site("en", "wikipedia")
+    print(f"  [fetch] DRN page: {page_title}")
+    try:
+        page = pywikibot.Page(site, page_title)
+        full_text = page.text
+        if not full_text:
+            print("          (empty)")
+            return ""
+    except Exception as exc:
+        print(f"          ERROR: {exc}")
+        return ""
+
+    if not anchor:
+        print(f"  [fetch] full page ({len(full_text):,} chars) — all sections")
+        return full_text
+
+    # Slice out the section matching the anchor (case-insensitive).
+    # MediaWiki sections are headed by "== Title ==" — we find the matching
+    # heading and return content up to the next heading at the same level.
+    import re as _re
+
+    pattern = _re.compile(r"(==+\s*" + _re.escape(anchor) + r"\s*==+)", _re.I)
+    m = pattern.search(full_text)
+    if not m:
+        print(f"          WARNING: section '{anchor}' not found; returning full page")
+        return full_text
+    section_start = m.start()
+    # Find next heading of same or higher level after this one
+    level = m.group(1).count("=") // 2
+    # Look for next heading of this level or shallower
+    next_heading = _re.compile(rf"\n=={{1,{level}}}[^=].*?=={{1,{level}}}\s*\n")
+    rest = full_text[m.end() :]
+    nm = next_heading.search(rest)
+    section = (
+        full_text[section_start : m.end() + nm.start()]
+        if nm
+        else full_text[section_start:]
+    )
+    print(f"  [fetch] section '{anchor}' ({len(section):,} chars)")
+    return section
+
+
+def fetch_drn_archive(archive_number: int | str) -> list[tuple[str, str]]:
+    """Fetch every case section from one DRN archive page.
+
+    Returns a list of (section_title, section_wikitext) tuples — one per
+    case in the archive. Useful for batch DRN extraction since each archive
+    contains ~30 cases.
+    """
+    try:
+        import pywikibot  # type: ignore[import-untyped]
+    except ImportError as exc:
+        raise RuntimeError(
+            "pywikibot not installed. Run: pip install pywikibot"
+        ) from exc
+
+    page_title = f"Wikipedia:Dispute_resolution_noticeboard/Archive_{archive_number}"
+    site = pywikibot.Site("en", "wikipedia")
+    print(f"  [fetch] DRN archive: {page_title}")
+    try:
+        page = pywikibot.Page(site, page_title)
+        full_text = page.text
+    except Exception as exc:
+        print(f"          ERROR: {exc}")
+        return []
+    if not full_text:
+        print("          (empty)")
+        return []
+
+    # Split on level-2 headings (== Title ==) — each is one DRN case.
+    import re as _re
+
+    sections: list[tuple[str, str]] = []
+    pattern = _re.compile(r"\n==\s*([^=\n]+?)\s*==\s*\n")
+    matches = list(pattern.finditer(full_text))
+    for i, m in enumerate(matches):
+        title = m.group(1).strip()
+        start = m.start()
+        end = matches[i + 1].start() if i + 1 < len(matches) else len(full_text)
+        body = full_text[start:end]
+        if len(body) < 200:  # skip tiny non-case sections (TOC, header, etc.)
+            continue
+        sections.append((title, body))
+    print(f"  [fetch] found {len(sections)} cases in archive {archive_number}")
+    return sections
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# RFC fetcher — RFCs live on talk pages or in Wikipedia: namespace
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def fetch_rfc(rfc_title: str) -> str:
+    """Fetch an RFC from Wikipedia.
+
+    RFCs typically live as sections of a talk page (Talk:Article#RfC_title)
+    or as standalone pages under Wikipedia:Requests_for_comment/.
+    Both forms are handled — anchor-based slicing works the same as DRN.
+    """
+    return fetch_drn_case(rfc_title)  # logic is identical: page + optional #anchor
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Venue-aware Gemma extraction — runs the appropriate prompt set per venue
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def _get_prompt_by_name(name: str) -> str:
+    """Resolve a prompt constant name to its actual string at runtime.
+
+    The venue registry stores prompt names as strings (rather than the
+    objects themselves) so the registry can be defined before the prompts
+    in module-load order. This indirection is harmless — module globals
+    are stable by the time any extract function runs.
+    """
+    return globals()[name]
+
+
+def extract_venue_case(
+    loader: Gemma4Loader | None,
+    text: str,
+    title: str,
+    venue: str,
+    max_input_chars: int,
+) -> dict:
+    """Generic per-case extractor for any venue in the VENUES registry.
+
+    Always runs the deterministic regex pass first (rule invocations,
+    namespace links — venue-agnostic), then runs the LLM passes named in
+    the venue's recipe and merges the results. Each pass's JSON is stored
+    under its label key in the case dict, so callers can reach into e.g.
+    `case["closure"]` for DRN closures.
+    """
+    venue_cfg = VENUES.get(venue)
+    if not venue_cfg:
+        raise ValueError(f"Unknown venue: {venue!r}; expected one of {list(VENUES)}")
+
+    # Deterministic universals (rule invocations + namespaces) — these run
+    # for every venue regardless of LLM availability.
+    rule_invocations = _extract_rule_invocations(text)
+    case: dict = {
+        "title": title,
+        "venue": venue,
+        "venue_label": venue_cfg["label"],
+        "rule_invocations": rule_invocations,
+    }
+
+    if loader is None:
+        # No-LLM mode: return only the deterministic data. The diagram
+        # builder handles missing fields gracefully.
+        return case
+
+    # Venue-specific multi-pass extraction
+    print(f"[{title}] Extracting {venue_cfg['label']} case structure ...")
+    for i, (pass_label, prompt_name) in enumerate(venue_cfg["passes"], start=1):
+        print(f"  [gemma] pass {i}/{len(venue_cfg['passes'])} — {pass_label}")
+        prompt = _get_prompt_by_name(prompt_name)
+        # Use the venue's system prompt instead of the global ARB one
+        try:
+            result = _run_pass_with_system(
+                loader,
+                venue_cfg["system_prompt"],
+                prompt,
+                text,
+                max_input_chars,
+                pass_label,
+            )
+        except Exception as exc:
+            print(f"    [{pass_label}] failed: {exc}")
+            result = {}
+        # Merge top-level fields directly when the result is a dict; nest
+        # under the pass label otherwise.
+        if isinstance(result, dict):
+            for k, v in result.items():
+                if k not in case:  # don't clobber title/venue/etc.
+                    case[k] = v
+            # Also keep a copy under the pass label for traceability
+            case[f"_{pass_label}_pass"] = result
+    return case
+
+
+def _run_pass_with_system(
+    loader: Gemma4Loader,
+    system_prompt: str,
+    prompt_tmpl: str,
+    text: str,
+    max_input_chars: int,
+    label: str,
+    max_retries: int = 2,
+) -> dict:
+    """Like _run_pass but takes an explicit system prompt (not the global one)."""
+    effective_cap = min(len(text), max_input_chars)
+    if effective_cap < len(text):
+        print(
+            f"    [{label}] truncating {len(text):,} → {effective_cap:,} chars "
+            f"to fit model context"
+        )
+    else:
+        print(f"    [{label}] sending full {len(text):,} chars")
+
+    oom_shrinks_remaining = 3
+    while True:
+        user_msg = prompt_tmpl.format(text=text[:effective_cap])
+        full_prompt = _build_chat_prompt(system_prompt, user_msg)
+        try:
+            for attempt in range(1, max_retries + 1):
+                raw = loader.generate(full_prompt)
+                try:
+                    return _extract_json(raw)
+                except (ValueError, json.JSONDecodeError) as exc:
+                    print(
+                        f"    [{label}] attempt {attempt}/{max_retries} "
+                        f"parse error: {exc}"
+                    )
+                    if attempt == max_retries:
+                        return {}
+            return {}
+        except torch.cuda.OutOfMemoryError:
+            if oom_shrinks_remaining <= 0:
+                print(f"    [{label}] CUDA OOM — giving up on this pass")
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+                return {}
+            oom_shrinks_remaining -= 1
+            new_cap = max(effective_cap // 2, 1500)
+            print(f"    [{label}] CUDA OOM — halving {effective_cap:,} → {new_cap:,}")
+            effective_cap = new_cap
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+                torch.cuda.synchronize()
+            if new_cap == 1500:
+                oom_shrinks_remaining = 0
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# DRN BPMN builder — simple flow: filing → mediator pickup → moderation → close
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def build_drn_bpmn(case: dict) -> str:
+    """Build a DRN-flavored BPMN diagram from an extracted DRN case dict.
+
+    DRN's process is much simpler than ArbCom — no voting branches, no
+    formal remedies. The diagram captures: filing → other-party statements
+    → volunteer pickup → moderated discussion phases → closure.
+    """
+    title = case.get("title", "Untitled")
+    b = SwimlaneBpmnBuilder(process_name=title, lanes=DRN_LANES)
+
+    filer = case.get("filing_party", "") or "Filing Party"
+    parties = case.get("other_parties", []) or []
+    article = case.get("article_subject", "") or ""
+    summary = case.get("dispute_summary", "") or ""
+
+    start = b.start(
+        "Content Dispute Identified", "Filing Party", doc=summary or article
+    )
+
+    # Filing
+    file_task = b.task(
+        f"File DRN: {filer}" + (f" re: {article}" if article else ""),
+        "Filing Party",
+        user=True,
+        doc=summary,
+    )
+    b.flow(start, file_task)
+    prev = file_task
+    prev_label = ""
+
+    # Other-party statements
+    if parties:
+        statements = b.task(
+            f"Opening statements from {len(parties)} other parties",
+            "Other Parties",
+            user=True,
+            doc=", ".join(parties[:10]),
+        )
+        b.flow(prev, statements)
+        prev = statements
+
+    # Volunteer pickup decision
+    mediators = case.get("volunteer_mediators", []) or []
+    pickup_gw = b.gateway("Volunteer picks up case?", "Volunteer Mediator")
+    no_volunteer = b.end(
+        "Closed: no volunteer", "Closer", doc="14-day archival without pickup"
+    )
+    b.flow(prev, pickup_gw)
+    b.flow(pickup_gw, no_volunteer, "No")
+
+    pickup = b.task(
+        f"Volunteer mediation: {', '.join(mediators) if mediators else '(unnamed)'}",
+        "Volunteer Mediator",
+        user=True,
+    )
+    b.flow(pickup_gw, pickup, "Yes")
+
+    # Discussion phases — each phase becomes its own task in sequence
+    phases = case.get("discussion_phases", []) or []
+    last = pickup
+    for i, phase in enumerate(phases[:6], start=1):
+        phase_task = b.task(
+            f"Phase {i}: {phase[:50]}",
+            "Volunteer Mediator",
+            user=True,
+        )
+        b.flow(last, phase_task)
+        last = phase_task
+
+    # Compromise gateway
+    compromise_proposed = case.get("compromise_proposed")
+    compromise_accepted = case.get("compromise_accepted")
+    if compromise_proposed:
+        comp_task = b.task(
+            "Compromise proposal floated", "Volunteer Mediator", user=True
+        )
+        b.flow(last, comp_task)
+        comp_gw = b.gateway("Parties accept compromise?", "Volunteer Mediator")
+        b.flow(comp_task, comp_gw)
+        last = comp_gw
+        if compromise_accepted:
+            prev_label = "Yes"
+        else:
+            no_accept = b.end(
+                "Compromise rejected — case fails",
+                "Closer",
+                doc="Parties did not accept",
+            )
+            b.flow(comp_gw, no_accept, "No")
+            prev_label = "Yes"  # fall through to closure
+
+    # Closure outcomes
+    closure_type = (case.get("closure_type", "") or "unknown").lower()
+    closer = case.get("closer", "") or ""
+    reason = case.get("closure_reason", "") or ""
+    next_venue = case.get("next_venue_recommended", "") or ""
+
+    close_task = b.task(
+        f"Closer determines outcome: {closer}" if closer else "Case closed",
+        "Closer",
+        user=True,
+        doc=reason,
+    )
+    b.flow(last, close_task, prev_label)
+
+    # Outcome end events — one per closure type so the diagram shows the option
+    outcome_labels = {
+        "resolved": "Resolved (consensus reached)",
+        "failed": "Failed (stalled or refused)",
+        "closed-unsuitable": "Closed unsuitable (out of scope)",
+        "withdrawn": "Withdrawn by filer",
+        "bot-archived": "Bot-archived (14d expired)",
+        "premature": "Premature (insufficient prior discussion)",
+        "unknown": "Closed (reason unknown)",
+    }
+    final_label = outcome_labels.get(closure_type, f"Closed: {closure_type}")
+    final = b.end(final_label, "Closer", doc=reason)
+    b.flow(close_task, final)
+
+    # If a next venue was recommended, branch off to a separate end event
+    if next_venue and next_venue.lower() not in ("none", ""):
+        escalate = b.end(
+            f"Escalated to {next_venue}",
+            "Closer",
+            doc=f"Closer recommended escalation to {next_venue}",
+        )
+        b.flow(close_task, escalate)
+
+    return b.to_xml()
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# RFC BPMN builder — proposal → !vote period → closer summary → outcome
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def build_rfc_bpmn(case: dict) -> str:
+    """Build an RFC-flavored BPMN diagram from an extracted RFC case dict.
+
+    RFCs have a well-defined open structure: proposer asks a question,
+    community !votes for ~30 days, an uninvolved closer reads consensus
+    and writes a closing summary. Outcomes cluster around 4 categories:
+    consensus support / consensus oppose / no consensus / withdrawn.
+    """
+    title = case.get("title", "Untitled")
+    b = SwimlaneBpmnBuilder(process_name=title, lanes=RFC_LANES)
+
+    proposer = case.get("proposer", "") or "Proposer"
+    question = case.get("proposal_question", "") or ""
+    page = case.get("page", "") or ""
+    options = case.get("proposal_options", []) or []
+    rfc_id = case.get("rfc_id", "") or ""
+    open_date = case.get("open_date", "") or ""
+
+    start_doc = "  ".join(
+        filter(
+            None,
+            [
+                f"Page: {page}" if page else "",
+                f"Question: {question[:200]}" if question else "",
+                f"Options: {', '.join(options[:6])}" if options else "",
+                f"RFC ID: {rfc_id}" if rfc_id else "",
+                f"Opened: {open_date}" if open_date else "",
+            ],
+        )
+    )
+    start = b.start("Issue requires community input", "Proposer", doc=start_doc)
+
+    # Proposer formulates the question
+    prop_task = b.task(
+        f"Open RFC: {proposer}",
+        "Proposer",
+        user=True,
+        doc=question[:300],
+    )
+    b.flow(start, prop_task)
+
+    # Listing/categorisation step — Legobot tags the RFC by category
+    cats = case.get("rfc_categories", []) or []
+    listing = b.task(
+        f"Listed by Legobot — categories: {', '.join(cats[:4]) if cats else '(none)'}",
+        "Proposer",
+        doc="Auto-listed in central RFC tables for advertised participation",
+    )
+    b.flow(prop_task, listing)
+
+    # !Voting period — render the actual !vote distribution
+    sup = case.get("support_count", 0) or 0
+    opp = case.get("oppose_count", 0) or 0
+    neu = case.get("neutral_count", 0) or 0
+    alt = case.get("alternative_count", 0) or 0
+    sup_voters = case.get("support_voters", []) or []
+    opp_voters = case.get("oppose_voters", []) or []
+    invo = case.get("involved_voters", 0) or 0
+    uninv = case.get("uninvolved_voters", 0) or 0
+
+    args_for = case.get("key_arguments_for", []) or []
+    args_against = case.get("key_arguments_against", []) or []
+
+    vote_task = b.task(
+        f"Community discussion ({sup}S / {opp}O / {neu}N"
+        + (f" / {alt}Alt" if alt else "")
+        + ")",
+        "Participants",
+        user=True,
+        doc="  ".join(
+            filter(
+                None,
+                [
+                    f"Support voters: {', '.join(sup_voters[:8])}"
+                    if sup_voters
+                    else "",
+                    f"Oppose voters: {', '.join(opp_voters[:8])}" if opp_voters else "",
+                    f"Top arguments for: {' | '.join(args_for[:3])}"
+                    if args_for
+                    else "",
+                    f"Top arguments against: {' | '.join(args_against[:3])}"
+                    if args_against
+                    else "",
+                    f"Involved/uninvolved breakdown: {invo} involved / {uninv} uninvolved",
+                ],
+            )
+        ),
+    )
+    b.flow(listing, vote_task)
+
+    # 30-day timer / Legobot delisting — implicit but worth showing
+    timer = b.task(
+        "30-day discussion period (Legobot delists)",
+        "Participants",
+        doc="Default RFC duration; can be extended for ongoing discussion",
+    )
+    b.flow(vote_task, timer)
+
+    # Closer reads consensus
+    closer = case.get("closer", "") or ""
+    closer_is_admin = bool(case.get("closer_is_admin"))
+    consensus = (case.get("consensus_finding", "") or "unknown").lower()
+    summary = case.get("closing_summary", "") or ""
+    next_actions = case.get("next_actions", "") or ""
+    close_date = case.get("close_date", "") or ""
+    appealed = bool(case.get("appealed"))
+
+    close_task = b.task(
+        f"Closer summary: {closer}" + (" (admin)" if closer_is_admin else ""),
+        "Closer",
+        user=True,
+        doc="  ".join(
+            filter(
+                None,
+                [
+                    f"Closed: {close_date}" if close_date else "",
+                    f"Summary: {summary[:300]}" if summary else "",
+                    f"Next: {next_actions}" if next_actions else "",
+                    "APPEALED at AN/ANI" if appealed else "",
+                ],
+            )
+        ),
+    )
+    b.flow(timer, close_task)
+
+    # Consensus gateway → branch by outcome.
+    #
+    # Each possible consensus outcome becomes its own end event. The renderer
+    # is responsible for laying these out so labels don't collide; the
+    # builder just declares the topology (one branch per possible outcome).
+    # The gateway's documentation carries the legend for the short flow
+    # codes so the diagram is self-explanatory.
+    gateway_legend = (
+        "Branch codes:  "
+        "SS = strong consensus support  •  "
+        "RS = rough consensus support  •  "
+        "NC = no consensus  •  "
+        "RO = rough consensus oppose  •  "
+        "SO = strong consensus oppose  •  "
+        "W = withdrawn  •  "
+        "SC = speedy close  •  "
+        "U = unknown"
+    )
+    consensus_gw = b.gateway("Consensus finding?", "Closer", doc=gateway_legend)
+    b.flow(close_task, consensus_gw)
+
+    consensus_labels = {
+        "strong-consensus-support": "Strong consensus to SUPPORT — implement",
+        "rough-consensus-support": "Rough consensus to support — implement with caveats",
+        "no-consensus": "No consensus — status quo / no change",
+        "rough-consensus-oppose": "Rough consensus to OPPOSE — do not implement",
+        "strong-consensus-oppose": "Strong consensus to OPPOSE — proposal rejected",
+        "withdrawn": "Withdrawn by proposer",
+        "speedy-close": "Speedy-closed (snowball/bad faith/duplicate)",
+        "unknown": "Outcome unclear",
+    }
+    # Short codes used as flow labels on the arrows. The full descriptive
+    # text lives on each end event below the circle, so the diagram is
+    # readable without redundancy. Each code maps 1:1 to its end-event row.
+    consensus_codes = {
+        "strong-consensus-support": "SS",
+        "rough-consensus-support": "RS",
+        "no-consensus": "NC",
+        "rough-consensus-oppose": "RO",
+        "strong-consensus-oppose": "SO",
+        "withdrawn": "W",
+        "speedy-close": "SC",
+        "unknown": "U",
+    }
+    matched = consensus if consensus in consensus_labels else "unknown"
+    # Emit all branches; the actual outcome gets a ★ prefix and the closer's
+    # summary as documentation. Other branches are tagged as not-reached so
+    # the renderer can dim them or otherwise distinguish them. The flow
+    # labels use short two-letter codes (SS/RS/NC/RO/SO/W/SC/U) rather than
+    # repeating the end-event name on the arrow.
+    for label_key, label_text in consensus_labels.items():
+        if label_key == matched:
+            end_node = b.end(f"★ {label_text}", "Closer", doc=summary)
+        else:
+            end_node = b.end(
+                label_text, "Closer", doc="Possible outcome — not the one reached."
+            )
+        b.flow(consensus_gw, end_node, consensus_codes[label_key])
+
+    # Appeal branch — if the close was challenged, show that as an additional
+    # downstream node (which would loop back into another venue's process)
+    if appealed:
+        appeal_end = b.end(
+            "Close appealed at AN/ANI",
+            "Closer",
+            doc="Closer's determination challenged in another venue",
+        )
+        b.flow(close_task, appeal_end)
+
+    return b.to_xml()
+
+
 def process_document(
     loader: Gemma4Loader | None,
     text: str,
@@ -2697,50 +3639,91 @@ def process_document(
     max_input_chars: int,
     detailed_lanes: bool,
     dry_run: bool,
+    venue: str = "arb",
 ) -> None:
+    """Per-case pipeline: extract → save JSON → build BPMN → render SVG/PNG.
+
+    Dispatches on `venue` to choose between ArbCom, DRN, and RFC pipelines.
+    Each venue has its own extractor (ArbCom uses the rich `extract_detailed_case`
+    with regex+LLM merge; DRN/RFC use the generic `extract_venue_case`) and
+    its own BPMN builder.
+    """
     stem = safe_filename(title)
-    print(f"\n[{stem}] Extracting detailed case structure ...")
 
-    case = extract_detailed_case(loader, text, title, max_input_chars)
+    if venue == "arb":
+        # ArbCom — full hybrid extraction with all the per-section regex parsing
+        print(f"\n[{stem}] Extracting detailed ArbCom case structure ...")
+        case = extract_detailed_case(loader, text, title, max_input_chars)
 
-    # Count branches for reporting
-    remedies = case.get("remedies", [])
-    n_suspended = sum(1 for r in remedies if r.get("suspended"))
-    n_ongoing = sum(1 for r in remedies if _is_ongoing_remedy(r))
-    n_gateways = (
-        1  # accept/decline
-        + (1 if case.get("has_injunction") else 0)
-        + len(case.get("principles", []))
-        + len(case.get("findings", []))
-        + len(remedies)
-        + n_suspended  # each suspended remedy adds an extra gateway for Active?
-        + len(case.get("enforcement_actions", []))
-        + len(case.get("appeals", []))
-        + len(case.get("amendments", []))
-        + len(case.get("clarifications", []))
-        + len(case.get("post_case_motions", []))
-    )
-    print(
-        f"[{stem}] Built rich lifecycle model:\n"
-        f"         type={case.get('case_type', 'conduct')}, "
-        f"private={case.get('is_private', False)}, "
-        f"pre-case actions={len(case.get('pre_case_actions', []))}\n"
-        f"         principles={len(case.get('principles', []))}, "
-        f"findings={len(case.get('findings', []))}, "
-        f"remedies={len(remedies)} "
-        f"(suspended={n_suspended}, ongoing={n_ongoing})\n"
-        f"         AE actions={len(case.get('enforcement_actions', []))}, "
-        f"appeals={len(case.get('appeals', []))}, "
-        f"amendments={len(case.get('amendments', []))}, "
-        f"clarifications={len(case.get('clarifications', []))}, "
-        f"post-case motions={len(case.get('post_case_motions', []))}\n"
-        f"         drafters={len(case.get('drafting_arbitrators', []))}, "
-        f"recused={len(case.get('recused_arbitrators', []))}\n"
-        f"         rule invocations: {case.get('rule_invocations', {}).get('total_invocations', 0)} "
-        f"total, {case.get('rule_invocations', {}).get('unique_rules', 0)} unique "
-        f"(top: {', '.join(r['ref'] for r in case.get('rule_invocations', {}).get('top_rules', [])[:3]) or 'none'})\n"
-        f"         → ~{n_gateways} gateway branches"
-    )
+        remedies = case.get("remedies", [])
+        n_suspended = sum(1 for r in remedies if r.get("suspended"))
+        n_ongoing = sum(1 for r in remedies if _is_ongoing_remedy(r))
+        n_gateways = (
+            1
+            + (1 if case.get("has_injunction") else 0)
+            + len(case.get("principles", []))
+            + len(case.get("findings", []))
+            + len(remedies)
+            + n_suspended
+            + len(case.get("enforcement_actions", []))
+            + len(case.get("appeals", []))
+            + len(case.get("amendments", []))
+            + len(case.get("clarifications", []))
+            + len(case.get("post_case_motions", []))
+        )
+        print(
+            f"[{stem}] Built rich lifecycle model:\n"
+            f"         type={case.get('case_type', 'conduct')}, "
+            f"private={case.get('is_private', False)}, "
+            f"pre-case actions={len(case.get('pre_case_actions', []))}\n"
+            f"         principles={len(case.get('principles', []))}, "
+            f"findings={len(case.get('findings', []))}, "
+            f"remedies={len(remedies)} "
+            f"(suspended={n_suspended}, ongoing={n_ongoing})\n"
+            f"         AE actions={len(case.get('enforcement_actions', []))}, "
+            f"appeals={len(case.get('appeals', []))}, "
+            f"amendments={len(case.get('amendments', []))}, "
+            f"clarifications={len(case.get('clarifications', []))}, "
+            f"post-case motions={len(case.get('post_case_motions', []))}\n"
+            f"         drafters={len(case.get('drafting_arbitrators', []))}, "
+            f"recused={len(case.get('recused_arbitrators', []))}\n"
+            f"         rule invocations: {case.get('rule_invocations', {}).get('total_invocations', 0)} "
+            f"total, {case.get('rule_invocations', {}).get('unique_rules', 0)} unique "
+            f"(top: {', '.join(r['ref'] for r in case.get('rule_invocations', {}).get('top_rules', [])[:3]) or 'none'})\n"
+            f"         → ~{n_gateways} gateway branches"
+        )
+    else:
+        # DRN / RFC — generic venue-aware extraction
+        case = extract_venue_case(loader, text, title, venue, max_input_chars)
+        ri = case.get("rule_invocations", {})
+        if venue == "drn":
+            phases = case.get("discussion_phases", []) or []
+            print(
+                f"[{stem}] Built DRN case model:\n"
+                f"         filer={case.get('filing_party', '?')}, "
+                f"others={len(case.get('other_parties', []) or [])}, "
+                f"mediators={len(case.get('volunteer_mediators', []) or [])}\n"
+                f"         phases={len(phases)}, "
+                f"compromise_proposed={case.get('compromise_proposed', False)}, "
+                f"compromise_accepted={case.get('compromise_accepted', False)}\n"
+                f"         closure={case.get('closure_type', 'unknown')}, "
+                f"escalation={case.get('next_venue_recommended', 'none')}\n"
+                f"         rule invocations: {ri.get('total_invocations', 0)} total"
+            )
+        elif venue == "rfc":
+            print(
+                f"[{stem}] Built RFC case model:\n"
+                f"         proposer={case.get('proposer', '?')}, "
+                f"page={case.get('page', '?')}\n"
+                f"         votes: {case.get('support_count', 0)}S / "
+                f"{case.get('oppose_count', 0)}O / "
+                f"{case.get('neutral_count', 0)}N / "
+                f"{case.get('alternative_count', 0)}Alt\n"
+                f"         consensus={case.get('consensus_finding', 'unknown')}, "
+                f"closer={case.get('closer', '?')}, "
+                f"appealed={case.get('appealed', False)}\n"
+                f"         rule invocations: {ri.get('total_invocations', 0)} total"
+            )
 
     if dry_run:
         print(json.dumps(case, indent=2, default=str))
@@ -2751,15 +3734,21 @@ def process_document(
     json_path.write_text(json.dumps(case, indent=2, default=str))
     print(f"[{stem}] Saved case JSON → {json_path}")
 
-    xml = build_detailed_bpmn(case, use_detailed_lanes=detailed_lanes)
+    # Build the BPMN appropriate to the venue
+    if venue == "arb":
+        xml = build_detailed_bpmn(case, use_detailed_lanes=detailed_lanes)
+    elif venue == "drn":
+        xml = build_drn_bpmn(case)
+    elif venue == "rfc":
+        xml = build_rfc_bpmn(case)
+    else:
+        raise ValueError(f"Unknown venue: {venue!r}")
+
     bpmn_path = output_dir / f"{stem}.bpmn"
     bpmn_path.write_text(xml, encoding="utf-8")
     print(f"[{stem}] Saved BPMN XML  → {bpmn_path}")
 
-    # Render the BPMN to visual formats. SVG is always produced (pure Python,
-    # no external deps). PNG is attempted via bpmn-to-image if available,
-    # which gives a pixel-perfect bpmn.io render; if that fails for any
-    # reason, we fall back to PNG-from-SVG via cairosvg if installed.
+    # Render the BPMN to visual formats (always SVG, optionally PNG).
     svg_path = output_dir / f"{stem}.svg"
     png_path = output_dir / f"{stem}.png"
     if render_bpmn_to_svg(bpmn_path, svg_path, case=case):
@@ -2910,6 +3899,16 @@ def render_bpmn_to_svg(
         shapes.append({"x": x, "y": y, "w": w, "h": h, "ref": ref, **meta})
 
     # ── Collect edges ───────────────────────────────────────────────────────
+    # First, build a map of sequenceFlow id → (sourceRef, targetRef) so we
+    # can identify which edges share a source (gateway fan-outs).
+    flow_endpoints: dict[str, tuple[str, str]] = {}
+    for sf in root.iter("{%s}sequenceFlow" % ns["bpmn"]):
+        sf_id = sf.get("id")
+        src = sf.get("sourceRef", "") or ""
+        tgt = sf.get("targetRef", "") or ""
+        if sf_id:
+            flow_endpoints[sf_id] = (src, tgt)
+
     edges: list[dict] = []
     for edge in root.iter("{%s}BPMNEdge" % ns["bpmndi"]):
         ref = edge.get("bpmnElement")
@@ -2931,8 +3930,17 @@ def render_bpmn_to_svg(
                 ly = float(label_bounds.get("y"))
             except (TypeError, ValueError):
                 pass
+        src, tgt = flow_endpoints.get(ref, ("", ""))
         edges.append(
-            {"ref": ref, "waypoints": waypoints, "label": label, "lx": lx, "ly": ly}
+            {
+                "ref": ref,
+                "waypoints": waypoints,
+                "label": label,
+                "lx": lx,
+                "ly": ly,
+                "src": src,
+                "tgt": tgt,
+            }
         )
 
     # ── Extract case-level metadata from the BPMN ──────────────────────────
@@ -3080,8 +4088,17 @@ def render_bpmn_to_svg(
                 f'transform="rotate(-90 {cx} {cy})">{lane_name}</text>'
             )
 
+    # Pre-compute, for each source node, the list of outgoing edges in
+    # render order. We use the edge's index within that list to vertically
+    # stagger labels on a fan-out (one gateway → many end events). Without
+    # this stagger, every polyline goes through ~the same first leg before
+    # fanning to its target, so all labels land at the same screen location.
+    out_edges_by_source: dict[str, list[int]] = {}
+    for i, edge in enumerate(edges):
+        out_edges_by_source.setdefault(edge["src"], []).append(i)
+
     # Draw edges next (so they render beneath node foregrounds)
-    for edge in edges:
+    for i, edge in enumerate(edges):
         pts = " ".join(f"{x},{y}" for x, y in edge["waypoints"])
         out.append(
             f'<polyline points="{pts}" fill="none" '
@@ -3092,19 +4109,51 @@ def render_bpmn_to_svg(
             lx = edge["lx"]
             ly = edge["ly"]
             if lx is None or ly is None:
-                # Place at midpoint of the polyline if no explicit label bounds
-                mid_i = len(edge["waypoints"]) // 2
-                if mid_i >= 1:
-                    p1 = edge["waypoints"][mid_i - 1]
-                    p2 = edge["waypoints"][mid_i]
-                    lx = (p1[0] + p2[0]) / 2
-                    ly = (p1[1] + p2[1]) / 2 - 4
+                # Anchor the label very close to the source exit point. For
+                # single-outflow edges (e.g. task → gateway) 25% along is
+                # plenty. For fan-outs (gateway → N end events), all the
+                # outgoing polylines start from the same point and travel
+                # through nearly the same first segment before splitting,
+                # so 25% of each polyline lands at the same screen spot.
+                # We anchor at the source itself and stagger siblings
+                # vertically to keep them distinct.
+                wp = edge["waypoints"]
+                siblings = out_edges_by_source.get(edge["src"], [edge])
+                # Index within the source's outgoing fan
+                try:
+                    sibling_idx = siblings.index(i)
+                except ValueError:
+                    sibling_idx = 0
+                n_siblings = len(siblings)
+
+                if len(wp) >= 2:
+                    p1 = wp[0]
+                    p2 = wp[1]
+                    # 8% along the first leg — well clear of any target
+                    base_lx = p1[0] + (p2[0] - p1[0]) * 0.08
+                    base_ly = p1[1] + (p2[1] - p1[1]) * 0.08
                 else:
-                    lx, ly = edge["waypoints"][0]
+                    base_lx, base_ly = wp[0]
+
+                # Vertical stagger when the source fans to >1 children.
+                # Each sibling label gets 14px of vertical separation, which
+                # is roughly one line of label-font-size text.
+                if n_siblings > 1:
+                    stagger_offset = (sibling_idx - (n_siblings - 1) / 2) * 14
+                    ly = base_ly + stagger_offset - 4
+                else:
+                    ly = base_ly - 4
+                lx = base_lx
             label = _xml_escape(edge["label"][:40])
+            # White stroke halo behind the text so it remains readable when
+            # polylines pass through it — important when fan-out labels
+            # cluster near the gateway and the fan polylines criss-cross
+            # behind them.
             out.append(
                 f'<text x="{lx}" y="{ly}" font-size="{style["label_font_size"]}" '
-                f'fill="{style["flow_label_fill"]}">{label}</text>'
+                f'fill="{style["flow_label_fill"]}" '
+                f'paint-order="stroke" stroke="{style["lane_fill"]}" '
+                f'stroke-width="3">{label}</text>'
             )
 
     # Draw nodes (tasks, gateways, events) on top
@@ -3174,13 +4223,18 @@ def render_bpmn_to_svg(
                 f'<circle cx="{cx}" cy="{cy}" r="{radius}" '
                 f'fill="{fill}" stroke="{stroke}" stroke-width="{stroke_w}"/>'
             )
-            # Label under the event
+            # Wrapped label below the event. Without wrapping, long end-event
+            # names like "Strong consensus to SUPPORT — implement" extend
+            # past the column width (170 px) and overflow into adjacent
+            # event labels. Wrap to ~22 chars per line; allow up to 4 lines.
             if name:
-                out.append(
-                    f'<text x="{cx}" y="{y + h + 14}" '
-                    f'font-size="{style["font_size"]}" text-anchor="middle" '
-                    f'fill="{style["text_fill"]}">{_xml_escape(name)}</text>'
-                )
+                # Centre the label block under the circle. _wrap_text_svg
+                # centers around (cx, cy) by default, but for events we want
+                # the text BELOW the circle, so push cy down by radius + half
+                # the expected text block height.
+                approx_lines = min(max(1, len(name) // 22 + 1), 4)
+                label_cy = y + h + 7 + (approx_lines * 13) / 2
+                out.append(_wrap_text_svg(name, cx, label_cy, _STEP_GAP - 20, style))
 
     # ── 3-column stats footer (only when a case dict was supplied) ──────────
     if has_full_case and footer_h:
@@ -4094,27 +5148,80 @@ def _build_aggregate_svg(m: dict) -> str:
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(
         description=(
-            "Generate BPMN / SVG / PNG diagrams from Wikipedia arbitration "
-            "cases using Gemma + deterministic text analysis. Runs in two "
-            "modes: per-case extraction (--text/--arb/--json/--batch) and "
-            "corpus aggregation (--aggregate)."
+            "Generate BPMN / SVG / PNG diagrams from Wikipedia dispute "
+            "resolution discussions using Gemma + deterministic text "
+            "analysis. Supports three venues: ArbCom (--arb), DRN "
+            "(--drn / --drn-archive), and RFC (--rfc). Runs in two modes: "
+            "per-case extraction (--text/--arb/--drn/--rfc/--json/--batch) "
+            "and per-venue corpus aggregation (--aggregate / "
+            "--aggregate-drn / --aggregate-rfc)."
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     src = p.add_mutually_exclusive_group(required=True)
+    # ── Per-case extraction modes ───────────────────────────────────────────
     src.add_argument("--text", metavar="FILE", help="Plain-text / wikitext file")
     src.add_argument("--arb", metavar="CASE", help="Wikipedia ARB case title")
     src.add_argument(
-        "--json", metavar="FILE", help="Pre-scraped ARB JSON (bpmn_from_arb format)"
+        "--drn",
+        metavar="CASE",
+        help="Wikipedia DRN case — full page or 'Page#Section' "
+        "form, e.g. "
+        "'Wikipedia:Dispute_resolution_noticeboard/Archive_233"
+        "#Talk:Foo'",
+    )
+    src.add_argument(
+        "--drn-archive",
+        metavar="N",
+        help="Process every case in DRN Archive N at once. E.g. --drn-archive 233",
+    )
+    src.add_argument(
+        "--rfc",
+        metavar="PAGE",
+        help="Wikipedia RFC — full page or 'Page#Section' form, "
+        "e.g. 'Talk:Article#RfC_about_lead_section'",
+    )
+    src.add_argument(
+        "--json",
+        metavar="FILE",
+        help="Pre-scraped ARB JSON (bpmn_from_arb format) — "
+        "list of {title, content} or {cases: [...]}.",
+    )
+    src.add_argument(
+        "--json-drn",
+        metavar="FILE",
+        help="Pre-scraped DRN JSON from fetch_drn_archived_cases.py "
+        "(shape: {cases: [{title, content, ...}]}). Each "
+        "case is processed with the DRN extraction recipe.",
+    )
+    src.add_argument(
+        "--json-rfc",
+        metavar="FILE",
+        help="Pre-scraped RFC JSON from fetch_rfc.py "
+        "(shape: {rfcs: [{title, content, ...}]}). Each "
+        "RFC is processed with the RFC extraction recipe.",
     )
     src.add_argument("--batch", metavar="DIR", help="Directory of *.txt files")
+    # ── Aggregate modes (one per venue, kept separate per user request) ─────
     src.add_argument(
         "--aggregate",
         metavar="DIR",
-        help="Directory of *_case.json files — build ONE corpus-"
-        "level aggregate SVG with outcome percentages, "
-        "top rules, namespace breakdown, and case-type mix. "
-        "Does not call Gemma; fast.",
+        help="ArbCom aggregate: directory of *_case.json files. "
+        "Builds ONE ArbCom corpus diagram. Fast.",
+    )
+    src.add_argument(
+        "--aggregate-drn",
+        metavar="DIR",
+        help="DRN aggregate: directory of DRN *_case.json files. "
+        "Builds ONE DRN corpus diagram with closure-type "
+        "percentages and top rules.",
+    )
+    src.add_argument(
+        "--aggregate-rfc",
+        metavar="DIR",
+        help="RFC aggregate: directory of RFC *_case.json files. "
+        "Builds ONE RFC corpus diagram with consensus "
+        "outcome percentages and !vote distributions.",
     )
 
     p.add_argument(
@@ -4149,7 +5256,19 @@ def parse_args() -> argparse.Namespace:
         "--max-cases",
         type=int,
         default=None,
-        help="With --json or --batch, cap number of cases processed",
+        help="With --json* or --batch / --drn-archive, cap number of cases processed",
+    )
+    p.add_argument(
+        "--filter-titles",
+        metavar="SUBSTR",
+        action="append",
+        default=[],
+        help="With any --json* mode, restrict to cases whose "
+        "title contains this substring (case-insensitive). "
+        "Repeat the flag for multiple substrings: "
+        "--filter-titles 'Power electronics' "
+        "--filter-titles 'Touhou'. A case is kept if its "
+        "title matches ANY of the substrings.",
     )
     p.add_argument(
         "--simple-lanes",
@@ -4166,6 +5285,15 @@ def parse_args() -> argparse.Namespace:
         "(skip /Evidence, /Workshop, /Proposed_decision, etc.)",
     )
     p.add_argument(
+        "--text-venue",
+        choices=list(VENUES.keys()),
+        default="arb",
+        help="With --text/--batch, which venue's extraction recipe "
+        "to use (default: arb). Only meaningful when paired "
+        "with --text or --batch — for --arb / --drn / --rfc "
+        "the venue is implied by the flag itself.",
+    )
+    p.add_argument(
         "--dry-run",
         action="store_true",
         help="Print extracted case JSON; don't write files",
@@ -4180,35 +5308,13 @@ def main() -> None:
 
     # ── Aggregate mode: doesn't need Gemma; short-circuit before loading ────
     if args.aggregate:
-        agg_dir = Path(args.aggregate)
-        out_svg = output_dir / "arb_aggregate_workflow.svg"
-        out_png = output_dir / "arb_aggregate_workflow.png"
-        output_dir.mkdir(parents=True, exist_ok=True)
-        cases = _load_aggregate_cases(agg_dir)
-        if not cases:
-            print(f"ERROR: no *_case.json files found in {agg_dir}")
-            sys.exit(1)
-        print(f"Aggregating {len(cases)} cases from {agg_dir} ...")
-        metrics = _aggregate_metrics(cases)
-        svg = _build_aggregate_svg(metrics)
-        out_svg.write_text(svg, encoding="utf-8")
-        print(f"Saved aggregate SVG → {out_svg}")
-        # Best-effort PNG
-        if (
-            render_bpmn_to_png.__wrapped__
-            if hasattr(render_bpmn_to_png, "__wrapped__")
-            else True
-        ):
-            try:
-                import cairosvg  # type: ignore
-
-                cairosvg.svg2png(url=str(out_svg), write_to=str(out_png), scale=2.0)
-                if out_png.exists():
-                    print(f"Saved aggregate PNG → {out_png}")
-            except ImportError:
-                print("  [png] cairosvg not installed; SVG is ready to view.")
-            except Exception as exc:
-                print(f"  [png] cairosvg failed: {exc}")
+        _run_aggregate(args.aggregate, output_dir, venue="arb")
+        return
+    if args.aggregate_drn:
+        _run_aggregate(args.aggregate_drn, output_dir, venue="drn")
+        return
+    if args.aggregate_rfc:
+        _run_aggregate(args.aggregate_rfc, output_dir, venue="rfc")
         return
 
     # Load Gemma (unless disabled)
@@ -4237,6 +5343,7 @@ def main() -> None:
             input_budget,
             detailed_lanes,
             args.dry_run,
+            venue=args.text_venue,
         )
 
     elif args.arb:
@@ -4256,27 +5363,117 @@ def main() -> None:
             input_budget,
             detailed_lanes,
             args.dry_run,
+            venue="arb",
         )
 
-    elif args.json:
-        with open(args.json, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        cases = data if isinstance(data, list) else data.get("cases", [])
+    elif args.drn:
+        try:
+            text = fetch_drn_case(args.drn)
+        except Exception as exc:
+            print(f"ERROR fetching DRN '{args.drn}': {exc}")
+            sys.exit(1)
+        if not text.strip():
+            print(f"ERROR: no content found for DRN '{args.drn}'")
+            sys.exit(1)
+        process_document(
+            loader,
+            text,
+            args.drn,
+            output_dir,
+            input_budget,
+            detailed_lanes,
+            args.dry_run,
+            venue="drn",
+        )
+
+    elif args.drn_archive:
+        try:
+            sections = fetch_drn_archive(args.drn_archive)
+        except Exception as exc:
+            print(f"ERROR fetching DRN archive {args.drn_archive}: {exc}")
+            sys.exit(1)
+        if not sections:
+            print(f"ERROR: no cases found in DRN archive {args.drn_archive}")
+            sys.exit(1)
         if args.max_cases:
-            cases = cases[: args.max_cases]
-        print(f"Processing {len(cases)} cases from {args.json}")
-        for c in cases:
-            content = c.get("content", "")
-            title = c.get("title", "untitled")
+            sections = sections[: args.max_cases]
+        print(f"Processing {len(sections)} DRN cases from archive {args.drn_archive}\n")
+        for section_title, body in sections:
+            full_title = (
+                f"DRN_archive_{args.drn_archive}_{safe_filename(section_title)}"
+            )
             process_document(
                 loader,
-                content,
-                title,
+                body,
+                full_title,
                 output_dir,
                 input_budget,
                 detailed_lanes,
                 args.dry_run,
+                venue="drn",
             )
+
+    elif args.rfc:
+        try:
+            text = fetch_rfc(args.rfc)
+        except Exception as exc:
+            print(f"ERROR fetching RFC '{args.rfc}': {exc}")
+            sys.exit(1)
+        if not text.strip():
+            print(f"ERROR: no content found for RFC '{args.rfc}'")
+            sys.exit(1)
+        process_document(
+            loader,
+            text,
+            args.rfc,
+            output_dir,
+            input_budget,
+            detailed_lanes,
+            args.dry_run,
+            venue="rfc",
+        )
+
+    elif args.json:
+        _process_json_corpus(
+            args.json,
+            loader,
+            output_dir,
+            input_budget,
+            detailed_lanes,
+            args.dry_run,
+            venue="arb",
+            filter_titles=args.filter_titles,
+            max_cases=args.max_cases,
+            list_keys=("cases",),
+        )
+
+    elif args.json_drn:
+        _process_json_corpus(
+            args.json_drn,
+            loader,
+            output_dir,
+            input_budget,
+            detailed_lanes,
+            args.dry_run,
+            venue="drn",
+            filter_titles=args.filter_titles,
+            max_cases=args.max_cases,
+            list_keys=("cases",),
+        )
+
+    elif args.json_rfc:
+        _process_json_corpus(
+            args.json_rfc,
+            loader,
+            output_dir,
+            input_budget,
+            detailed_lanes,
+            args.dry_run,
+            venue="rfc",
+            filter_titles=args.filter_titles,
+            max_cases=args.max_cases,
+            list_keys=("rfcs", "cases"),  # fetch_rfc.py uses "rfcs"
+        )
 
     elif args.batch:
         batch_dir = Path(args.batch)
@@ -4297,7 +5494,139 @@ def main() -> None:
                 input_budget,
                 detailed_lanes,
                 args.dry_run,
+                venue=args.text_venue,
             )
+
+
+def _process_json_corpus(
+    json_path: str,
+    loader: Gemma4Loader | None,
+    output_dir: Path,
+    input_budget: int,
+    detailed_lanes: bool,
+    dry_run: bool,
+    venue: str,
+    filter_titles: list[str],
+    max_cases: int | None,
+    list_keys: tuple[str, ...],
+) -> None:
+    """Load a pre-fetched JSON corpus, optionally filter by title substrings,
+    cap to max_cases, and process every entry through the right venue's
+    pipeline.
+
+    `list_keys` is a tuple of dict keys to try in order when the JSON is a
+    dict wrapping the case list (ARB and DRN use 'cases', RFC uses 'rfcs').
+    Falls back to treating the entire payload as the case list if it's
+    already a list.
+    """
+    with open(json_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    if isinstance(data, list):
+        cases = data
+    else:
+        cases = []
+        for k in list_keys:
+            if isinstance(data.get(k), list):
+                cases = data[k]
+                break
+
+    # Title filtering — case-insensitive substring match against any of
+    # the filter strings. Empty list means no filtering.
+    if filter_titles:
+        needles = [s.lower() for s in filter_titles]
+        cases = [
+            c
+            for c in cases
+            if any(n in (c.get("title") or "").lower() for n in needles)
+        ]
+        if not cases:
+            print(f"WARNING: no cases matched filter-titles {filter_titles!r}")
+            return
+        print(f"Filtered to {len(cases)} cases by title substring(s) {filter_titles!r}")
+
+    # Drop records with no content
+    before = len(cases)
+    cases = [c for c in cases if c.get("content")]
+    if len(cases) < before:
+        print(f"Skipped {before - len(cases)} records missing content")
+
+    if max_cases:
+        cases = cases[:max_cases]
+
+    if not cases:
+        print(f"ERROR: no usable cases in {json_path}")
+        sys.exit(1)
+
+    print(f"Processing {len(cases)} {VENUES[venue]['label']} cases from {json_path}")
+    for c in cases:
+        content = c.get("content", "")
+        title = c.get("title", "untitled")
+        process_document(
+            loader,
+            content,
+            title,
+            output_dir,
+            input_budget,
+            detailed_lanes,
+            dry_run,
+            venue=venue,
+        )
+
+
+def _run_aggregate(input_dir: str, output_dir: Path, venue: str) -> None:
+    """Run aggregate-mode rendering for one venue.
+
+    Reads every *_case.json in input_dir, computes corpus metrics, writes
+    SVG + PNG. Currently uses the same _aggregate_metrics + _build_aggregate_svg
+    machinery for all venues — venue-specific aggregations would extend this
+    by branching on case['venue'] inside those helpers.
+    """
+    agg_dir = Path(input_dir)
+    venue_label = VENUES[venue]["label"].lower()
+    out_svg = output_dir / f"{venue_label}_aggregate_workflow.svg"
+    out_png = output_dir / f"{venue_label}_aggregate_workflow.png"
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    cases = _load_aggregate_cases(agg_dir)
+    if not cases:
+        print(f"ERROR: no *_case.json files found in {agg_dir}")
+        sys.exit(1)
+
+    # Filter to cases whose venue matches (or whose venue field is missing
+    # and we're aggregating ARB — handles legacy ARB JSONs with no venue tag).
+    if venue == "arb":
+        venue_cases = [c for c in cases if c.get("venue", "arb") == "arb"]
+    else:
+        venue_cases = [c for c in cases if c.get("venue") == venue]
+
+    if not venue_cases:
+        print(
+            f"ERROR: no {VENUES[venue]['label']} cases found in {agg_dir} "
+            f"(found {len(cases)} cases of other venues). Did you mean a "
+            f"different --aggregate flag?"
+        )
+        sys.exit(1)
+
+    print(
+        f"Aggregating {len(venue_cases)} {VENUES[venue]['label']} cases "
+        f"from {agg_dir} ..."
+    )
+    metrics = _aggregate_metrics(venue_cases)
+    metrics["venue_label"] = VENUES[venue]["label"]
+    svg = _build_aggregate_svg(metrics)
+    out_svg.write_text(svg, encoding="utf-8")
+    print(f"Saved aggregate SVG → {out_svg}")
+
+    try:
+        import cairosvg  # type: ignore
+
+        cairosvg.svg2png(url=str(out_svg), write_to=str(out_png), scale=2.0)
+        if out_png.exists():
+            print(f"Saved aggregate PNG → {out_png}")
+    except ImportError:
+        print("  [png] cairosvg not installed; SVG is ready to view.")
+    except Exception as exc:
+        print(f"  [png] cairosvg failed: {exc}")
 
 
 if __name__ == "__main__":
