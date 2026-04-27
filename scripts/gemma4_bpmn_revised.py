@@ -3648,7 +3648,7 @@ def process_document(
     with regex+LLM merge; DRN/RFC use the generic `extract_venue_case`) and
     its own BPMN builder.
     """
-    stem = safe_filename(title)
+    stem = f"arb_gemma_{safe_filename(title)}"
 
     if venue == "arb":
         # ArbCom — full hybrid extraction with all the per-section regex parsing
