@@ -335,12 +335,18 @@ export default function BpmnScreen() {
     setSelected(section.cases[0] ?? null)
   }
 
-  const isMulti      = (selected?.variants?.length ?? 0) > 1
+  const isMulti       = (selected?.variants?.length ?? 0) > 1
   const singleVariant = !isMulti ? selected?.variants?.[0] : null
 
   // KPI stats use the first (rules-based) variant's stem
   const primaryStem = selected?.variants?.[0] ? stemFromFile(selected.variants[0].file) : null
   const stats = primaryStem ? caseStats[primaryStem] : null
+
+  // Resolve Wikipedia URL: prefer stats-derived URL, fall back to hardcoded variant URL
+  const caseUrl = (() => {
+    if (activeSection.id === 'drn') return stats?.sourceUrl || singleVariant?.url || null
+    return stats?.url || singleVariant?.url || null
+  })()
 
   return (
     <div className="bpmn-screen">
@@ -390,8 +396,8 @@ export default function BpmnScreen() {
                 <div style={{ minWidth: 0, flex: 1 }}>
                   <h2>{selected.label}</h2>
                   <div className="bpmn-viewer__desc">{selected.description}</div>
-                  {singleVariant?.url && (
-                    <a className="bpmn-viewer__link" href={singleVariant.url} target="_blank" rel="noreferrer">
+                  {caseUrl && (
+                    <a className="bpmn-viewer__link" href={caseUrl} target="_blank" rel="noreferrer">
                       View on Wikipedia ↗
                     </a>
                   )}
