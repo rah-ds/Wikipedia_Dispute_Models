@@ -1,0 +1,151 @@
+{
+  "title": "Requests for comment/Global AbuseFilter",
+  "venue": "rfc",
+  "venue_label": "RFC",
+  "rule_invocations": {
+    "total_invocations": 1,
+    "unique_rules": 1,
+    "by_type": {
+      "policy": 0,
+      "guideline": 0,
+      "essay": 0,
+      "other": 1
+    },
+    "top_rules": [
+      {
+        "ref": "WP:AN",
+        "count": 1,
+        "type": "other",
+        "first_section": "Preamble"
+      }
+    ],
+    "namespace_links": [
+      {
+        "namespace": "User",
+        "count": 44,
+        "meaning": "editor conduct \u2014 personal user page evidence"
+      },
+      {
+        "namespace": "User_talk",
+        "count": 34,
+        "meaning": "editor conduct \u2014 user-talk-page discussions"
+      },
+      {
+        "namespace": "Main",
+        "count": 4,
+        "meaning": "article content evidence"
+      },
+      {
+        "namespace": "Special",
+        "count": 2,
+        "meaning": "special-page / log evidence"
+      },
+      {
+        "namespace": "User_Talk",
+        "count": 2,
+        "meaning": "(unclassified namespace)"
+      },
+      {
+        "namespace": "Category",
+        "count": 1,
+        "meaning": "category / taxonomy evidence"
+      }
+    ]
+  },
+  "proposer": "Glaisher",
+  "rfc_id": "2A1B3C4",
+  "page": "Wikipedia:Requests for comment/2014/November",
+  "proposal_question": "Should cross-wiki filters exist at all?",
+  "proposal_options": [
+    "Yes",
+    "No"
+  ],
+  "rfc_categories": [
+    "policy"
+  ],
+  "open_date": "2014-11-05",
+  "policies_invoked": [
+    "WP:NPOV"
+  ],
+  "_proposal_pass": {
+    "proposer": "Glaisher",
+    "rfc_id": "2A1B3C4",
+    "page": "Wikipedia:Requests for comment/2014/November",
+    "proposal_question": "Should cross-wiki filters exist at all?",
+    "proposal_options": [
+      "Yes",
+      "No"
+    ],
+    "rfc_categories": [
+      "policy"
+    ],
+    "open_date": "2014-11-05",
+    "policies_invoked": [
+      "WP:NPOV"
+    ]
+  },
+  "support_count": 3,
+  "oppose_count": 1,
+  "neutral_count": 1,
+  "alternative_count": 1,
+  "support_voters": [
+    "Glaisher",
+    "Stryn",
+    "Jasper Deng"
+  ],
+  "oppose_voters": [
+    "Ningauble"
+  ],
+  "key_arguments_for": [
+    "Helps with dealing with cross-wiki abuse (spam in particular) and makes local admins' jobs easier.",
+    "Local admins should have the rights to view global filters.",
+    "Formalizing the process for global abuse filter editor, including a week of discussion before granting the right."
+  ],
+  "key_arguments_against": [
+    "Concerned about the use of these filters for outright censorship."
+  ],
+  "uninvolved_voters": 1,
+  "involved_voters": 6,
+  "_votes_pass": {
+    "support_count": 3,
+    "oppose_count": 1,
+    "neutral_count": 1,
+    "alternative_count": 1,
+    "support_voters": [
+      "Glaisher",
+      "Stryn",
+      "Jasper Deng"
+    ],
+    "oppose_voters": [
+      "Ningauble"
+    ],
+    "key_arguments_for": [
+      "Helps with dealing with cross-wiki abuse (spam in particular) and makes local admins' jobs easier.",
+      "Local admins should have the rights to view global filters.",
+      "Formalizing the process for global abuse filter editor, including a week of discussion before granting the right."
+    ],
+    "key_arguments_against": [
+      "Concerned about the use of these filters for outright censorship."
+    ],
+    "uninvolved_voters": 1,
+    "involved_voters": 6
+  },
+  "closer": "PiRSquared17",
+  "closer_is_admin": true,
+  "consensus_finding": "strong-consensus-support",
+  "closing_summary": "The discussion concluded with broad support for granting local administrators the ability to view global abuse filters and the abuse logs, as well as formalizing a process for requesting abuse filter editor rights. Stewards' editing rights were affirmed.",
+  "close_date": "2014-11-01",
+  "duration_days": 6,
+  "appealed": false,
+  "next_actions": "no action",
+  "_closure_pass": {
+    "closer": "PiRSquared17",
+    "closer_is_admin": true,
+    "consensus_finding": "strong-consensus-support",
+    "closing_summary": "The discussion concluded with broad support for granting local administrators the ability to view global abuse filters and the abuse logs, as well as formalizing a process for requesting abuse filter editor rights. Stewards' editing rights were affirmed.",
+    "close_date": "2014-11-01",
+    "duration_days": 6,
+    "appealed": false,
+    "next_actions": "no action"
+  }
+}

@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="60.0 -30.0 2820.0 873.0" width="2820" height="873" font-family="Helvetica, Arial, sans-serif">
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#657b83"/></marker></defs>
+<rect x="70.0" y="-20.0" width="2800.0" height="50" fill="#f3f3f3" stroke="#999999" rx="4" ry="4"/>
+<text x="85.0" y="4.0" font-size="16" font-weight="bold" fill="#073642">Requests for comment/Global AbuseFilter</text>
+<text x="85.0" y="24.0" font-size="11" fill="#073642">3 lanes · 5 tasks · 1 gateways · 8 end events · 0 ongoing (↻)</text>
+<rect x="100.0" y="80.0" width="2740.0" height="480.0" fill="#ffffff" stroke="#999999" stroke-width="1"/>
+<rect x="130.0" y="80.0" width="2710.0" height="160.0" fill="#ffffff" stroke="#999999" stroke-width="1"/>
+<rect x="130.0" y="80.0" width="28" height="160.0" fill="#f3f3f3" stroke="#999999"/>
+<text x="144.0" y="160.0" font-size="13" fill="#073642" text-anchor="middle" transform="rotate(-90 144.0 160.0)">Proposer</text>
+<rect x="130.0" y="240.0" width="2710.0" height="160.0" fill="#ffffff" stroke="#999999" stroke-width="1"/>
+<rect x="130.0" y="240.0" width="28" height="160.0" fill="#f3f3f3" stroke="#999999"/>
+<text x="144.0" y="320.0" font-size="13" fill="#073642" text-anchor="middle" transform="rotate(-90 144.0 320.0)">Participants</text>
+<rect x="130.0" y="400.0" width="2710.0" height="160.0" fill="#ffffff" stroke="#999999" stroke-width="1"/>
+<rect x="130.0" y="400.0" width="28" height="160.0" fill="#f3f3f3" stroke="#999999"/>
+<text x="144.0" y="480.0" font-size="13" fill="#073642" text-anchor="middle" transform="rotate(-90 144.0 480.0)">Closer</text>
+<polyline points="246.0,160.0 380.0,160.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<polyline points="510.0,160.0 550.0,160.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<polyline points="680.0,160.0 720.0,320.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<polyline points="850.0,320.0 890.0,320.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<polyline points="1020.0,320.0 1060.0,480.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<polyline points="1190.0,480.0 1230.0,480.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<polyline points="1280.0,480.0 1400.0,480.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="1316.0" y="407.0" font-size="9" fill="#073642" paint-order="stroke" stroke="#ffffff" stroke-width="3">SS</text>
+<polyline points="1280.0,480.0 1570.0,480.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="1401.0" y="425.0" font-size="9" fill="#073642" paint-order="stroke" stroke="#ffffff" stroke-width="3">RS</text>
+<polyline points="1280.0,480.0 1740.0,480.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="1486.0" y="443.0" font-size="9" fill="#073642" paint-order="stroke" stroke="#ffffff" stroke-width="3">NC</text>
+<polyline points="1280.0,480.0 1910.0,480.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="1571.0" y="461.0" font-size="9" fill="#073642" paint-order="stroke" stroke="#ffffff" stroke-width="3">RO</text>
+<polyline points="1280.0,480.0 2080.0,480.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="1656.0" y="479.0" font-size="9" fill="#073642" paint-order="stroke" stroke="#ffffff" stroke-width="3">SO</text>
+<polyline points="1280.0,480.0 2250.0,480.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="1741.0" y="497.0" font-size="9" fill="#073642" paint-order="stroke" stroke="#ffffff" stroke-width="3">W</text>
+<polyline points="1280.0,480.0 2420.0,480.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="1826.0" y="515.0" font-size="9" fill="#073642" paint-order="stroke" stroke="#ffffff" stroke-width="3">SC</text>
+<polyline points="1280.0,480.0 2590.0,480.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="1911.0" y="533.0" font-size="9" fill="#073642" paint-order="stroke" stroke="#ffffff" stroke-width="3">U</text>
+<circle cx="228.0" cy="160.0" r="18.0" fill="#b4f2a1" stroke="#2aa198" stroke-width="2"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="228.0" y="194.75">Issue requires community</tspan><tspan x="228.0" y="207.75">input</tspan></text>
+<rect x="380.0" y="130.0" width="130.0" height="60.0" rx="6" ry="6" fill="#eee8d5" stroke="#586e75" stroke-width="1.5"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="445.0" y="163.25">Open RFC: Glaisher</tspan></text>
+<rect x="550.0" y="130.0" width="130.0" height="60.0" rx="6" ry="6" fill="#fdf6e3" stroke="#586e75" stroke-width="1.5"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="615.0" y="156.75">Listed by Legobot —</tspan><tspan x="615.0" y="169.75">categories: policy</tspan></text>
+<rect x="720.0" y="290.0" width="130.0" height="60.0" rx="6" ry="6" fill="#eee8d5" stroke="#586e75" stroke-width="1.5"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="785.0" y="310.25">Community</tspan><tspan x="785.0" y="323.25">discussion (3S / 1O</tspan><tspan x="785.0" y="336.25">/ 1N / 1Alt)</tspan></text>
+<rect x="890.0" y="290.0" width="130.0" height="60.0" rx="6" ry="6" fill="#fdf6e3" stroke="#586e75" stroke-width="1.5"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="955.0" y="310.25">30-day discussion</tspan><tspan x="955.0" y="323.25">period (Legobot</tspan><tspan x="955.0" y="336.25">delists)</tspan></text>
+<rect x="1060.0" y="450.0" width="130.0" height="60.0" rx="6" ry="6" fill="#eee8d5" stroke="#586e75" stroke-width="1.5"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="1125.0" y="470.25">Closer summary:</tspan><tspan x="1125.0" y="483.25">PiRSquared17</tspan><tspan x="1125.0" y="496.25">(admin)</tspan></text>
+<polygon points="1255.0,455.0 1280.0,480.0 1255.0,505.0 1230.0,480.0" fill="#fff8dc" stroke="#b58900" stroke-width="1.5"/>
+<text x="1255.0" y="485.0" font-size="16" text-anchor="middle" fill="#b58900" font-weight="bold">×</text>
+<text x="1255.0" y="519.0" font-size="11" text-anchor="middle" fill="#073642">Consensus finding?</text>
+<circle cx="1418.0" cy="480.0" r="18.0" fill="#f4a8a8" stroke="#dc322f" stroke-width="3"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="1418.0" y="514.75">★ Strong consensus to</tspan><tspan x="1418.0" y="527.75">SUPPORT — implement</tspan></text>
+<circle cx="1588.0" cy="480.0" r="18.0" fill="#f4a8a8" stroke="#dc322f" stroke-width="3"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="1588.0" y="514.75">Rough consensus to</tspan><tspan x="1588.0" y="527.75">support — implement with</tspan><tspan x="1588.0" y="540.75">caveats</tspan></text>
+<circle cx="1758.0" cy="480.0" r="18.0" fill="#f4a8a8" stroke="#dc322f" stroke-width="3"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="1758.0" y="514.75">No consensus — status quo</tspan><tspan x="1758.0" y="527.75">/ no change</tspan></text>
+<circle cx="1928.0" cy="480.0" r="18.0" fill="#f4a8a8" stroke="#dc322f" stroke-width="3"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="1928.0" y="521.25">Rough consensus to OPPOSE</tspan><tspan x="1928.0" y="534.25">— do not implement</tspan></text>
+<circle cx="2098.0" cy="480.0" r="18.0" fill="#f4a8a8" stroke="#dc322f" stroke-width="3"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="2098.0" y="514.75">Strong consensus to</tspan><tspan x="2098.0" y="527.75">OPPOSE — proposal</tspan><tspan x="2098.0" y="540.75">rejected</tspan></text>
+<circle cx="2268.0" cy="480.0" r="18.0" fill="#f4a8a8" stroke="#dc322f" stroke-width="3"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="2268.0" y="514.75">Withdrawn by proposer</tspan></text>
+<circle cx="2438.0" cy="480.0" r="18.0" fill="#f4a8a8" stroke="#dc322f" stroke-width="3"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="2438.0" y="514.75">Speedy-closed</tspan><tspan x="2438.0" y="527.75">(snowball/bad</tspan><tspan x="2438.0" y="540.75">faith/duplicate)</tspan></text>
+<circle cx="2608.0" cy="480.0" r="18.0" fill="#f4a8a8" stroke="#dc322f" stroke-width="3"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="2608.0" y="514.75">Outcome unclear</tspan></text>
+<rect x="70.0" y="610.0" width="2800.0" height="223" fill="#f3f3f3" stroke="#999999" rx="4" ry="4"/>
+<text x="84.0" y="632.0" font-size="13" font-weight="bold" fill="#073642">Case element counts</text>
+<text x="84.0" y="652.0" font-size="11" font-family="monospace" fill="#073642">Parties:                 0</text>
+<text x="84.0" y="665.0" font-size="11" font-family="monospace" fill="#073642">Principles:              0</text>
+<text x="84.0" y="678.0" font-size="11" font-family="monospace" fill="#073642">Findings of fact:        0</text>
+<text x="84.0" y="691.0" font-size="11" font-family="monospace" fill="#073642">Remedies:                0</text>
+<text x="84.0" y="704.0" font-size="11" font-family="monospace" fill="#073642">Amendments:              0</text>
+<text x="84.0" y="717.0" font-size="11" font-family="monospace" fill="#073642">Appeals:                 0</text>
+<text x="84.0" y="730.0" font-size="11" font-family="monospace" fill="#073642">Enforcement actions:     0</text>
+<text x="84.0" y="743.0" font-size="11" font-family="monospace" fill="#073642">Clarifications:          0</text>
+<text x="84.0" y="756.0" font-size="11" font-family="monospace" fill="#073642">Post-case motions:       0</text>
+<text x="84.0" y="769.0" font-size="11" font-family="monospace" fill="#073642">Pre-case actions:        0</text>
+<text x="84.0" y="782.0" font-size="11" font-family="monospace" fill="#073642">Injunction issued:       no</text>
+<text x="84.0" y="795.0" font-size="11" font-family="monospace" fill="#073642">Drafting arbitrators:    0</text>
+<text x="84.0" y="808.0" font-size="11" font-family="monospace" fill="#073642">Recused arbitrators:     0</text>
+<text x="84.0" y="821.0" font-size="11" font-family="monospace" fill="#073642">Case outcome:            Unknown</text>
+<text x="84.0" y="834.0" font-size="11" font-family="monospace" fill="#073642">Accept votes:  0A / 0D / 0R / 0Ab (net=+0)</text>
+<text x="1004.0" y="632.0" font-size="13" font-weight="bold" fill="#073642">Invoked rules (1 total, 1 unique)</text>
+<text x="1004.0" y="648.0" font-size="10" fill="#073642" font-style="italic">policies: 0, guidelines: 0, essays: 0, other: 1</text>
+<text x="1004.0" y="664.0" font-size="11" font-family="monospace" fill="#073642">· WP:AN                  × 1</text>
+<text x="1924.0" y="632.0" font-size="13" font-weight="bold" fill="#073642">Evidence namespaces</text>
+<text x="1924.0" y="652.0" font-size="11" font-family="monospace" fill="#073642">User                44 (50.6%)</text>
+<text x="1924.0" y="665.0" font-size="11" font-family="monospace" fill="#073642">User_talk           34 (39.1%)</text>
+<text x="1924.0" y="678.0" font-size="11" font-family="monospace" fill="#073642">Main                 4 ( 4.6%)</text>
+<text x="1924.0" y="691.0" font-size="11" font-family="monospace" fill="#073642">Special              2 ( 2.3%)</text>
+<text x="1924.0" y="704.0" font-size="11" font-family="monospace" fill="#073642">User_Talk            2 ( 2.3%)</text>
+<text x="1924.0" y="717.0" font-size="11" font-family="monospace" fill="#073642">Category             1 ( 1.1%)</text>
+<text x="1924.0" y="743.0" font-size="9" fill="#073642" font-style="italic">User/User_talk ⇒ conduct; Main/Talk ⇒ content dispute</text>
+</svg>

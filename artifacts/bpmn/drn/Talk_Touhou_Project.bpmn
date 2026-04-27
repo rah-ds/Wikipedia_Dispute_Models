@@ -1,0 +1,229 @@
+<?xml version="1.0" ?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Defs_11e13402" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Gemma4-ARB-BPMN-Generator" exporterVersion="3.0">
+  <bpmn:collaboration id="Collab_0fc0cd3a">
+    <bpmn:participant id="Participant_2e51cfd0" name="Talk:Touhou_Project" processRef="Process_b0d414ec"/>
+  </bpmn:collaboration>
+  <bpmn:process id="Process_b0d414ec" isExecutable="false">
+    <bpmn:laneSet id="LS_491d9f82">
+      <bpmn:lane id="Lane_e9b04970" name="Filing Party">
+        <bpmn:flowNodeRef>startE_556f367e</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>userTa_012c2eb5</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_96c9f3cc" name="Other Parties">
+        <bpmn:flowNodeRef>userTa_ebb06a05</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_3443c4e1" name="Volunteer Mediator">
+        <bpmn:flowNodeRef>exclus_ed2e8cf0</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>userTa_a9ab9e0f</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>userTa_05db2760</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>userTa_e2315115</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>userTa_85d01917</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>userTa_9b365890</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>exclus_651bdd7a</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_d61a9142" name="Closer">
+        <bpmn:flowNodeRef>endEve_0655c798</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>userTa_c8c19302</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>endEve_a616d765</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="startE_556f367e" name="Content Dispute Identified">
+      <bpmn:documentation>The editor is disputing the romanization of the article's name between &quot;Touhou&quot; and &quot;Tōhō&quot;, arguing that &quot;Tōhō&quot; is more appropriate according to Wikipedia's romanization guidelines, despite the widespread use of &quot;Touhou&quot; within the fandom.</bpmn:documentation>
+      <bpmn:outgoing>Flow_71423949</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="userTa_012c2eb5" name="File DRN: Mr. Stradivarius re: Touhou_Project">
+      <bpmn:documentation>The editor is disputing the romanization of the article's name between &quot;Touhou&quot; and &quot;Tōhō&quot;, arguing that &quot;Tōhō&quot; is more appropriate according to Wikipedia's romanization guidelines, despite the widespread use of &quot;Touhou&quot; within the fandom.</bpmn:documentation>
+      <bpmn:incoming>Flow_71423949</bpmn:incoming>
+      <bpmn:outgoing>Flow_327b1edd</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="userTa_ebb06a05" name="Opening statements from 3 other parties">
+      <bpmn:documentation>Deadkid_dk, Robinchm, 158.37.73.31</bpmn:documentation>
+      <bpmn:incoming>Flow_327b1edd</bpmn:incoming>
+      <bpmn:outgoing>Flow_952481fd</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="exclus_ed2e8cf0" name="Volunteer picks up case?">
+      <bpmn:incoming>Flow_952481fd</bpmn:incoming>
+      <bpmn:outgoing>Flow_62635027</bpmn:outgoing>
+      <bpmn:outgoing>Flow_912eae2f</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="endEve_0655c798" name="Closed: no volunteer">
+      <bpmn:documentation>14-day archival without pickup</bpmn:documentation>
+      <bpmn:incoming>Flow_62635027</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:userTask id="userTa_a9ab9e0f" name="Volunteer mediation: Mr. Stradivarius">
+      <bpmn:incoming>Flow_912eae2f</bpmn:incoming>
+      <bpmn:outgoing>Flow_85bf1346</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="userTa_05db2760" name="Phase 1: Dispute overview">
+      <bpmn:incoming>Flow_85bf1346</bpmn:incoming>
+      <bpmn:outgoing>Flow_d72b332b</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="userTa_e2315115" name="Phase 2: Users involved">
+      <bpmn:incoming>Flow_d72b332b</bpmn:incoming>
+      <bpmn:outgoing>Flow_07810bae</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="userTa_85d01917" name="Phase 3: Resolving the dispute">
+      <bpmn:incoming>Flow_07810bae</bpmn:incoming>
+      <bpmn:outgoing>Flow_20fc6e9d</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="userTa_9b365890" name="Compromise proposal floated">
+      <bpmn:incoming>Flow_20fc6e9d</bpmn:incoming>
+      <bpmn:outgoing>Flow_5278b5ba</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="exclus_651bdd7a" name="Parties accept compromise?">
+      <bpmn:incoming>Flow_5278b5ba</bpmn:incoming>
+      <bpmn:outgoing>Flow_e3b691e2</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="userTa_c8c19302" name="Closer determines outcome: Mr. Stradivarius">
+      <bpmn:documentation>the participants have come to a consensus on how to romanize the name of the article.</bpmn:documentation>
+      <bpmn:incoming>Flow_e3b691e2</bpmn:incoming>
+      <bpmn:outgoing>Flow_656ebd1f</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="endEve_a616d765" name="Resolved (consensus reached)">
+      <bpmn:documentation>the participants have come to a consensus on how to romanize the name of the article.</bpmn:documentation>
+      <bpmn:incoming>Flow_656ebd1f</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_71423949" sourceRef="startE_556f367e" targetRef="userTa_012c2eb5"/>
+    <bpmn:sequenceFlow id="Flow_327b1edd" sourceRef="userTa_012c2eb5" targetRef="userTa_ebb06a05"/>
+    <bpmn:sequenceFlow id="Flow_952481fd" sourceRef="userTa_ebb06a05" targetRef="exclus_ed2e8cf0"/>
+    <bpmn:sequenceFlow id="Flow_62635027" sourceRef="exclus_ed2e8cf0" targetRef="endEve_0655c798" name="No"/>
+    <bpmn:sequenceFlow id="Flow_912eae2f" sourceRef="exclus_ed2e8cf0" targetRef="userTa_a9ab9e0f" name="Yes"/>
+    <bpmn:sequenceFlow id="Flow_85bf1346" sourceRef="userTa_a9ab9e0f" targetRef="userTa_05db2760"/>
+    <bpmn:sequenceFlow id="Flow_d72b332b" sourceRef="userTa_05db2760" targetRef="userTa_e2315115"/>
+    <bpmn:sequenceFlow id="Flow_07810bae" sourceRef="userTa_e2315115" targetRef="userTa_85d01917"/>
+    <bpmn:sequenceFlow id="Flow_20fc6e9d" sourceRef="userTa_85d01917" targetRef="userTa_9b365890"/>
+    <bpmn:sequenceFlow id="Flow_5278b5ba" sourceRef="userTa_9b365890" targetRef="exclus_651bdd7a"/>
+    <bpmn:sequenceFlow id="Flow_e3b691e2" sourceRef="exclus_651bdd7a" targetRef="userTa_c8c19302" name="Yes"/>
+    <bpmn:sequenceFlow id="Flow_656ebd1f" sourceRef="userTa_c8c19302" targetRef="endEve_a616d765"/>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diag_c74b72e3">
+    <bpmndi:BPMNPlane id="Plane_d89a8078" bpmnElement="Collab_0fc0cd3a">
+      <bpmndi:BPMNShape id="Participant_2e51cfd0_di" bpmnElement="Participant_2e51cfd0" isHorizontal="true">
+        <dc:Bounds x="100" y="80" width="2400" height="640"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_e9b04970_di" bpmnElement="Lane_e9b04970" isHorizontal="true">
+        <dc:Bounds x="130" y="80" width="2370" height="160"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_96c9f3cc_di" bpmnElement="Lane_96c9f3cc" isHorizontal="true">
+        <dc:Bounds x="130" y="240" width="2370" height="160"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_3443c4e1_di" bpmnElement="Lane_3443c4e1" isHorizontal="true">
+        <dc:Bounds x="130" y="400" width="2370" height="160"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_d61a9142_di" bpmnElement="Lane_d61a9142" isHorizontal="true">
+        <dc:Bounds x="130" y="560" width="2370" height="160"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="startE_556f367e_di" bpmnElement="startE_556f367e">
+        <dc:Bounds x="210" y="142" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="182" width="56" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="userTa_012c2eb5_di" bpmnElement="userTa_012c2eb5">
+        <dc:Bounds x="380" y="130" width="130" height="60"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="userTa_ebb06a05_di" bpmnElement="userTa_ebb06a05">
+        <dc:Bounds x="550" y="290" width="130" height="60"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="exclus_ed2e8cf0_di" bpmnElement="exclus_ed2e8cf0">
+        <dc:Bounds x="720" y="455" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="710" y="509" width="70" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="endEve_0655c798_di" bpmnElement="endEve_0655c798">
+        <dc:Bounds x="890" y="622" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="880" y="662" width="56" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="userTa_a9ab9e0f_di" bpmnElement="userTa_a9ab9e0f">
+        <dc:Bounds x="1060" y="450" width="130" height="60"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="userTa_05db2760_di" bpmnElement="userTa_05db2760">
+        <dc:Bounds x="1230" y="450" width="130" height="60"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="userTa_e2315115_di" bpmnElement="userTa_e2315115">
+        <dc:Bounds x="1400" y="450" width="130" height="60"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="userTa_85d01917_di" bpmnElement="userTa_85d01917">
+        <dc:Bounds x="1570" y="450" width="130" height="60"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="userTa_9b365890_di" bpmnElement="userTa_9b365890">
+        <dc:Bounds x="1740" y="450" width="130" height="60"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="exclus_651bdd7a_di" bpmnElement="exclus_651bdd7a">
+        <dc:Bounds x="1910" y="455" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1900" y="509" width="70" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="userTa_c8c19302_di" bpmnElement="userTa_c8c19302">
+        <dc:Bounds x="2080" y="610" width="130" height="60"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="endEve_a616d765_di" bpmnElement="endEve_a616d765">
+        <dc:Bounds x="2250" y="622" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2240" y="662" width="56" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_71423949_di" bpmnElement="Flow_71423949">
+        <di:waypoint x="246" y="160"/>
+        <di:waypoint x="380" y="160"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_327b1edd_di" bpmnElement="Flow_327b1edd">
+        <di:waypoint x="510" y="160"/>
+        <di:waypoint x="550" y="320"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_952481fd_di" bpmnElement="Flow_952481fd">
+        <di:waypoint x="680" y="320"/>
+        <di:waypoint x="720" y="480"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_62635027_di" bpmnElement="Flow_62635027">
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="806" y="541" width="60" height="20"/>
+        </bpmndi:BPMNLabel>
+        <di:waypoint x="770" y="480"/>
+        <di:waypoint x="890" y="640"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_912eae2f_di" bpmnElement="Flow_912eae2f">
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="915" y="479" width="60" height="20"/>
+        </bpmndi:BPMNLabel>
+        <di:waypoint x="770" y="480"/>
+        <di:waypoint x="1060" y="480"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_85bf1346_di" bpmnElement="Flow_85bf1346">
+        <di:waypoint x="1190" y="480"/>
+        <di:waypoint x="1230" y="480"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_d72b332b_di" bpmnElement="Flow_d72b332b">
+        <di:waypoint x="1360" y="480"/>
+        <di:waypoint x="1400" y="480"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_07810bae_di" bpmnElement="Flow_07810bae">
+        <di:waypoint x="1530" y="480"/>
+        <di:waypoint x="1570" y="480"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_20fc6e9d_di" bpmnElement="Flow_20fc6e9d">
+        <di:waypoint x="1700" y="480"/>
+        <di:waypoint x="1740" y="480"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_5278b5ba_di" bpmnElement="Flow_5278b5ba">
+        <di:waypoint x="1870" y="480"/>
+        <di:waypoint x="1910" y="480"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_e3b691e2_di" bpmnElement="Flow_e3b691e2">
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2020" y="550" width="60" height="20"/>
+        </bpmndi:BPMNLabel>
+        <di:waypoint x="1960" y="480"/>
+        <di:waypoint x="2080" y="640"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_656ebd1f_di" bpmnElement="Flow_656ebd1f">
+        <di:waypoint x="2210" y="640"/>
+        <di:waypoint x="2250" y="640"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
