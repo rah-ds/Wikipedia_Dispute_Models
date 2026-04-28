@@ -5,7 +5,8 @@ const BpmnViewer = lazy(() => import('../components/BpmnViewer'))
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-const pngFrom = (bpmnPath) => bpmnPath.replace('.bpmn', '.png')
+/** Returns the image path for a variant: use explicit imgFile if set, else swap .bpmn → .png */
+const imgFrom = (variant) => variant.imgFile || variant.file.replace('.bpmn', '.png')
 
 function stemFromFile(filePath) {
   return filePath.split('/').pop().replace('.bpmn', '')
@@ -13,59 +14,29 @@ function stemFromFile(filePath) {
 
 // ── Case definitions ──────────────────────────────────────────────────────────
 //
-// variants: array of { variantLabel?, file, url? }
+// variants: array of { variantLabel?, file, imgFile?, url? }
 //   - Single-variant cases: one entry, variantLabel omitted
-//   - Multi-variant cases (7, 10): three entries with variantLabel shown as sub-headers
+//   - Multi-variant cases: variantLabel shown as sub-headers, scroll to view all
+//   - imgFile: explicit image override (used for SVG output from Gemma)
 //
-// File stem conventions:
-//   arb_00*                               → Rules-Based Extraction
-//   arb_Wikipedia_Arbitration_Requests_*  → HuggingFace BERT XML
-//   arb_gemma_* / Wikipedia_Arbitration_* → Gemma Model XML
+// Ordering: Aggregate first, then multi-variant cases, then single-variant numbered
 
 const SECTIONS = [
   {
     id: 'arbitration',
     label: 'Arbitration Cases',
     cases: [
+      // ── Aggregate ──
       {
-        id: 'arb-0001-ril',
-        label: 'Arbitration Case 1 - -Ril-',
-        description: 'Arbitration case for the -Ril- dispute.',
-        variants: [{ file: '/bpmn/arb/arb_0001_-Ril-.bpmn' }],
+        id: 'arb-aggregate',
+        label: 'Aggregate Workflow',
+        description: 'Generalised BPMN workflow showing common process paths across all arbitration cases.',
+        variants: [{ file: '/bpmn/arb/arb_aggregate_workflow.bpmn' }],
       },
-      {
-        id: 'arb-0002-8bitjake',
-        label: 'Arbitration Case 2 - 8bitJake',
-        description: 'Arbitration case for 8bitJake dispute.',
-        variants: [{ file: '/bpmn/arb/arb_0002_8bitJake.bpmn' }],
-      },
-      {
-        id: 'arb-0003-168',
-        label: 'Arbitration Case 3 - 168/209/97/34',
-        description: 'Arbitration case involving editors 168, 209, 97, 34.',
-        variants: [{ file: '/bpmn/arb/arb_0003_168_209_97_34.bpmn' }],
-      },
-      {
-        id: 'arb-0004-172',
-        label: 'Arbitration Case 4 - 172',
-        description: 'Arbitration case for editor 172.',
-        variants: [{ file: '/bpmn/arb/arb_0004_172.bpmn' }],
-      },
-      {
-        id: 'arb-0005-172-2',
-        label: 'Arbitration Case 5 - 172 (2)',
-        description: 'Second arbitration case for editor 172.',
-        variants: [{ file: '/bpmn/arb/arb_0005_172_2.bpmn' }],
-      },
-      {
-        id: 'arb-0006-194',
-        label: 'Arbitration Case 6 - 194x144x90x118',
-        description: 'Arbitration case involving multiple editors.',
-        variants: [{ file: '/bpmn/arb/arb_0006_194x144x90x118.bpmn' }],
-      },
+      // ── Multi-variant ──
       {
         id: 'arb-0007-man-in-black',
-        label: 'Arbitration Case 7 - A Man In Black',
+        label: 'Case 1 - A Man In Black',
         description: 'Three extraction methods compared: rules-based regex, HuggingFace BERT NER, and Gemma LLM. Scroll to view all.',
         variants: [
           {
@@ -79,25 +50,14 @@ const SECTIONS = [
           },
           {
             variantLabel: 'Gemma Model XML',
-            file: '/bpmn/arb/arb_gemma_A_Man_In_Black.bpmn',
+            file: '/bpmn/arb/Wikipedia_Arbitration_Requests_Case_A_Man_In_Black.bpmn',
+            imgFile: '/bpmn/arb/Wikipedia_Arbitration_Requests_Case_A_Man_In_Black.svg',
           },
         ],
       },
       {
-        id: 'arb-0008-nobody',
-        label: 'Arbitration Case 8 - A Nobody',
-        description: 'Arbitration case for A Nobody dispute.',
-        variants: [{ file: '/bpmn/arb/arb_0008_A_Nobody.bpmn' }],
-      },
-      {
-        id: 'arb-0009-abd-jzg',
-        label: 'Arbitration Case 9 - Abd and JzG',
-        description: 'Arbitration case for Abd and JzG dispute.',
-        variants: [{ file: '/bpmn/arb/arb_0009_Abd_and_JzG.bpmn' }],
-      },
-      {
         id: 'arb-0010-abortion',
-        label: 'Arbitration Case 10 - Abortion',
+        label: 'Case 2 - Abortion',
         description: 'Three extraction methods compared: rules-based regex, HuggingFace BERT NER, and Gemma LLM. Scroll to view all.',
         variants: [
           {
@@ -111,74 +71,135 @@ const SECTIONS = [
           },
           {
             variantLabel: 'Gemma Model XML',
-            file: '/bpmn/arb/arb_gemma_Abortion.bpmn',
+            file: '/bpmn/arb/Wikipedia_Arbitration_Requests_Case_Abortion.bpmn',
+            imgFile: '/bpmn/arb/Wikipedia_Arbitration_Requests_Case_Abortion.svg',
           },
         ],
       },
       {
-        id: 'arb-ril-wikipedia',
-        label: 'Wikipedia:Requests for arbitration/-Ril-',
-        description: 'ArbCom case for the -Ril- dispute. Generated using Hugging Face BERT NER model for entity extraction.',
-        variants: [{
-          file: '/bpmn/arb/arb_Wikipedia_Requests_for_arbitration_-Ril-.bpmn',
-          url: 'https://en.wikipedia.org/wiki/Wikipedia:Requests_for_arbitration/-Ril-',
-        }],
+        id: 'arb-0001-ril',
+        label: 'Case 3 - -Ril-',
+        description: 'Two extraction methods compared: rules-based regex and HuggingFace BERT NER. Scroll to view all.',
+        variants: [
+          {
+            variantLabel: 'Rules-Based Extraction',
+            file: '/bpmn/arb/arb_0001_-Ril-.bpmn',
+          },
+          {
+            variantLabel: 'HuggingFace BERT XML',
+            file: '/bpmn/arb/arb_Wikipedia_Requests_for_arbitration_-Ril-.bpmn',
+            url: 'https://en.wikipedia.org/wiki/Wikipedia:Requests_for_arbitration/-Ril-',
+          },
+        ],
       },
-      {
-        id: 'arb-aggregate',
-        label: 'Aggregate Workflow',
-        description: 'Generalised BPMN workflow showing common process paths across all arbitration cases.',
-        variants: [{ file: '/bpmn/arbitration/arb_aggregate_workflow.bpmn' }],
-      },
+      // ── Single-variant (numbered) ──
+      { id: 'arb-0002-8bitjake',label: 'Case 4 - 8bitJake',           description: 'Arbitration case for 8bitJake dispute.',                     variants: [{ file: '/bpmn/arb/arb_0002_8bitJake.bpmn' }] },
+      { id: 'arb-0003-168',     label: 'Case 5 - 168/209/97/34',      description: 'Arbitration case involving editors 168, 209, 97, 34.',        variants: [{ file: '/bpmn/arb/arb_0003_168_209_97_34.bpmn' }] },
+      { id: 'arb-0004-172',     label: 'Case 6 - 172',                description: 'Arbitration case for editor 172.',                           variants: [{ file: '/bpmn/arb/arb_0004_172.bpmn' }] },
+      { id: 'arb-0005-172-2',   label: 'Case 7 - 172 (2)',            description: 'Second arbitration case for editor 172.',                    variants: [{ file: '/bpmn/arb/arb_0005_172_2.bpmn' }] },
+      { id: 'arb-0006-194',     label: 'Case 8 - 194x144x90x118',     description: 'Arbitration case involving multiple editors.',               variants: [{ file: '/bpmn/arb/arb_0006_194x144x90x118.bpmn' }] },
+      { id: 'arb-0008-nobody',  label: 'Case 9 - A Nobody',           description: 'Arbitration case for A Nobody dispute.',                     variants: [{ file: '/bpmn/arb/arb_0008_A_Nobody.bpmn' }] },
+      { id: 'arb-0009-abd-jzg', label: 'Case 10 - Abd and JzG',      description: 'Arbitration case for Abd and JzG dispute.',                  variants: [{ file: '/bpmn/arb/arb_0009_Abd_and_JzG.bpmn' }] },
     ],
   },
   {
     id: 'rfc',
     label: 'RFC',
     cases: [
-      { id: 'rfc-global-abusefilter', label: 'Global AbuseFilter', description: 'RFC case for Global AbuseFilter.', variants: [{ file: '/bpmn/rfc/rfc_0001_Global_AbuseFilter.bpmn' }] },
-      { id: 'rfc-anais-azerbaijan', label: 'Anais article with abusive content (Azerbaijan)', description: 'RFC case for Anais article with abusive content in Azerbaijan.', variants: [{ file: '/bpmn/rfc/rfc_0001_Anais_article_with_abusive_content_in_Azerbai.bpmn' }] },
-      { id: 'rfc-ongoing-chinese', label: 'Ongoing issues at Chinese Wikipedia', description: 'RFC case for ongoing issues at Chinese Wikipedia.', variants: [{ file: '/bpmn/rfc/rfc_0002_Ongoing_issues_at_Chinese_Wikipedia_-_Resorti.bpmn' }] },
-      { id: 'rfc-from-wikipedia', label: 'From Wikipedia the free encyclopedia incomplete', description: 'RFC case for incomplete "From Wikipedia the free encyclopedia" text.', variants: [{ file: '/bpmn/rfc/rfc_0002_From_Wikipedia_the_free_encyclopedia_incomple.bpmn' }] },
-      { id: 'rfc-turkish-wikipedia', label: 'Turkish Wikipedia copies again from Ansiklope', description: 'RFC case for Turkish Wikipedia copying from Ansiklope.', variants: [{ file: '/bpmn/rfc/rfc_0003_Turkish_wikipedia_copies_again_from_Ansiklope.bpmn' }] },
-      { id: 'rfc-putin-khuylo', label: 'Putin khuylo on the main page', description: 'RFC case for Putin khuylo on the main page.', variants: [{ file: '/bpmn/rfc/rfc_0003_Putin_khuylo_on_the_main_page.bpmn' }] },
-      { id: 'rfc-sysop-abuse', label: 'Sysop abuse on Wikiversité', description: 'RFC case for sysop abuse on Wikiversité.', variants: [{ file: '/bpmn/rfc/rfc_0004_Sysop_abuse_on_Wikiversité.bpmn' }] },
-      { id: 'rfc-simpsons-hebrew', label: 'Simpsons Roasting on an Open Fire (Hebrew Wikipedia)', description: 'RFC case for Simpsons episode on Hebrew Wikipedia.', variants: [{ file: '/bpmn/rfc/rfc_0004_Simpsons_Roasting_on_an_Open_Fire_on_Hebrew_W.bpmn' }] },
-      { id: 'rfc-adminship', label: 'What adminship is not', description: 'RFC case for adminship scope and definition.', variants: [{ file: '/bpmn/rfc/rfc_0005_What_adminship_is_not_does_not_work_in_the_Po.bpmn' }] },
-      { id: 'rfc-jkb', label: '-jkb- case', description: 'RFC case involving -jkb-.', variants: [{ file: '/bpmn/rfc/rfc_0006_-jkb-.bpmn' }] },
-      { id: 'rfc-croatian-wikipedia', label: '2013 issues on Croatian Wikipedia', description: 'RFC case for 2013 issues on Croatian Wikipedia.', variants: [{ file: '/bpmn/rfc/rfc_0007_2013_issues_on_Croatian_Wikipedia.bpmn' }] },
-      { id: 'rfc-bureaucrat-troll', label: 'A bureaucrat which supports a troll (Hebrew)', description: 'RFC case for bureaucrat supporting troll on Hebrew Wikipedia.', variants: [{ file: '/bpmn/rfc/rfc_0008_A_bureaucrat_which_supports_a_troll_in_the_He.bpmn' }] },
-      { id: 'rfc-global-lock', label: 'A new global lock reason', description: 'RFC case for new global lock reason.', variants: [{ file: '/bpmn/rfc/rfc_0009_A_new_global_lock_reason.bpmn' }] },
-      { id: 'rfc-abandoned-labs', label: 'Abandoned Labs tools', description: 'RFC case for abandoned tools on Labs.', variants: [{ file: '/bpmn/rfc/rfc_0010_Abandoned_Labs_tools.bpmn' }] },
+      // ── Aggregate ──
       { id: 'rfc-aggregate', label: 'Aggregate Workflow', description: 'Generalised BPMN workflow showing common process paths across all RFC cases.', variants: [{ file: '/bpmn/rfc/rfc_aggregate_workflow.bpmn' }] },
+      // ── Multi-variant ──
+      {
+        id: 'rfc-global-abusefilter',
+        label: 'RFC 1 - Global AbuseFilter',
+        description: 'Two extraction methods compared: rules-based regex and Gemma LLM. Scroll to view all.',
+        variants: [
+          {
+            variantLabel: 'Rules-Based Extraction',
+            file: '/bpmn/rfc/rfc_0001_Global_AbuseFilter.bpmn',
+          },
+          {
+            variantLabel: 'Gemma Model XML',
+            file: '/bpmn/rfc/Requests_for_comment_Global_AbuseFilter.bpmn',
+            imgFile: '/bpmn/rfc/Requests_for_comment_Global_AbuseFilter.svg',
+          },
+        ],
+      },
+      // ── Single-variant (numbered) ──
+      { id: 'rfc-anais-azerbaijan',    label: 'RFC 2 - Anais article (Azerbaijan)',             description: 'RFC case for Anais article with abusive content in Azerbaijan.',    variants: [{ file: '/bpmn/rfc/rfc_0001_Anais_article_with_abusive_content_in_Azerbai.bpmn' }] },
+      { id: 'rfc-ongoing-chinese',     label: 'RFC 3 - Ongoing issues at Chinese Wikipedia',    description: 'RFC case for ongoing issues at Chinese Wikipedia.',                  variants: [{ file: '/bpmn/rfc/rfc_0002_Ongoing_issues_at_Chinese_Wikipedia_-_Resorti.bpmn' }] },
+      { id: 'rfc-from-wikipedia',      label: 'RFC 4 - From Wikipedia (incomplete)',            description: 'RFC case for incomplete "From Wikipedia the free encyclopedia" text.',variants: [{ file: '/bpmn/rfc/rfc_0002_From_Wikipedia_the_free_encyclopedia_incomple.bpmn' }] },
+      { id: 'rfc-turkish-wikipedia',   label: 'RFC 5 - Turkish Wikipedia copies Ansiklope',    description: 'RFC case for Turkish Wikipedia copying from Ansiklope.',             variants: [{ file: '/bpmn/rfc/rfc_0003_Turkish_wikipedia_copies_again_from_Ansiklope.bpmn' }] },
+      { id: 'rfc-putin-khuylo',        label: 'RFC 6 - Putin khuylo on the main page',         description: 'RFC case for Putin khuylo on the main page.',                       variants: [{ file: '/bpmn/rfc/rfc_0003_Putin_khuylo_on_the_main_page.bpmn' }] },
+      { id: 'rfc-sysop-abuse',         label: 'RFC 7 - Sysop abuse on Wikiversité',            description: 'RFC case for sysop abuse on Wikiversité.',                          variants: [{ file: '/bpmn/rfc/rfc_0004_Sysop_abuse_on_Wikiversité.bpmn' }] },
+      { id: 'rfc-simpsons-hebrew',     label: 'RFC 8 - Simpsons (Hebrew Wikipedia)',           description: 'RFC case for Simpsons episode on Hebrew Wikipedia.',                variants: [{ file: '/bpmn/rfc/rfc_0004_Simpsons_Roasting_on_an_Open_Fire_on_Hebrew_W.bpmn' }] },
+      { id: 'rfc-adminship',           label: 'RFC 9 - What adminship is not',                 description: 'RFC case for adminship scope and definition.',                      variants: [{ file: '/bpmn/rfc/rfc_0005_What_adminship_is_not_does_not_work_in_the_Po.bpmn' }] },
+      { id: 'rfc-jkb',                 label: 'RFC 10 - -jkb- case',                          description: 'RFC case involving -jkb-.',                                         variants: [{ file: '/bpmn/rfc/rfc_0006_-jkb-.bpmn' }] },
+      { id: 'rfc-croatian-wikipedia',  label: 'RFC 11 - 2013 issues on Croatian Wikipedia',   description: 'RFC case for 2013 issues on Croatian Wikipedia.',                   variants: [{ file: '/bpmn/rfc/rfc_0007_2013_issues_on_Croatian_Wikipedia.bpmn' }] },
+      { id: 'rfc-bureaucrat-troll',    label: 'RFC 12 - Bureaucrat supports troll (Hebrew)',   description: 'RFC case for bureaucrat supporting troll on Hebrew Wikipedia.',     variants: [{ file: '/bpmn/rfc/rfc_0008_A_bureaucrat_which_supports_a_troll_in_the_He.bpmn' }] },
+      { id: 'rfc-global-lock',         label: 'RFC 13 - A new global lock reason',             description: 'RFC case for new global lock reason.',                              variants: [{ file: '/bpmn/rfc/rfc_0009_A_new_global_lock_reason.bpmn' }] },
+      { id: 'rfc-abandoned-labs',      label: 'RFC 14 - Abandoned Labs tools',                 description: 'RFC case for abandoned tools on Labs.',                             variants: [{ file: '/bpmn/rfc/rfc_0010_Abandoned_Labs_tools.bpmn' }] },
     ],
   },
   {
     id: 'drn',
     label: 'DRN',
     cases: [
-      { id: 'drn-adam-milstein', label: 'Adam Milstein', description: 'DRN case for Adam Milstein dispute.', variants: [{ file: '/bpmn/drn/case_001_Adam_Milstein.bpmn' }] },
-      { id: 'drn-talk-touhou', label: 'Talk:Touhou Project', description: 'DRN case for Talk:Touhou Project dispute.', variants: [{ file: '/bpmn/drn/case_001_Talk_Touhou_Project.bpmn' }] },
-      { id: 'drn-template-vermont', label: 'Template:Vermont', description: 'DRN case for Template:Vermont dispute.', variants: [{ file: '/bpmn/drn/case_002_Template_Vermont.bpmn' }] },
-      { id: 'drn-occupy-wall-street', label: 'Occupy Wall Street', description: 'DRN case for Occupy Wall Street dispute.', variants: [{ file: '/bpmn/drn/case_002_Occupy_Wall_Street.bpmn' }] },
-      { id: 'drn-george-v', label: 'George V', description: 'DRN case for George V dispute.', variants: [{ file: '/bpmn/drn/case_003_George_V.bpmn' }] },
-      { id: 'drn-power-electronics', label: 'Power Electronics', description: 'DRN case for Power Electronics dispute.', variants: [{ file: '/bpmn/drn/case_003_Power_Electronics.bpmn' }] },
-      { id: 'drn-speedy-deletion', label: 'Speedy deletion of page Gerardo Poggi', description: 'DRN case for speedy deletion of page Gerardo Poggi.', variants: [{ file: '/bpmn/drn/case_004_Speedy_deletion_of_page_Gerardo_Poggi.bpmn' }] },
-      { id: 'drn-culpeper', label: 'Culpeper', description: 'DRN case for Culpeper dispute.', variants: [{ file: '/bpmn/drn/case_004_Culpeper.bpmn' }] },
-      { id: 'drn-lackawanna-cutoff', label: 'Lackawanna Cut-Off', description: 'DRN case for Lackawanna Cut-Off dispute.', variants: [{ file: '/bpmn/drn/case_005_Lackawanna_Cut-Off.bpmn' }] },
-      { id: 'drn-speed-limit', label: 'Speed limit enforcement', description: 'DRN case for speed limit enforcement.', variants: [{ file: '/bpmn/drn/case_006_Speed_limit_enforcement.bpmn' }] },
-      { id: 'drn-hinduism', label: 'Hinduism', description: 'DRN case for Hinduism article dispute.', variants: [{ file: '/bpmn/drn/case_007_Hinduism.bpmn' }] },
-      { id: 'drn-mercedes', label: 'Mercedes-Benz article omits car components', description: 'DRN case for Mercedes-Benz article omissions.', variants: [{ file: '/bpmn/drn/case_008_Mercedes-Benz_article_omits_the_car_comp.bpmn' }] },
-      { id: 'drn-homeopathy', label: 'Homeopathy - mention summary or description', description: 'DRN case for Homeopathy article description.', variants: [{ file: '/bpmn/drn/case_009_Homeopathy_-_to_mention_a_summary_or_the.bpmn' }] },
-      { id: 'drn-chinaman', label: 'Chinaman term - whether to include information', description: 'DRN case for Chinaman term usage.', variants: [{ file: '/bpmn/drn/case_010_Chinaman_term_-_whether_to_include_infor.bpmn' }] },
+      // ── Aggregate ──
       { id: 'drn-aggregate', label: 'Aggregate Workflow', description: 'Generalised BPMN workflow showing common process paths across all DRN cases.', variants: [{ file: '/bpmn/drn/drn_aggregate_workflow.bpmn' }] },
+      // ── Multi-variant ──
+      {
+        id: 'drn-power-electronics',
+        label: 'DRN 1 - Power Electronics',
+        description: 'Two extraction methods compared: rules-based regex and Gemma LLM. Scroll to view all.',
+        variants: [
+          {
+            variantLabel: 'Rules-Based Extraction',
+            file: '/bpmn/drn/case_003_Power_Electronics.bpmn',
+          },
+          {
+            variantLabel: 'Gemma Model XML',
+            file: '/bpmn/drn/Power_Electronics.bpmn',
+            imgFile: '/bpmn/drn/Power_Electronics.svg',
+          },
+        ],
+      },
+      {
+        id: 'drn-talk-touhou',
+        label: 'DRN 2 - Talk:Touhou Project',
+        description: 'Two extraction methods compared: rules-based regex and Gemma LLM. Scroll to view all.',
+        variants: [
+          {
+            variantLabel: 'Rules-Based Extraction',
+            file: '/bpmn/drn/case_001_Talk_Touhou_Project.bpmn',
+          },
+          {
+            variantLabel: 'Gemma Model XML',
+            file: '/bpmn/drn/Talk_Touhou_Project.bpmn',
+            imgFile: '/bpmn/drn/Talk_Touhou_Project.svg',
+          },
+        ],
+      },
+      // ── Single-variant (numbered) ──
+      { id: 'drn-adam-milstein',    label: 'DRN 3 - Adam Milstein',                         description: 'DRN case for Adam Milstein dispute.',                          variants: [{ file: '/bpmn/drn/case_001_Adam_Milstein.bpmn' }] },
+      { id: 'drn-template-vermont', label: 'DRN 4 - Template:Vermont',                      description: 'DRN case for Template:Vermont dispute.',                       variants: [{ file: '/bpmn/drn/case_002_Template_Vermont.bpmn' }] },
+      { id: 'drn-occupy-wall-street',label: 'DRN 5 - Occupy Wall Street',                   description: 'DRN case for Occupy Wall Street dispute.',                     variants: [{ file: '/bpmn/drn/case_002_Occupy_Wall_Street.bpmn' }] },
+      { id: 'drn-george-v',         label: 'DRN 6 - George V',                              description: 'DRN case for George V dispute.',                               variants: [{ file: '/bpmn/drn/case_003_George_V.bpmn' }] },
+      { id: 'drn-speedy-deletion',  label: 'DRN 7 - Speedy deletion of Gerardo Poggi',      description: 'DRN case for speedy deletion of page Gerardo Poggi.',          variants: [{ file: '/bpmn/drn/case_004_Speedy_deletion_of_page_Gerardo_Poggi.bpmn' }] },
+      { id: 'drn-culpeper',         label: 'DRN 8 - Culpeper',                              description: 'DRN case for Culpeper dispute.',                               variants: [{ file: '/bpmn/drn/case_004_Culpeper.bpmn' }] },
+      { id: 'drn-lackawanna-cutoff',label: 'DRN 9 - Lackawanna Cut-Off',                    description: 'DRN case for Lackawanna Cut-Off dispute.',                     variants: [{ file: '/bpmn/drn/case_005_Lackawanna_Cut-Off.bpmn' }] },
+      { id: 'drn-speed-limit',      label: 'DRN 10 - Speed limit enforcement',              description: 'DRN case for speed limit enforcement.',                        variants: [{ file: '/bpmn/drn/case_006_Speed_limit_enforcement.bpmn' }] },
+      { id: 'drn-hinduism',         label: 'DRN 11 - Hinduism',                             description: 'DRN case for Hinduism article dispute.',                       variants: [{ file: '/bpmn/drn/case_007_Hinduism.bpmn' }] },
+      { id: 'drn-mercedes',         label: 'DRN 12 - Mercedes-Benz article omissions',      description: 'DRN case for Mercedes-Benz article omissions.',                variants: [{ file: '/bpmn/drn/case_008_Mercedes-Benz_article_omits_the_car_comp.bpmn' }] },
+      { id: 'drn-homeopathy',       label: 'DRN 13 - Homeopathy description',               description: 'DRN case for Homeopathy article description.',                 variants: [{ file: '/bpmn/drn/case_009_Homeopathy_-_to_mention_a_summary_or_the.bpmn' }] },
+      { id: 'drn-chinaman',         label: 'DRN 14 - Chinaman term inclusion',              description: 'DRN case for Chinaman term usage.',                            variants: [{ file: '/bpmn/drn/case_010_Chinaman_term_-_whether_to_include_infor.bpmn' }] },
     ],
   },
 ]
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
-function ViewToggle({ mode, onChange }) {
+function ViewToggle({ mode, onChange, imgLabel = 'PNG' }) {
   const btn = (val, label) => (
     <button
       onClick={() => onChange(val)}
@@ -200,7 +221,7 @@ function ViewToggle({ mode, onChange }) {
   return (
     <div style={{ display: 'flex', border: '1px solid var(--border)', borderRadius: 6, overflow: 'hidden', flexShrink: 0 }}>
       {btn('bpmn', 'BPMN XML')}
-      {btn('png', 'PNG')}
+      {btn('png', imgLabel)}
     </div>
   )
 }
@@ -248,6 +269,8 @@ function ViewerSuspense({ url }) {
   )
 }
 
+const imgLabel = (variant) => variant.imgFile?.endsWith('.svg') ? 'SVG' : 'PNG'
+
 /** One variant block: sub-header (if labelled) + toggle + diagram */
 function VariantBlock({ variant, viewMode, onToggle, onExpand }) {
   const showLabel = !!variant.variantLabel
@@ -270,7 +293,7 @@ function VariantBlock({ variant, viewMode, onToggle, onExpand }) {
                 Wikipedia ↗
               </a>
             )}
-            <ViewToggle mode={viewMode} onChange={onToggle} />
+            <ViewToggle mode={viewMode} onChange={onToggle} imgLabel={imgLabel(variant)} />
             <button
               onClick={() => onExpand(variant)}
               style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', padding: '2px 4px' }}
@@ -293,7 +316,7 @@ function VariantBlock({ variant, viewMode, onToggle, onExpand }) {
         ) : (
           <div style={{ height: '100%', overflow: 'auto', display: 'flex', justifyContent: 'center', padding: 12 }}>
             <img
-              src={pngFrom(variant.file)}
+              src={imgFrom(variant)}
               alt={variant.variantLabel || 'BPMN diagram'}
               style={{ maxWidth: '100%', height: 'auto', borderRadius: 4 }}
             />
@@ -410,6 +433,7 @@ export default function BpmnScreen() {
                     <ViewToggle
                       mode={getMode(singleVariant.file)}
                       onChange={(m) => setMode(singleVariant.file, m)}
+                      imgLabel={imgLabel(singleVariant)}
                     />
                     <button
                       className="bpmn-expand-btn"
@@ -445,7 +469,7 @@ export default function BpmnScreen() {
                     ) : (
                       <div style={{ display: 'flex', justifyContent: 'center', padding: 16, width: '100%' }}>
                         <img
-                          src={pngFrom(singleVariant.file)}
+                          src={imgFrom(singleVariant)}
                           alt={selected.label}
                           style={{ maxWidth: '100%', height: 'auto', borderRadius: 4, border: '1px solid var(--border)' }}
                         />
@@ -475,6 +499,7 @@ export default function BpmnScreen() {
                 <ViewToggle
                   mode={getMode(expandedVariant.file)}
                   onChange={(m) => setMode(expandedVariant.file, m)}
+                  imgLabel={imgLabel(expandedVariant)}
                 />
                 <button className="bpmn-overlay__close" onClick={() => setExpandedVariant(null)} title="Close (Esc)">
                   <X size={18} />
@@ -487,7 +512,7 @@ export default function BpmnScreen() {
               ) : (
                 <div style={{ display: 'flex', justifyContent: 'center', padding: 20 }}>
                   <img
-                    src={pngFrom(expandedVariant.file)}
+                    src={imgFrom(expandedVariant)}
                     alt={expandedVariant.variantLabel || ''}
                     style={{ maxWidth: '100%', height: 'auto' }}
                   />
