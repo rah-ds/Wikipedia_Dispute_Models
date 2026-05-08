@@ -131,9 +131,11 @@ Stage 3   │ DISPUTE RESOLUTION NOTICEBOARD │    │   ADMINS NOTICEBOARD   �
   retries, rate limiting, and optional OAuth support
 - **Module:** `src/wiki.py` — `WikiClient` class
 
-**Authentication setup:** set `WIKIPEDIA_ACCESS_TOKEN` or the variables in
-`.env.example`; `src/credentials.py` and `src/wiki.py` load them for project
-scripts.
+**Authentication setup:** set `WIKIPEDIA_ACCESS_TOKEN` to make authenticated
+bearer-token requests. Authentication is optional for project scripts;
+`src/credentials.py` and `src/wiki.py` load environment-based configuration.
+Any additional authenticated-request variables should be documented
+explicitly in `.env.example`.
 
 ---
 
