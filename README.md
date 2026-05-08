@@ -31,7 +31,7 @@ Current repository audit:
 | Raw per-case arbitration JSON records | 481 | One JSON record exists for every listed case |
 | Usable arbitration/lifecycle records | 472 | Have ArbCom pages, revisions, and observed lifecycle data |
 | Zero-data records needing follow-up | 9 | See `docs/handoff.md` |
-| Generated D3/dashboard payloads | 466 | Re-export after fixing raw gaps |
+| D3 JSON files | 466 | Includes `manifest.json`; see `docs/data_dictionary.md` |
 | Collected revisions | 129,677 | From raw per-case summaries |
 | Extracted participant mentions | 22,255 | From raw per-case summaries |
 | Extracted article mentions | 14,826 | From raw per-case summaries |
@@ -216,6 +216,8 @@ data, run `git lfs pull`.
 | Document | Purpose |
 | --- | --- |
 | [`docs/handoff.md`](docs/handoff.md) | Detailed handoff audit, current gaps, module notes, and next priorities |
+| [`docs/data_dictionary.md`](docs/data_dictionary.md) | Definitions for raw records, usable data, D3 payloads, dashboard data, and feature tables |
+| [`docs/dashboard.md`](docs/dashboard.md) | Dashboard tabs, data inputs, D3/BPMN loading, and troubleshooting |
 | [`docs/wikipedia_dispute_resolution_lifecycle.md`](docs/wikipedia_dispute_resolution_lifecycle.md) | Dispute escalation process and venue mapping |
 | [`docs/wikimedia_api.md`](docs/wikimedia_api.md) | Wikimedia API reference used by the project |
 | [`docs/graph_schema.md`](docs/graph_schema.md) | Editor/article/case graph schema and planned Wikidata enrichment |

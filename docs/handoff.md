@@ -11,7 +11,7 @@ handoff. It is the detailed companion to the top-level `README.md`.
 | Raw per-case arbitration JSON records | 481 | One JSON record exists for every listed case |
 | Usable arbitration/lifecycle records | 472 | Have ArbCom pages, revisions, and observed lifecycle data |
 | Zero-data records needing follow-up | 9 | Listed below |
-| Generated D3/dashboard payloads | 466 | Re-export after fixing raw gaps |
+| D3 JSON files | 466 | Includes `manifest.json`; see `docs/data_dictionary.md` |
 | Collected revisions | 129,677 | From raw per-case summaries |
 | Extracted participant mentions | 22,255 | From raw per-case summaries |
 | Extracted article mentions | 14,826 | From raw per-case summaries |
@@ -50,6 +50,10 @@ a claim that disputes truly skipped earlier venues:
    as a future negative class for escalation modeling.
 5. Improve earlier-stage matching for Talk, RfC, DRN, and ANI archives before
    making claims about whether cases skipped lower venues.
+
+See [`data_dictionary.md`](data_dictionary.md) for definitions of "usable",
+`lifecycle_stages_with_data`, D3 payloads, dashboard data, feature tables, and
+coverage files that should or should not be used for final counts.
 
 ## Implementation notes for maintainers
 

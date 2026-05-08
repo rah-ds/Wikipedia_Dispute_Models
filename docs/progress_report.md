@@ -7,8 +7,10 @@
 **Program:** UVA MSDS Capstone
 **Last Updated:** May 2026 handoff refresh
 
-> This report contains historical project notes. For the current handoff audit,
-> known gaps, and maintainer priorities, see [`handoff.md`](handoff.md).
+> **Historical context:** this report preserves project planning notes and may
+> mix older design context with refreshed handoff facts. For the current
+> handoff state, use [`docs/handoff.md`](handoff.md); this file preserves
+> historical project context.
 
 ---
 
@@ -794,7 +796,7 @@ Output path: `data/raw/dispute_venues/{case_name}_lifecycle.json`
 | **Canonical ArbCom case list** | ✅ Complete | 481 cases in `artifacts/arb_cases.txt` |
 | **Raw per-case arbitration JSON** | ✅ Complete | 481 raw records present |
 | **Usable arbitration/lifecycle data** | ✅ Mostly complete | 472 usable records; 9 zero-data records need inspection |
-| **Dashboard/D3 payloads** | ✅ Partial | 466 payloads present; regenerate after raw fixes |
+| **Dashboard/D3 exports** | ✅ Partial | 466 JSON files in `data/processed/d3/`, including `manifest.json`; regenerate after raw fixes |
 | **Evidence diff enrichment** | ✅ Implemented | `src/evidence.py` and `scripts/enrich_evidence_diffs.py` extract `Special:Diff` evidence |
 | **Graph layer** | ✅ Implemented | `src/graph.py` builds editor/article/case `MultiDiGraph` exports |
 
