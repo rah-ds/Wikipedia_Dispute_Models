@@ -75,6 +75,7 @@ git lfs pull
 
 # Create a local environment and install project + development dependencies.
 uv venv
+source .venv/bin/activate
 make setup
 ```
 
