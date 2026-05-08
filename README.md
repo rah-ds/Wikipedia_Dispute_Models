@@ -16,8 +16,8 @@ process modeling, feature extraction, graph construction, and a React dashboard
 for inspecting dispute lifecycles.
 
 The project is intentionally transparent: raw case records are preserved,
-processed payloads are reproducible, and current handoff gaps are documented
-below.
+processed payloads are reproducible, and current handoff gaps are documented in
+[`docs/handoff.md`](docs/handoff.md).
 
 ---
 
@@ -30,22 +30,16 @@ Current repository audit:
 | Canonical English Wikipedia ArbCom cases | 481 | Source: `artifacts/arb_cases.txt` |
 | Raw per-case arbitration JSON records | 481 | One JSON record exists for every listed case |
 | Usable arbitration/lifecycle records | 472 | Have ArbCom pages, revisions, and observed lifecycle data |
-| Zero-data records needing follow-up | 9 | Listed below |
+| Zero-data records needing follow-up | 9 | See `docs/handoff.md` |
 | Generated D3/dashboard payloads | 466 | Re-export after fixing raw gaps |
 | Collected revisions | 129,677 | From raw per-case summaries |
 | Extracted participant mentions | 22,255 | From raw per-case summaries |
 | Extracted article mentions | 14,826 | From raw per-case summaries |
 
-Zero-data records to inspect or refetch:
-
-`CoolKatt number 99999`, `FuelWagon v. Ed Poor`, `Highways 2`,
-`Historical elections`, `Historicity of Jesus`, `Koavf`, `Sathya Sai Baba`,
-`SchuminWeb`, and `Waterboarding`.
-
 Lifecycle coverage should be interpreted as **collection coverage**, not as a
-claim that disputes truly skipped earlier venues. At handoff, 456 cases have
-one observed lifecycle stage, 7 have two stages, 7 have three stages, 2 have
-four stages, and 9 have no usable observed stage.
+claim that disputes truly skipped earlier venues. See
+[`docs/handoff.md`](docs/handoff.md) for the zero-data case list, lifecycle
+stage distribution, implementation notes, and handoff priorities.
 
 ---
 
@@ -217,53 +211,15 @@ data, run `git lfs pull`.
 
 ---
 
-## Core modules
+## Documentation
 
-| Module | Purpose |
+| Document | Purpose |
 | --- | --- |
-| `src/wiki.py` | MediaWiki API client with authentication, rate limiting, retry logic, and pagination helpers |
-| `src/arbitration.py` | ArbCom case discovery, path resolution, page collection, participant extraction, and article extraction |
-| `src/lifecycle.py` | Lifecycle reconstruction across Talk, DRN, ANI, and ArbCom evidence |
-| `src/outcome.py` | ArbCom finding, principle, remedy, sanction, and vote parsing |
-| `src/evidence.py` | Evidence-page `Special:Diff` extraction and enrichment |
-| `src/analysis.py` | Revert/edit-war features and conflict summaries |
-| `src/timeline.py` | Case timeline construction and escalation features |
-| `src/graph.py` | NetworkX `MultiDiGraph` builder for editor, article, and case relationships |
-| `src/network.py` | Graph analysis utilities and projections |
-| `src/ores.py` | Wikimedia ORES/Lift Wing score client |
-| `src/pageviews.py` | Wikimedia Pageviews API client |
-| `src/xtools.py` | XTools API client for editor and article summaries |
-| `src/pull_config.py` | YAML-backed pull presets for `sample`, `dev`, and `full` collection |
-| `src/pull_state.py` | Resumable pull state with per-item progress tracking |
-
-The graph layer uses typed editor, article, and ArbCom-case nodes with edges
-such as `REVERTS`, `EDITS_CASE`, `EDITS_ARTICLE`, `SUBJECT_OF`, and
-`CO_OCCURS`. See `docs/graph_schema.md` for the full schema and planned
-Wikidata enrichment.
-
----
-
-## Handoff implementation notes
-
-These details are easy to miss but useful for future maintainers:
-
-- `src/wiki.py` uses direct MediaWiki REST/action API calls through
-  `requests.Session`, with optional OAuth bearer-token support. It no longer
-  depends on Pywikibot for the main collection path.
-- `scripts/pull.py` and `src/pull_state.py` are designed for interruption:
-  pulls save per-item status and can resume after failures or `Ctrl+C`.
-- `src/models.py` and `src/lifecycle.py` encode the key modeling assumption:
-  the same editors can appear across Talk, DRN, ANI, and ArbCom venues, so
-  temporal co-occurrence is a core escalation signal.
-- `src/evidence.py` and `scripts/enrich_evidence_diffs.py` target
-  `Special:Diff` links from ArbCom evidence pages. These links point to the
-  concrete edits cited as evidence, which makes them especially valuable for
-  future label validation.
-- `scripts/build_features.py` prioritizes enriched arbitration JSON over older
-  Arb-DFS or lifecycle-only files when rebuilding `data/processed/features.*`.
-- `scripts/export_d3_all.py` writes both per-case D3 payloads and a
-  `manifest.json` that records successes and failures, so a failed export can
-  be audited without rerunning the whole batch.
+| [`docs/handoff.md`](docs/handoff.md) | Detailed handoff audit, current gaps, module notes, and next priorities |
+| [`docs/wikipedia_dispute_resolution_lifecycle.md`](docs/wikipedia_dispute_resolution_lifecycle.md) | Dispute escalation process and venue mapping |
+| [`docs/wikimedia_api.md`](docs/wikimedia_api.md) | Wikimedia API reference used by the project |
+| [`docs/graph_schema.md`](docs/graph_schema.md) | Editor/article/case graph schema and planned Wikidata enrichment |
+| [`docs/rivanna_guide.md`](docs/rivanna_guide.md) | UVA Rivanna setup and SLURM collection workflow |
 
 ---
 
@@ -294,24 +250,8 @@ The SLURM pipeline is dependency ordered:
 | 5 | `pipeline_summary.slurm` | Send progress summary |
 
 See `docs/rivanna_guide.md` for setup details, logging paths, and recovery
-steps.
-
----
-
-## Current limitations
-
-- The corpus is ArbCom-centered, so it overrepresents severe or long-running
-  disputes.
-- Earlier-stage venues are harder to reconstruct retrospectively because old
-  Talk, RfC, DRN, and ANI records are archived under changing conventions.
-- Nine listed cases currently have raw JSON records but no usable ArbCom pages
-  or revisions.
-- Dashboard exports currently cover 466 cases; regenerate D3 payloads after
-  repairing zero-data records.
-- Outcome parsing is useful for exploration, but sanctions and remedies should
-  be hand-validated before being used as ground-truth labels.
-- Escalation prediction requires a negative class of non-escalated or declined
-  disputes.
+steps. Current limitations and next priorities are tracked in
+[`docs/handoff.md`](docs/handoff.md).
 
 ---
 

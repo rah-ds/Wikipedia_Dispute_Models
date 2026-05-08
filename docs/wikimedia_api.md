@@ -3,7 +3,10 @@
 
 ## Overview
 
-Wikipedia data can be accessed through multiple APIs and data sources. For research on edit wars, disputes, and arbitration, the **MediaWiki Action API** combined with **Pywikibot** provides the most comprehensive access to revision histories, talk pages, and user contributions.
+Wikipedia data can be accessed through multiple APIs and data sources. For this
+project, the main collection path uses direct **MediaWiki Action API** and REST
+requests through `src/wiki.py`. Pywikibot was useful during exploration, but it
+is no longer the recommended runtime dependency for the core pull pipeline.
 
 ---
 
@@ -49,59 +52,59 @@ For large-scale analysis, download complete dumps.
 
 ---
 
-## Python Libraries
+## Python access pattern
 
-### Recommended: Pywikibot
+### Recommended for this repository: `src/wiki.py`
 
-**Pywikibot** is the official Python library for MediaWiki automation. Winner of the 2020 Coolest Tool Award.
+`src/wiki.py` wraps MediaWiki Action API and selected REST endpoints with a
+plain `requests.Session`, optional OAuth bearer-token support, retry logic,
+rate-limit handling, pagination helpers, and descriptive user-agent behavior.
+Use it for project code so authentication, throttling, and error handling stay
+consistent across scripts.
 
-**Install**:
+Typical project usage:
+
+```python
+from src.wiki import WikiClient
+
+client = WikiClient()
+page = client.get_page("Wikipedia:Arbitration/Requests/Case/Climate change")
+revisions = client.get_revisions("Wikipedia:Arbitration/Requests/Case/Climate change")
+```
+
+### Alternative: direct `requests`
+
+For one-off checks, call the Action API directly:
+
+```python
+import requests
+
+session = requests.Session()
+session.headers["User-Agent"] = "WikipediaDisputeModels/0.1"
+
+params = {
+    "action": "query",
+    "format": "json",
+    "prop": "revisions",
+    "titles": "Wikipedia:Arbitration/Requests/Case/Climate change",
+    "rvlimit": "10",
+}
+
+response = session.get("https://en.wikipedia.org/w/api.php", params=params)
+response.raise_for_status()
+data = response.json()
+```
+
+### Historical / exploratory: Pywikibot
+
+Pywikibot is the official Python library for MediaWiki automation and remains a
+valid option for exploratory scripts. It is not required for the current
+repository setup, and new production code should prefer `src/wiki.py`.
+
+Install if needed for experiments:
 
 ```bash
 pip install pywikibot
-```
-
-**Why Pywikibot for dispute research**:
-
-- Built-in handling of API pagination, rate limits, authentication
-- Direct access to revision histories, diffs, user contributions
-- Talk page parsing support
-- Mature, well-documented, actively maintained
-
-**Basic usage**:
-
-```python
-import pywikibot
-
-# Connect to English Wikipedia
-site = pywikibot.Site('en', 'wikipedia')
-
-# Get a page and its revision history
-page = pywikibot.Page(site, 'Article_title')
-
-# Iterate through all revisions
-for rev in page.revisions():
-    print(rev.timestamp, rev.user, rev.comment)
-
-# Get talk page
-talk = page.toggleTalkPage()
-for rev in talk.revisions():
-    print(rev.timestamp, rev.user)
-```
-
-**Fetching edit wars** (pages with high revert activity):
-
-```python
-import pywikibot
-
-site = pywikibot.Site('en', 'wikipedia')
-page = pywikibot.Page(site, 'Contentious_Article')
-
-revisions = list(page.revisions(content=False))
-
-# Detect reverts by checking for "revert" in edit summaries
-reverts = [r for r in revisions if r.comment and 'revert' in r.comment.lower()]
-print(f"Reverts: {len(reverts)} / {len(revisions)} total edits")
 ```
 
 ### Alternative: mwapi
@@ -174,16 +177,10 @@ Arbitration cases are stored as wiki pages:
 - **Evidence**: `Wikipedia:Arbitration/Requests/Case/{CaseName}/Evidence`
 - **Workshop**: `Wikipedia:Arbitration/Requests/Case/{CaseName}/Workshop`
 
-```python
-import pywikibot
-
-site = pywikibot.Site('en', 'wikipedia')
-
-# List all arbitration case pages
-arb_cat = pywikibot.Category(site, 'Category:Wikipedia arbitration cases')
-for page in arb_cat.articles():
-    print(page.title())
-```
+The repository stores the canonical case list in `artifacts/arb_cases.txt` and
+resolves each case against historical ArbCom path patterns. Use
+`scripts/fetch_arb_cases_list.py` to refresh that list, or the high-level pull
+scripts to collect case records.
 
 ### Dispute Resolution Noticeboard
 
@@ -193,15 +190,9 @@ DRN discussions at: `Wikipedia:Dispute resolution noticeboard`
 
 Query revision history for revert patterns:
 
-```python
-# Get revisions with size changes (potential reverts restore previous size)
-for rev in page.revisions(content=False):
-    # Large negative size change may indicate revert
-    if hasattr(rev, 'size') and hasattr(rev, 'parentsize'):
-        delta = rev.size - rev.parentsize
-        if abs(delta) > 1000:
-            print(f"{rev.timestamp}: {rev.user} changed {delta} bytes")
-```
+Use `src/analysis.py` for project-level revert/edit-war features. It combines
+revision metadata, tags, and edit-summary patterns rather than relying only on
+page-size deltas.
 
 ---
 

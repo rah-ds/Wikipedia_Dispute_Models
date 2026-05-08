@@ -1,5 +1,9 @@
 # Rivanna Run Estimates — April 10, 2026
 
+> Historical planning note. These estimates describe the April large-pull
+> submission strategy, not the final handoff state. For current coverage and
+> remaining data gaps, see [`handoff.md`](handoff.md).
+
 ## Current Pipeline (Serialized)
 
 Jobs run one at a time to avoid Wikipedia API rate limit (429) exhaustion.
@@ -78,7 +82,7 @@ Only 1 data point: `-Ril-` took 6.7 hrs (but was heavily rate-limited by concurr
 ## Key Risks
 
 1. **Walltime timeout on fetch_full**: Unlikely now (48hr limit, solo run should finish in 4–8hr)
-2. **Rate limits still hitting**: Even solo, pywikibot has internal throttle. Check `.err` logs for "Sleeping for" messages — should be seconds, not hours
+2. **Rate limits still hitting**: Even solo, MediaWiki API throttling can occur. Check `.err` logs for "Sleeping for" messages — should be seconds, not hours
 3. **Lifecycle total runtime**: At 20–40 days, may exceed practical window. Mitigation: reduce scope or increase concurrency (`%2`) once arb_dfs is done
 4. **SLURM allocation limits**: Check if your allocation has monthly hour limits (`sacct` or allocation dashboard)
 5. **Skip-completed logic**: If a case output file exists but is corrupt/incomplete, it will be skipped. Check file sizes if results look wrong

@@ -6,6 +6,7 @@ Project documentation for Wikipedia Dispute Models.
 
 ### Background & Research
 
+- [handoff.md](handoff.md) — Current handoff audit, known gaps, and maintainer notes
 - [wikipedia_background.md](wikipedia_background.md) — Overview of Wikipedia's structure and editing
 - [wikipedia_dispute_resolution_lifecycle.md](wikipedia_dispute_resolution_lifecycle.md) — Dispute escalation path (Talk → DRN → ANI → ArbCom)
 - [wikimedia_api.md](wikimedia_api.md) — API documentation and usage notes
@@ -16,6 +17,9 @@ Project documentation for Wikipedia Dispute Models.
 
 ### Guides
 
+- [graph_schema.md](graph_schema.md) — Editor/article/case graph schema and Wikidata extension plan
+- [rivanna_guide.md](rivanna_guide.md) — UVA Rivanna setup and SLURM workflow
+- [rivanna_run_estimates.md](rivanna_run_estimates.md) — Historical Rivanna run estimates from the large pull
 - [zotero_guide.md](zotero_guide.md) — Literature management with Zotero
 
 ### Subdirectories
