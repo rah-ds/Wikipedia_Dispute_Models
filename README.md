@@ -299,7 +299,7 @@ repository state and public Wikimedia data before inclusion.
 | Authors | Louis Cocks, Katherine Kelleher, Ryan Healy |
 | Program | UVA School of Data Science, MSDS DS 6015 Capstone, including Professor Rafael Alvarado |
 | Sponsor | Lexipedia |
-| Subject-matter feedback | Lane Raspberry and Anson Parker|
+| Subject-matter feedback | Lane Raspberry and Anson Parker |
 
 ---
 
