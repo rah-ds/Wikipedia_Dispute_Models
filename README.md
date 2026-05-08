@@ -1,272 +1,308 @@
 # Wikipedia Dispute Models
 
-![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)
-[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![UVA MSDS](https://img.shields.io/badge/UVA-MSDS-232D4B?style=flat&labelColor=E57200)](https://datascience.virginia.edu/)
+[![CI](https://github.com/rah-ds/Wikipedia_Dispute_Models/actions/workflows/ci.yml/badge.svg)](https://github.com/rah-ds/Wikipedia_Dispute_Models/actions/workflows/ci.yml)
+![Python 3.11](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)
+![uv](https://img.shields.io/badge/uv-managed-654FF0)
+![React 19](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=111)
+![Vite](https://img.shields.io/badge/Vite-dashboard-646CFF?logo=vite&logoColor=white)
+![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
+![ArbCom coverage](https://img.shields.io/badge/ArbCom_usable-472%2F481-success)
+![Dashboard payloads](https://img.shields.io/badge/D3_payloads-466-blue)
 
+**Wikipedia Dispute Models** is a UVA MSDS capstone project for mapping how
+Wikipedia conflicts move from local discussion to formal Arbitration Committee
+(ArbCom) remedies. The repository combines public Wikimedia data collection,
+process modeling, feature extraction, graph construction, and a React dashboard
+for inspecting dispute lifecycles.
 
-
-This project maps and analyzes Wikipedia's dispute resolution system—tracking how content and conduct conflicts emerge, escalate, and resolve across the platform's five-stage intervention framework.
+The project is intentionally transparent: raw case records are preserved,
+processed payloads are reproducible, and current handoff gaps are documented in
+[`docs/handoff.md`](docs/handoff.md).
 
 ---
 
-## Project Structure
+## Handoff status
+
+Current repository audit:
+
+| Artifact | Count | Notes |
+| --- | ---: | --- |
+| Canonical English Wikipedia ArbCom cases | 481 | Source: `artifacts/arb_cases.txt` |
+| Raw per-case arbitration JSON records | 481 | One JSON record exists for every listed case |
+| Usable arbitration/lifecycle records | 472 | Have ArbCom pages, revisions, and observed lifecycle data |
+| Zero-data records needing follow-up | 9 | See `docs/handoff.md` |
+| D3 JSON files | 466 | Includes `manifest.json`; see `docs/data_dictionary.md` |
+| Collected revisions | 129,677 | From raw per-case summaries |
+| Extracted participant mentions | 22,255 | From raw per-case summaries |
+| Extracted article mentions | 14,826 | From raw per-case summaries |
+
+Lifecycle coverage should be interpreted as **collection coverage**, not as a
+claim that disputes truly skipped earlier venues. See
+[`docs/handoff.md`](docs/handoff.md) for the zero-data case list, lifecycle
+stage distribution, implementation notes, and handoff priorities.
+
+---
+
+## What this repository contains
+
+| Area | What it does | Key files |
+| --- | --- | --- |
+| Data collection | Fetches ArbCom cases, revisions, participants, disputed articles, noticeboard mentions, and lifecycle evidence from Wikimedia APIs | `scripts/pull.py`, `src/wiki.py`, `src/arbitration.py`, `src/lifecycle.py` |
+| Process modeling | Generates BPMN-style models for ArbCom, DRN, and RfC workflows | `scripts/bpmn_from_arb.py`, `scripts/bpmn_from_drn.py`, `scripts/bpmn_from_rfc.py`, `scripts/arbitration_bpmn_hf.py` |
+| Analysis features | Builds edit-war, outcome, evidence-diff, participant, article, timeline, and graph features | `src/analysis.py`, `src/outcome.py`, `src/evidence.py`, `src/timeline.py`, `src/graph.py`, `scripts/build_features.py` |
+| Dashboard exports | Converts enriched case records into D3/React dashboard payloads | `scripts/export_d3_all.py`, `scripts/process_arbitration_for_dashboard.py`, `data/processed/d3/` |
+| Web dashboard | Provides interactive views of coverage, cases, BPMN diagrams, and D3 visuals | `dashboard/` |
+| HPC pipeline | Runs large, resumable collection jobs on UVA Rivanna with SLURM | `scripts/slurm/`, `docs/rivanna_guide.md` |
+
+---
+
+## Quick start
+
+### 1. Install prerequisites
+
+- Python 3.11+
+- [uv](https://docs.astral.sh/uv/)
+- Node.js 20+ for the dashboard
+- Git LFS for large data artifacts
+- Optional but recommended: a Wikimedia API token
 
 ```bash
-├── data/
-│   ├── raw/              # Raw API responses
-│   ├── processed/        # Cleaned datasets
-│   └── external/         # Third-party data
-├── docs/                 # Documentation
-├── notebooks/            # Exploratory analysis
-├── scripts/              # Data collection scripts
-├── src/                  # Source code
-└── artifacts/            # Model outputs and logs
-```
-
----
-
-## Prerequisites
-
-- **Python 3.11+**
-- **[uv](https://docs.astral.sh/uv/)** — fast Python package manager (`curl -LsSf https://astral.sh/uv/install.sh | sh`)
-- **Node.js 18+** — only required to run the React dashboard
-- A [Wikimedia API token](https://api.wikimedia.org/wiki/Authentication) — optional but strongly recommended (raises rate limit from 500 to 5,000 req/hr)
-
----
-
-## Quick Start
-
-```bash
-# Clone and install
 git clone https://github.com/rah-ds/Wikipedia_Dispute_Models.git
 cd Wikipedia_Dispute_Models
-make setup          # install deps + validate environment
 
-# (Optional) set your Wikimedia token
-cp .env.example .env  # then fill in WIKI_API_KEY / WIKIPEDIA_ACCESS_TOKEN
+# Pull LFS-backed raw/processed data if your clone did not do so automatically.
+git lfs pull
 
-# Fetch a small sample dataset (5 arbitration cases, resumable)
-make pull
+# Create a local environment and install project + development dependencies.
+uv venv
+source .venv/bin/activate
+make setup
 ```
 
-See `make help` for all available targets.
-
-## Data Pulling
-
-The unified data pull runner is the recommended entrypoint for fetching project data.
+If you have Wikimedia credentials, copy the example environment file and fill
+in the values:
 
 ```bash
-python scripts/pull.py --config sample
-python scripts/pull.py --config full
-python scripts/pull.py --dry-run
-python scripts/pull.py --status
-python scripts/pull.py --reset
-python scripts/pull.py --validate
-python scripts/pull.py --skip-validation --skip-speed-test
+cp .env.example .env
 ```
 
-`pull.py` supports the config presets `sample`, `full`, and `dev`, or a custom config file path.
+For authenticated Wikimedia requests, make sure your `.env` also includes
+`WIKIPEDIA_ACCESS_TOKEN`. If `.env.example` does not already contain that
+variable, add it manually after copying the file.
 
-## Data Cleaning
-
-Clean raw arbitration case JSON into processed case files:
+### 2. Validate the Python project
 
 ```bash
-python scripts/clean_arbitration_cases_data.py
+make test-unit
+make lint
 ```
 
-This interactive script reads from `data/raw/arbitration` and writes cleaned output to `data/processed/clean_arbitration_cases_*.json`.
+The CI workflow also runs pre-commit checks, Python unit tests, type checking,
+and the dashboard lint/build pipeline.
 
-### Dashboard data
-
-Build the dashboard payload used by the React app:
-
-```bash
-python scripts/process_arbitration_for_dashboard.py
-```
-
-This writes `dashboard_data.json` to both `data/processed/` and `dashboard/public/data/`, which is required for `dashboard` dev and preview servers.
-
-## BPMN Generation
-
-Generate BPMN diagrams from saved case data.
-
-- Arbitration cases:
-  ```bash
-  python scripts/bpmn_from_arb.py --input data/raw/arb/ --output artifacts/bpmn/arb/ --max-cases 20
-  ```
-- Requests for Comments cases:
-  ```bash
-  python scripts/bpmn_from_rfc.py --input data/raw/rfc/ --output artifacts/bpmn/rfc/ --max-cases 20
-  ```
-- DRN cases (interactive):
-  ```bash
-  python scripts/bpmn_from_drn.py
-  ```
-
-### Comparative BPMN with Hugging Face
-
-Generate ArbCom BPMN using the Hugging Face NER model:
+### 3. Run the dashboard
 
 ```bash
-python scripts/arbitration_bpmn_hf.py --case "Wikipedia:Requests_for_arbitration/-Ril-"
-python scripts/arbitration_bpmn_hf.py --aggregate
-python scripts/arbitration_bpmn_hf.py --aggregate --sample 50
-python scripts/arbitration_bpmn_hf.py --output-dir artifacts/bpmn/arb
-python scripts/arbitration_bpmn_hf.py --no-ner
-```
+# Rebuild the dashboard data payload if needed.
+uv run python scripts/process_arbitration_for_dashboard.py
 
-The default output directory is `artifacts/bpmn/arb`.
-
----
-
-## Testing
-
-```bash
-make test           # run full test suite
-make test-unit      # unit tests only (no network calls)
-make test-cov       # coverage report
-```
-
-The test suite lives in `tests/` and covers arbitration parsing, graph construction, outcome extraction, lifecycle tracing, and integration paths.
-
----
-
-## Running the Dashboard
-
-```bash
-# Build the data payload first
-python scripts/process_arbitration_for_dashboard.py
-
-# Start the dev server
+# Start the React dashboard.
 cd dashboard
 npm install
 npm run dev
 ```
 
-The dashboard reads from `dashboard/public/data/dashboard_data.json`. BPMN diagrams in `dashboard/public/bpmn/` are served statically and browsable in the **BPMN Viewer** screen.
-Standalone D3 exports in `dashboard/public/d3/` are available inside the dashboard's **D3 Visuals** tab.
+The dashboard reads from `dashboard/public/data/dashboard_data.json`. BPMN
+assets in `dashboard/public/bpmn/` and D3 exports in `data/processed/d3/` are
+used by the case and visualization views.
 
 ---
 
-## Rivanna HPC (UVA)
+## Common workflows
 
-Large-scale data collection runs on UVA's Rivanna cluster. Requires an SSH key configured for `login.hpc.virginia.edu` and `RIVANNA_ID` set in `.env`.
+### Fetch data
+
+The unified pull runner is the safest entry point for resumable local pulls:
 
 ```bash
-make rivanna-sync    # rsync source code to /scratch/<id>/Wikipedia_Dispute_Models
-make rivanna-setup   # one-time: install uv + deps on Rivanna, smoke test imports
-make rivanna-submit  # submit the full SLURM job pipeline
-make rivanna-status  # check running jobs and data collection progress
-make rivanna-logs    # tail the 5 most recent SLURM log files
-make rivanna-pull    # download collected data/raw, data/processed, slurmlogs
-make rivanna-clean   # (destructive) cancel jobs and clear remote data/raw
+make pull                 # sample config
+make pull CONFIG=dev      # minimal development pull
+make pull CONFIG=full     # larger full pull
+make pull-status
+make pull-reset
 ```
 
-### SLURM Pipeline (`scripts/slurm/`)
+Direct script access is also available:
 
-Five-stage dependency-ordered pipeline:
-
-| Job | Script | Wall Time | Memory |
-|-----|--------|-----------|--------|
-| 1 — Update case list | `update_arb_cases.slurm` | 15 min | 2 GB |
-| 2 — Full article fetch | `fetch_full.slurm` | 4 hrs | 8 GB |
-| 3 — Arb DFS (array) | `fetch_arb_dfs.slurm` | 2 hrs/case | 8 GB |
-| 4 — Lifecycle (array) | `fetch_lifecycle.slurm` | 3 hrs/case | 8 GB |
-| 5 — Summary email | `pipeline_summary.slurm` | — | — |
-
-Progress is logged to `slurmlogs/progress_*.csv` with quarter-milestone email alerts. See [`docs/rivanna_guide.md`](docs/rivanna_guide.md) for full setup.
-
----
-
-## Windows Start with WSL
-If you are working with Windows, follow here for WSL-friendly setup.
-First download WSL via your preferred IDE.
-Next this should get you uv installed via bash.
 ```bash
-wget -qO- https://astral.sh/uv/install.sh | sh
+uv run python scripts/pull.py --config sample
+uv run python scripts/pull.py --dry-run
+uv run python scripts/pull.py --validate
 ```
-Move/Copy repo to Linux filesystem to avoid /mnt/c/... (OneDrive/Windows FS causes permissions issues). You can find the wsl location with ```\\wsl$``` in your file explorer.
-Once the repo is in the wsl directory, create a WSL terminal and navigate to the repo then run:
+
+### Regenerate features and dashboard exports
+
 ```bash
-uv venv
-make install-dev
+uv run python scripts/build_features.py --dry-run
+uv run python scripts/build_features.py
+
+uv run python scripts/export_d3_all.py --workers 4
+uv run python scripts/process_arbitration_for_dashboard.py
 ```
-Run Python/tools via uv & no need to manually activate venv — uv handles it.
 
+Use `--force` with `export_d3_all.py` when you want to overwrite existing D3
+payloads after a data fix.
 
----
+### Generate BPMN artifacts
 
-## Data Sources
+```bash
+# Rule-based ArbCom BPMN and aggregate model.
+uv run python scripts/bpmn_from_arb.py --input data/raw/arbitration --output artifacts/bpmn/arb --max-cases 20
 
-| Source | Description | Module / Script |
-| ------ | ----------- | --------------- |
-| Arbitration Cases | Binding decisions from ArbCom | `src/fetchers.py` → `fetch_arbitration_cases()` |
-| Revision History | Edit history with timestamps, users, comments | `src/fetchers.py` → `fetch_revisions()` |
-| Edit Wars | Pages with high revert activity | `scripts/detect_edit_wars.py` |
-| DRN Cases | Dispute Resolution Noticeboard threads | `src/fetchers.py` → `fetch_drn_page()` |
-| Dispute Lifecycle | Full escalation path: Talk → DRN → ANI → ArbCom | `scripts/fetch_dispute_lifecycle.py` |
-| Arb Case DFS | Depth-first collection of all related pages | `scripts/fetch_arb_dfs.py` |
-| Requests for Comments | RFC threads on Meta-Wikipedia | `scripts/fetch_rfc.py` |
-| Declined RFAs | Failed requests for adminship | `scripts/fetch_declined_rfas.py` |
-| Page Views | Wikimedia pageview statistics | `src/pageviews.py` |
+# Hugging Face NER-assisted ArbCom BPMN.
+uv run python scripts/arbitration_bpmn_hf.py --case "Wikipedia:Requests_for_arbitration/-Ril-"
+uv run python scripts/arbitration_bpmn_hf.py --aggregate
 
-See [`docs/wikimedia_api.md`](docs/wikimedia_api.md) for full API documentation.
+# DRN and RfC generators.
+uv run python scripts/bpmn_from_drn.py
+uv run python scripts/bpmn_from_rfc.py
+```
 
----
+The project supports three BPMN-generation styles:
 
-## Core Analysis Modules
+1. **Deterministic structural extraction** for fast, reproducible aggregate
+   diagrams.
+2. **BERT-assisted labeling** for better actor/task labels inside a stable
+   process skeleton.
+3. **Hybrid language-model branching** for high-fidelity case studies where
+   principles, findings, remedies, amendments, and enforcement events become
+   separate process elements.
 
-| Module | Description |
-| ------ | ----------- |
-| `src/arbitration.py` | Data models for arbitration cases. Parses case JSON into `ArbitrationCaseSummary` objects with editor profiles, conflict networks, and revision timelines. |
-| `src/outcome.py` | Parses ArbCom proposed/final decision wikitext to extract structured votes, findings, and remedies with pass/fail status. |
-| `src/lifecycle.py` | Traces disputes through all resolution stages (Talk → DRN → ANI → ArbCom). Extracts participants and disputed articles. |
-| `src/analysis.py` | Edit war detection, revert analysis, and 3RR violation detection from revision histories. |
-| `src/timeline.py` | Constructs chronological dispute timelines with escalation features for modeling. |
-| `src/graph.py` | NetworkX `MultiDiGraph` builder with editor, article, and case nodes; `REVERTS`, `EDITS_CASE`, and `CO_OCCURS` edges. |
-| `src/network.py` | Graph analysis utilities: centrality, community detection, co-occurrence summaries. |
-| `src/ores.py` | ORES (Wikimedia ML) integration for edit quality and damage scoring. |
-| `src/models.py` | Shared Pydantic/dataclass models for cases, revisions, and participants. |
-| `src/evidence.py` | Evidence diff extraction and enrichment from ArbCom case pages. |
-| `src/pageviews.py` | Wikimedia pageview API client for article traffic data. |
-| `src/xtools.py` | XTools API client for editor statistics and contribution summaries. |
-| `src/pull_config.py` | YAML config management for `pull.py` presets (`sample`, `full`, `dev`). |
-| `src/pull_state.py` | JSON state persistence enabling resumable multi-hour data pulls. |
-| `src/credentials.py` | API credential loading, validation, and warnings. |
-| `src/wiki.py` | Wikipedia API client wrapper with rate limiting, retry logic, and OAuth support. |
-| `src/cli_utils.py` | CLI utilities for graceful shutdown handling and memory monitoring in data fetch scripts. |
+### Enrich evidence diffs and negative-class data
+
+```bash
+uv run python scripts/enrich_evidence_diffs.py --dry-run
+uv run python scripts/enrich_evidence_diffs.py --case "Gamergate"
+
+make fetch-declined-dry
+make fetch-declined
+```
+
+Declined ArbCom requests are intended as a future negative class for escalation
+modeling. They should not be mixed with accepted ArbCom cases without clear
+labels.
 
 ---
 
-## Dispute Resolution Lifecycle
-
-Wikipedia employs graduated intervention for conflicts:
+## Repository layout
 
 ```text
-Talk Page → Third Opinion/RFC → DRN → ANI → Arbitration
+.
+|-- artifacts/              # Case lists, generated BPMN/results, logs
+|-- dashboard/              # React + Vite dashboard
+|-- data/
+|   |-- raw/                # LFS-backed API records and case JSON
+|   `-- processed/          # LFS-backed feature tables and dashboard payloads
+|-- docs/                   # API, graph, Rivanna, lifecycle, and progress docs
+|-- notebooks/              # Exploratory notebooks
+|-- scripts/                # CLI scripts for collection, export, BPMN, HPC
+|-- src/                    # Reusable Python package code
+`-- tests/                  # Unit and integration tests
 ```
 
-Content disputes and conduct disputes follow distinct pathways. See [`docs/wikipedia_dispute_resolution_lifecycle.md`](docs/wikipedia_dispute_resolution_lifecycle.md) for the complete mapping.
+Large raw and processed data artifacts are tracked through Git LFS via
+`.gitattributes`. If a JSON file looks like a small LFS pointer instead of real
+data, run `git lfs pull`.
 
 ---
 
-## Important Links
+## Documentation
 
-- [Capstone Class Repo](https://github.com/UVADS/ds6015/)
-- [Lexipedia Capstone Group Repo](statics.teams.cdn.office.net/evergreen-assets/safelinks/2/atp-safelinks.html)
-- [MediaWiki API Documentation](https://www.mediawiki.org/wiki/API:Main_page)
-- [Pywikibot Manual](https://www.mediawiki.org/wiki/Manual:Pywikibot)
+| Document | Purpose |
+| --- | --- |
+| [`docs/handoff.md`](docs/handoff.md) | Detailed handoff audit, current gaps, module notes, and next priorities |
+| [`docs/data_dictionary.md`](docs/data_dictionary.md) | Definitions for raw records, usable data, D3 payloads, dashboard data, and feature tables |
+| [`docs/dashboard.md`](docs/dashboard.md) | Dashboard tabs, data inputs, D3/BPMN loading, and troubleshooting |
+| [`docs/wikipedia_dispute_resolution_lifecycle.md`](docs/wikipedia_dispute_resolution_lifecycle.md) | Dispute escalation process and venue mapping |
+| [`docs/wikimedia_api.md`](docs/wikimedia_api.md) | Wikimedia API reference used by the project |
+| [`docs/graph_schema.md`](docs/graph_schema.md) | Editor/article/case graph schema and planned Wikidata enrichment |
+| [`docs/rivanna_guide.md`](docs/rivanna_guide.md) | UVA Rivanna setup and SLURM collection workflow |
 
 ---
 
-## Development Team
+## Rivanna HPC workflow
+
+You do need to be logged into the UVA network.
+
+Large-scale collection can run on UVA Rivanna. Configure `RIVANNA_ID` in
+`.env`, set up SSH access, then use:
+
+```bash
+make rivanna-sync
+make rivanna-setup
+make rivanna-submit
+make rivanna-status
+make rivanna-logs
+make rivanna-pull
+```
+
+The SLURM pipeline is dependency ordered:
+
+| Stage | Script | Purpose |
+| --- | --- | --- |
+| 1 | `update_arb_cases.slurm` | Refresh canonical ArbCom case list |
+| 2 | `fetch_full.slurm` | Fetch broad article/dispute data |
+| 3 | `fetch_arb_dfs.slurm` | Collect ArbCom case pages and linked pages |
+| 4 | `fetch_lifecycle.slurm` | Reconstruct dispute lifecycle stages |
+| 5 | `pipeline_summary.slurm` | Send progress summary |
+
+See `docs/rivanna_guide.md` for setup details, logging paths, and recovery
+steps. Current limitations and next priorities are tracked in
+[`docs/handoff.md`](docs/handoff.md).
+
+---
+
+## Ethics and responsible use
+
+This project uses public Wikimedia records, but editor names, sanctions, and
+dispute histories can still be sensitive when aggregated. Use the data for
+governance analysis, reproducibility, and process understanding. Avoid ranking
+or targeting individual volunteers. Any future predictive model should be
+evaluated for false positives, contestability, and chilling effects on
+good-faith participation.
+
+---
+
+## AI disclosure
+
+Generative AI tools were used as assistants during portions of this project,
+including code review, documentation drafting, LaTeX editing, and repository
+handoff cleanup. The team remains responsible for the final analysis, claims,
+code, and documentation. AI-generated suggestions were reviewed against the
+repository state and public Wikimedia data before inclusion.
+
+---
+
+## Project links
+
+- Repository: <https://github.com/rah-ds/Wikipedia_Dispute_Models>
+- Wikimedia API documentation: <https://www.mediawiki.org/wiki/API:Main_page>
+- Wikipedia dispute resolution: <https://en.wikipedia.org/wiki/Wikipedia:Dispute_resolution>
+- BPMN 2.0 specification: <https://www.omg.org/spec/BPMN/2.0.2/>
+
+---
+
+## Team
 
 | Role | Name |
-| ---- | ---- |
-| Authors | Ryan, Louis, Katherine |
-| Advisor | Professor Alvarado |
-| Project Sponsor | Lexipedia and Wikimedia |
-| Domain Expert | Lane |
-| Domain Expert | Anson (Lexipedia) |
+| --- | --- |
+| Authors | Louis Cocks, Katherine Kelleher, Ryan Healy |
+| Program | UVA School of Data Science, MSDS DS 6015 Capstone, including Professor Rafael Alvarado |
+| Sponsor | Lexipedia |
+| Subject-matter feedback | Lane Raspberry and Anson Parker |
+
+---
+
+## License
+
+This repository is released under the MIT License. See `LICENSE`.

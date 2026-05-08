@@ -5,7 +5,12 @@
 **Sponsor:** Lexipedia / Wikimedia Foundation
 **Domain Experts:** Lane, Anson (Lexipedia)
 **Program:** UVA MSDS Capstone
-**Last Updated:** February 2026
+**Last Updated:** May 2026 handoff refresh
+
+> **Historical context:** this report preserves project planning notes and may
+> mix older design context with refreshed handoff facts. For the current
+> handoff state, use [`docs/handoff.md`](handoff.md); this file preserves
+> historical project context.
 
 ---
 
@@ -52,7 +57,7 @@ Wikipedia_Dispute_Models/
 │   ├── processed/          # Cleaned datasets
 │   └── external/           # Third-party data
 ├── artifacts/
-│   ├── arb_cases.txt       # Master case list (~170 cases)
+│   ├── arb_cases.txt       # Master case list (481 cases at handoff)
 │   ├── pull_state.json     # Current collection progress
 │   └── configs/            # YAML preset configs
 ├── docs/                   # Documentation
@@ -122,13 +127,15 @@ Stage 3   │ DISPUTE RESOLUTION NOTICEBOARD │    │   ADMINS NOTICEBOARD   �
 - **Rate limits:**
   - Anonymous: 500 requests/hour per IP
   - Authenticated (bot password / OAuth): 5,000 requests/hour
-- **Library:** Pywikibot wraps this; direct `action=query` calls for advanced features
+- **Library:** `src/wiki.py` wraps direct MediaWiki REST/action API calls with
+  retries, rate limiting, and optional OAuth support
 - **Module:** `src/wiki.py` — `WikiClient` class
 
-**Authentication setup:**
-```python
-site._custom_headers = {"Authorization": f"Bearer {token}"}
-```
+**Authentication setup:** set `WIKIPEDIA_ACCESS_TOKEN` to make authenticated
+bearer-token requests. Authentication is optional for project scripts;
+`src/credentials.py` and `src/wiki.py` load environment-based configuration.
+Any additional authenticated-request variables should be documented
+explicitly in `.env.example`.
 
 ---
 
@@ -256,8 +263,8 @@ site._custom_headers = {"Authorization": f"Bearer {token}"}
 |--------|----------------|-----------------|
 | `get_page_assessments(title)` | WikiProject quality and importance ratings | `prop=pageassessments&palimit=max` |
 | `get_page_protection(title)` | Current edit/move protection level and expiry | `prop=info&inprop=protection` |
-| `get_talk_page(title)` | `pywikibot.Page` for the talk page | Pywikibot `toggleTalkPage()` |
-| `get_category_pages(name, limit)` | All pages in a category | Pywikibot `Category.articles()` |
+| `get_talk_page(title)` | Talk-page metadata/content | MediaWiki title and revisions queries |
+| `get_category_pages(name, limit)` | All pages in a category | `list=categorymembers` |
 
 **Assessment fields returned:**
 ```python
@@ -788,16 +795,18 @@ Output path: `data/raw/dispute_venues/{case_name}_lifecycle.json`
 
 | Source | Status | Detail |
 |--------|--------|--------|
-| **Sample pull — Arbitration (5 cases)** | ✅ Complete | Climate change, Gamergate, Eastern Europe, Scientology, Muhammad images |
-| **Sample pull — Lifecycle (5 cases)** | ✅ Complete | Full dispute lifecycle for same 5 cases |
-| **Sample pull — DRN (5 cases)** | ⏳ Pending | Queued in state file, not yet started |
-| **Full pull — Arbitration** | 🔄 In Progress | 80+ of ~170 cases; ~115 MB collected |
-| **ORES enrichment pass** | 🔲 Not started | Will run over collected revision IDs |
-| **Pageviews enrichment pass** | 🔲 Not started | Will correlate traffic with dispute events |
+| **Canonical ArbCom case list** | ✅ Complete | 481 cases in `artifacts/arb_cases.txt` |
+| **Raw per-case arbitration JSON** | ✅ Complete | 481 raw records present |
+| **Usable arbitration/lifecycle data** | ✅ Mostly complete | 472 usable records; 9 zero-data records need inspection |
+| **Dashboard/D3 exports** | ✅ Partial | 466 JSON files in `data/processed/d3/`, including `manifest.json`; regenerate after raw fixes |
+| **Evidence diff enrichment** | ✅ Implemented | `src/evidence.py` and `scripts/enrich_evidence_diffs.py` extract `Special:Diff` evidence |
+| **Graph layer** | ✅ Implemented | `src/graph.py` builds editor/article/case `MultiDiGraph` exports |
 
-**Case list:** `artifacts/arb_cases.txt` — ~170 canonical ArbCom cases from 2004–present
+**Case list:** `artifacts/arb_cases.txt` — 481 canonical ArbCom cases from
+2004–2025. See [`handoff.md`](handoff.md) for the current zero-data case list
+and lifecycle-stage distribution.
 
-### 7.2 What's Implemented vs. Pending
+### 7.2 Implemented Capabilities
 
 | Capability | Status |
 |------------|--------|
@@ -810,38 +819,40 @@ Output path: `data/raw/dispute_venues/{case_name}_lifecycle.json`
 | 3O and RfC fetching | ✅ |
 | User info, block history, abuse hits | ✅ |
 | SPI case fetching and parsing | ✅ |
-| ORES/Lift Wing ML scoring | ✅ implemented; not yet integrated into main pull |
-| Pageviews traffic analysis | ✅ implemented; not yet integrated into main pull |
-| XTools user stats | ✅ implemented; not yet integrated into main pull |
+| ORES/Lift Wing ML scoring | ✅ implemented |
+| Pageviews traffic analysis | ✅ implemented |
+| XTools user stats | ✅ implemented |
 | Edit war detection (`analyze_edit_war`) | ✅ |
 | Outcome parsing (sanctions, remedies) | ✅ |
-| Analysis phase (modeling, ML) | 🔲 Pending |
+| Graph construction | ✅ |
+| Evidence diff extraction | ✅ |
+| Analysis phase (modeling, ML) | Prototype / future work |
 
-### 7.3 Recent Commits
+### 7.3 Handoff References
 
-| Hash | Message |
-|------|---------|
-| `f65e6e0` | Save runs |
-| `3ae5c3d` | EOD checkpoint |
-| `12ae0d4` | feat: starting pull |
-| `ff07b07` | Add `make archive` and `make clear-results` |
-| `d53bbb4` | Add abuse filter log, SPI scraping, update API docs |
+The historical commit list that used to appear here is no longer maintained.
+For current handoff state, use:
+
+- `docs/handoff.md` for coverage, gaps, and maintainer priorities
+- `artifacts/arb_cases.txt` for the canonical case list
+- `data/raw/arbitration/` for raw per-case records
+- `data/processed/d3/manifest.json` for dashboard export coverage
 
 ---
 
 ## 8. Next Steps
 
-### Immediate (Data Collection)
-1. **Complete DRN collection** — 5 cases queued, run `make pull` to collect
-2. **Complete full arbitration pull** — ~90 cases remaining in `arb_cases.txt`
-3. **ORES enrichment pass** — batch-score all collected revision IDs for `damaging` / `goodfaith` signals
+### Immediate (Data Quality)
+1. **Repair zero-data ArbCom records** — inspect or refetch the 9 cases listed in [`handoff.md`](handoff.md)
+2. **Regenerate dashboard payloads** — run the D3 export after raw fixes so dashboard coverage matches usable raw coverage
+3. **Validate outcomes** — hand-check parsed sanctions/remedies before using them as labels
 
 ### Analysis Phase
 4. **Revert ratio analysis** — compute per-article and per-editor revert ratios using `mw-revert` / `mw-reverted` tags
-5. **Editor co-occurrence networks** — build graph of editors who appear together at multiple dispute stages
-6. **Escalation prediction** — binary classifier: given Talk page + ANI features, predict ArbCom referral
-7. **Traffic spike correlation** — use Pageviews data to test hypothesis that high-visibility articles attract more edit warring
-8. **Sanction outcome classification** — model which participant characteristics predict sanctions
+5. **Editor co-occurrence networks** — use the graph layer to identify editors who appear together across cases and venues
+6. **Escalation prediction** — collect non-escalated or declined disputes as a negative class before training
+7. **Traffic spike correlation** — use Pageviews data to test whether high-visibility articles attract more edit warring
+8. **Sanction outcome classification** — model participant characteristics only after outcome labels are validated
 
 ### Deliverables
 9. Capstone paper (UVA MSDS DS 6015 submission)
@@ -868,7 +879,7 @@ Cases in `arb_cases.txt` are stored as short names (e.g., `Climate change`). The
 
 ## Appendix: Sample Case Names (from `arb_cases.txt`)
 
-The full list contains ~170 cases spanning 2004–2023. A representative sample:
+The full list contains 481 cases spanning 2004–2025. A representative sample:
 
 ```
 Climate change
