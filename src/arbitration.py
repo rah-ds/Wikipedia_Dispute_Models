@@ -264,11 +264,89 @@ class ArbitrationCaseSummary:
 
     @classmethod
     def from_dict(cls, data: dict) -> "ArbitrationCaseSummary":
-        """Build summary from an already-loaded dict (either format)."""
-        # Detect which format: old fetcher vs lifecycle fetcher
+        """Build summary from an already-loaded dict (any format)."""
+        # Detect which format: lifecycle vs enriched (pages-as-dict) vs legacy
         if "lifecycle_stages" in data:
             return cls._from_lifecycle_dict(data)
+        if isinstance(data.get("pages"), dict):
+            return cls._from_enriched_dict(data)
         return cls._from_legacy_dict(data)
+
+    # ---- enriched format (fetch_arb_dfs.py output, pages as dict) ----
+
+    @classmethod
+    def _from_enriched_dict(cls, data: dict) -> "ArbitrationCaseSummary":
+        """Parse the enriched/DFS format where ``pages`` is a dict keyed by
+        subpage label (e.g. ``"main"``, ``"/Evidence"``)."""
+        pages_dict = data.get("pages", {})
+        case_pages: list[PageSummary] = []
+        raw_page_dicts: list[dict] = []
+        for subpage_label, page_data in pages_dict.items():
+            if not isinstance(page_data, dict):
+                continue
+            # Normalise to PageSummary.from_dict format
+            normalised = {
+                "title": page_data.get("title", ""),
+                "url": page_data.get("url", ""),
+                "subpage": f"({subpage_label})"
+                if subpage_label == "main"
+                else f"/{subpage_label}"
+                if not subpage_label.startswith("/")
+                else subpage_label,
+                "exists": True,
+                "revisions": page_data.get("revisions", []),
+                "content": page_data.get("content", ""),
+            }
+            case_pages.append(PageSummary.from_dict(normalised))
+            raw_page_dicts.append(normalised)
+
+        talk_dict = data.get("talk_pages", {})
+        case_talk_pages: list[PageSummary] = []
+        for subpage_label, page_data in (
+            talk_dict if isinstance(talk_dict, dict) else {}
+        ).items():
+            if not isinstance(page_data, dict):
+                continue
+            normalised = {
+                "title": page_data.get("title", ""),
+                "url": page_data.get("url", ""),
+                "subpage": subpage_label,
+                "exists": True,
+                "revisions": page_data.get("revisions", []),
+            }
+            case_talk_pages.append(PageSummary.from_dict(normalised))
+
+        # Article revision data
+        linked_articles: list[PageSummary] = []
+        article_revs = data.get("article_revisions", {})
+        article_titles = data.get("all_articles", [])
+        if isinstance(article_revs, dict):
+            for art_title, revisions in article_revs.items():
+                normalised = {
+                    "title": art_title,
+                    "url": "",
+                    "subpage": "",
+                    "exists": True,
+                    "revisions": revisions if isinstance(revisions, list) else [],
+                }
+                linked_articles.append(PageSummary.from_dict(normalised))
+
+        summary = cls(
+            case_name=data.get("case_name", ""),
+            case_prefix=data.get("case_prefix", ""),
+            fetched_at=data.get("fetched_at", ""),
+            case_pages=case_pages,
+            case_talk_pages=case_talk_pages,
+            linked_article_titles=article_titles,
+            linked_articles=linked_articles,
+            total_case_pages=len(case_pages),
+            total_talk_pages=len(case_talk_pages),
+            total_linked_articles=len(article_titles),
+            raw_summary=data.get("summary", {}),
+        )
+        summary._compute_derived()
+        summary._parse_decision_from_pages(raw_page_dicts)
+        return summary
 
     # ---- legacy format (fetch_dispute_lifecycle.py old output) ----
 
@@ -588,11 +666,19 @@ class ArbitrationCaseSummary:
 
 def load_all_cases(
     data_dir: str | Path = "data/raw/arbitration",
-    glob_pattern: str = "arb_dfs_*.json",
+    glob_pattern: str = "*.json",
+    exclude_prefixes: tuple[str, ...] = ("arbitration_cases_",),
 ) -> list[ArbitrationCaseSummary]:
     """
     Load every case JSON in a directory and return ArbitrationCaseSummary
     objects. Skips files that fail to parse (with a warning).
+
+    Parameters
+    ----------
+    data_dir : directory containing case JSON files
+    glob_pattern : filename glob (default matches all JSON)
+    exclude_prefixes : skip files whose name starts with these prefixes
+        (e.g. index / manifest files)
     """
     import logging
 
@@ -601,6 +687,8 @@ def load_all_cases(
     summaries = []
 
     for path in sorted(data_dir.glob(glob_pattern)):
+        if any(path.name.startswith(p) for p in exclude_prefixes):
+            continue
         try:
             summaries.append(ArbitrationCaseSummary.from_json_path(path))
         except Exception as exc:

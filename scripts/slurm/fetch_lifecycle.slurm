@@ -10,6 +10,8 @@
 #SBATCH -o ./slurmlogs/lifecycle_%A_%a.out
 #SBATCH -e ./slurmlogs/lifecycle_%A_%a.err
 #SBATCH -J wiki-lifecycle
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=rah5ff@virginia.edu
 
 ## SLURM Array Job: Fetch full dispute lifecycle for each arbitration case
 ## Traces: Talk Pages -> DRN -> ANI -> ArbCom
@@ -21,7 +23,8 @@
 ##
 ## The %2 limits to 2 concurrent tasks to respect Wikipedia API rate limits.
 
-source "${SLURM_SUBMIT_DIR}/scripts/slurm/common.sh"
+_PROJECT="${WIKI_PROJECT_ROOT:-/scratch/rah5ff/Wikipedia_Dispute_Models}"
+source "${_PROJECT}/scripts/slurm/common.sh"
 
 # ---------------------------------------------------------------------------
 # Read case name from arb_cases.txt using the array task ID as line number
@@ -42,7 +45,7 @@ if (( TASK_ID < 1 || TASK_ID > TOTAL_CASES )); then
     exit 1
 fi
 
-CASE_NAME=$(sed -n "${TASK_ID}p" "$ARB_CASES_FILE")
+CASE_NAME=$(sed -n "${TASK_ID}p" "$ARB_CASES_FILE" | xargs)
 
 if [[ -z "$CASE_NAME" ]]; then
     echo "ERROR: Empty case name at line $TASK_ID"
@@ -52,6 +55,18 @@ fi
 echo "Lifecycle [$TASK_ID/$TOTAL_CASES]: $CASE_NAME"
 echo "Stages: Talk Pages -> DRN -> ANI -> ArbCom"
 echo ""
+
+# ---------------------------------------------------------------------------
+# Skip if output already exists (allows safe resubmission after cancel)
+# ---------------------------------------------------------------------------
+SAFE_NAME=$(echo "$CASE_NAME" | tr '/ :' '___')
+EXISTING=$(find data/raw/dispute_venues -name "lifecycle_${SAFE_NAME}_*.json" 2>/dev/null | head -1)
+if [[ -n "$EXISTING" ]]; then
+    echo "SKIP: Output already exists: $EXISTING"
+    log_progress "lifecycle" "$CASE_NAME" "SUCCESS" "skipped=already_exists,file=$(basename $EXISTING)"
+    print_summary "lifecycle" "$CASE_NAME" "SKIPPED (output exists)"
+    exit 0
+fi
 
 log_progress "lifecycle" "$CASE_NAME" "STARTED" "task=${TASK_ID}/${TOTAL_CASES}"
 
@@ -75,7 +90,16 @@ if [[ $EXIT_CODE -eq 0 ]]; then
 else
     log_progress "lifecycle" "$CASE_NAME" "FAILED" "exit_code=${EXIT_CODE}"
     print_summary "lifecycle" "$CASE_NAME" "FAILED (exit $EXIT_CODE)"
+
+    # Send failure email with stderr excerpt
+    ERR_FILE="slurmlogs/lifecycle_${SLURM_ARRAY_JOB_ID}_${TASK_ID}.err"
+    LAST_ERR=$(tail -20 "$ERR_FILE" 2>/dev/null || echo "(no stderr)")
+    send_report "[Rivanna] lifecycle FAILED: $CASE_NAME (task $TASK_ID)" \
+        "Case:       $CASE_NAME\nTask:       $TASK_ID / $TOTAL_CASES\nExit code:  $EXIT_CODE\n\nLast 20 lines of stderr:\n$LAST_ERR"
 fi
+
+# Check for quarter milestones (25%, 50%, 75%, 100%)
+check_milestone "lifecycle" "$TOTAL_CASES"
 
 echo "Output: data/raw/dispute_venues/ (+${NEW_FILES} files)"
 exit $EXIT_CODE

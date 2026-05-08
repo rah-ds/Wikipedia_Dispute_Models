@@ -1,4 +1,4 @@
-.PHONY: install install-dev clean data-dirs help lint fetch-all fetch-full fetch-arb fetch-drn fetch-small test test-unit test-cov fetch-venues fetch-ani fetch-talk fetch-arb-dfs fetch-arb-dfs-sample fetch-arb-dfs-sample-full fetch-arb-dfs-all fetch-arb-dfs-all-full update-arb-cases-list fetch-lifecycle fetch-lifecycle-dry fetch-lifecycle-sample fetch-lifecycle-all setup pull pull-status pull-reset validate archive clear-results pull-full-arb pull-full-arb-estimate pull-full-arb-force rivanna-sync rivanna-setup rivanna-submit rivanna-status rivanna-logs rivanna-pull rivanna-clean rivanna-ssh rivanna-train
+.PHONY: install install-dev clean data-dirs help lint fetch-all fetch-full fetch-arb fetch-drn fetch-small test test-unit test-cov fetch-venues fetch-ani fetch-talk fetch-arb-dfs fetch-arb-dfs-sample fetch-arb-dfs-sample-full fetch-arb-dfs-all fetch-arb-dfs-all-full update-arb-cases-list fetch-lifecycle fetch-lifecycle-dry fetch-lifecycle-sample fetch-lifecycle-all setup pull pull-status pull-reset validate archive clear-results pull-full-arb pull-full-arb-estimate pull-full-arb-force rivanna-sync rivanna-setup rivanna-submit rivanna-status rivanna-logs rivanna-pull rivanna-clean rivanna-ssh rivanna-train enrich-diffs enrich-diffs-dry fetch-declined fetch-declined-dry build-features fetch-missing viz-export viz-update viz-serve dashboard dashboard-build
 
 # =============================================================================
 # QUICK START - Three simple commands to get started
@@ -84,6 +84,13 @@ help:
 	@printf "    $(CYAN)fetch-lifecycle-sample$(RESET)        Fetch 5 sample cases with full lifecycle\n"
 	@printf "    $(CYAN)fetch-lifecycle-all$(RESET)           Fetch ALL cases with full lifecycle\n"
 	@printf "\n"
+	@printf "$(BOLD)$(YELLOW)  Data Quality$(RESET)\n"
+	@printf "    $(CYAN)make enrich-diffs$(RESET)             Fetch evidence diffs for all case JSONs\n"
+	@printf "    $(CYAN)make enrich-diffs CASE=<name>$(RESET) Fetch evidence diffs for one case\n"
+	@printf "    $(CYAN)make enrich-diffs-dry$(RESET)         Preview enrich-diffs without API calls\n"
+	@printf "    $(CYAN)make fetch-declined$(RESET)           Fetch declined ArbCom requests (negative class)\n"
+	@printf "    $(CYAN)make fetch-declined-dry$(RESET)       Preview fetch-declined without API calls\n"
+	@printf "\n"
 	@printf "$(BOLD)$(MAGENTA)  Rivanna HPC$(RESET) $(DIM)(requires RIVANNA_ID in .env + SSH key)$(RESET)\n"
 	@printf "    $(CYAN)make rivanna-sync$(RESET)    Sync project to Rivanna /scratch\n"
 	@printf "    $(CYAN)make rivanna-setup$(RESET)   One-time setup (uv, venv, deps)\n"
@@ -94,6 +101,17 @@ help:
 	@printf "    $(CYAN)make rivanna-clean$(RESET)   Cancel jobs and clear remote data\n"
 	@printf "    $(CYAN)make rivanna-ssh$(RESET)     SSH into Rivanna interactively\n"
 	@printf "    $(CYAN)make rivanna-train$(RESET)   Submit Gemma4 BPMN GPU job\n"
+	@printf "\n"
+	@printf "$(BOLD)$(MAGENTA)  Visualization Pipeline$(RESET)\n"
+	@printf "    $(CYAN)make viz-update$(RESET)              Fetch missing cases + re-export dashboard data\n"
+	@printf "    $(CYAN)make viz-update LIMIT=20$(RESET)     Fetch at most 20 missing cases this run\n"
+	@printf "    $(CYAN)make fetch-missing$(RESET)           Fetch uncollected cases from arb_cases.txt\n"
+	@printf "    $(CYAN)make fetch-missing DRY=1$(RESET)     List missing cases without fetching\n"
+	@printf "    $(CYAN)make viz-export$(RESET)              Re-export D3 JSONs + update manifest only\n"
+	@printf "    $(CYAN)make viz-serve$(RESET)               Serve D3 viz → http://localhost:8765/viz/dashboard.html\n"
+	@printf "    $(CYAN)make viz-serve VIZ_PORT=9000$(RESET) Serve on a custom port\n"
+	@printf "    $(CYAN)make dashboard$(RESET)               Start the React dashboard (http://localhost:5173)\n"
+	@printf "    $(CYAN)make dashboard-build$(RESET)         Build the React dashboard for production\n"
 	@printf "\n"
 
 # =============================================================================
@@ -162,13 +180,13 @@ lint:
 
 # Testing
 test:
-	uv run pytest tests/ -v
+	uv run --extra dev pytest tests/ -v
 
 test-unit:
-	uv run pytest tests/ -v -m "not integration"
+	uv run --extra dev pytest tests/ -v -m "not integration"
 
 test-cov:
-	uv run pytest tests/ -v --cov=src --cov-report=term-missing
+	uv run --extra dev pytest tests/ -v --cov=src --cov-report=term-missing
 
 # Create data directories
 data-dirs:
@@ -392,6 +410,62 @@ clear-results-force:
 	rm -rf data/raw/*
 	rm -rf data/processed/*
 	@echo "✓ All results cleared"
+
+# Rebuild features.csv from raw data (arb_dfs + enriched + lifecycle)
+build-features:
+	uv run python scripts/build_features.py
+
+# =============================================================================
+# VISUALIZATION PIPELINE
+# =============================================================================
+
+# Fetch cases in artifacts/arb_cases.txt that are not yet on disk,
+# then re-export D3 JSONs and update the manifest for the dashboard.
+#
+# Usage:
+#   make viz-update              # fetch missing + re-export (recommended)
+#   make viz-update LIMIT=20     # fetch at most 20 missing cases this run
+#   make fetch-missing           # only identify and fetch missing cases
+#   make fetch-missing DRY=1     # list what would be fetched without API calls
+#   make viz-export              # only re-export D3 JSONs + update manifest
+
+fetch-missing: data-dirs
+	@echo "Checking for uncollected arbitration cases..."
+	$(if $(DRY), \
+		uv run python scripts/fetch_missing_cases.py --dry-run, \
+		uv run python scripts/fetch_missing_cases.py $(if $(LIMIT),--limit $(LIMIT),) --delay 1 \
+	)
+
+viz-export:
+	@echo "Exporting D3 JSONs and updating manifest..."
+	uv run python scripts/export_d3_all.py --workers 4
+	@echo "✓ Dashboard data updated → data/processed/d3/manifest.json"
+
+viz-update: fetch-missing viz-export
+	@echo ""
+	@echo "✓ Done. Serve the D3 viz with: make viz-serve"
+
+VIZ_PORT ?= 8765
+
+viz-serve:
+	@echo "Serving D3 viz → http://localhost:$(VIZ_PORT)/viz/dashboard.html"
+	@open "http://localhost:$(VIZ_PORT)/viz/dashboard.html" 2>/dev/null || true
+	python3 -m http.server $(VIZ_PORT)
+
+# =============================================================================
+# REACT DASHBOARD
+# =============================================================================
+
+DASH_PORT ?= 5173
+
+dashboard:
+	@echo "Starting React dashboard → http://localhost:$(DASH_PORT)"
+	cd dashboard && npm install --silent && npm run dev -- --port $(DASH_PORT)
+
+dashboard-build:
+	@echo "Building React dashboard..."
+	cd dashboard && npm install --silent && npm run build
+	@echo "✓ Built → dashboard/dist/"
 # =============================================================================
 # FULL DISPUTE LIFECYCLE FETCHER (RECOMMENDED)
 # =============================================================================
@@ -516,6 +590,26 @@ pull-full-arb-force: data-dirs
 	uv run python scripts/pull.py --config full
 
 # =============================================================================
+# DATA QUALITY: EVIDENCE DIFFS & DECLINED REQUESTS
+# =============================================================================
+
+# Enrich arbitration case JSONs with evidence page diffs
+# Usage: make enrich-diffs
+#        make enrich-diffs CASE="Gamergate"
+enrich-diffs: data-dirs
+	uv run python scripts/enrich_evidence_diffs.py $(if $(CASE),--case "$(CASE)",)
+
+enrich-diffs-dry: data-dirs
+	uv run python scripts/enrich_evidence_diffs.py --dry-run $(if $(CASE),--case "$(CASE)",)
+
+# Fetch declined arbitration requests (negative class for escalation models)
+fetch-declined: data-dirs
+	uv run python scripts/fetch_declined_rfas.py
+
+fetch-declined-dry: data-dirs
+	uv run python scripts/fetch_declined_rfas.py --dry-run
+
+# =============================================================================
 # RIVANNA HPC TARGETS
 # =============================================================================
 # Local convenience targets that SSH into Rivanna to manage SLURM jobs.
@@ -533,6 +627,7 @@ rivanna-sync:
 		--exclude='.venv' --exclude='__pycache__' --exclude='node_modules' \
 		--exclude='data/raw' --exclude='data/processed' --exclude='apicache' \
 		--exclude='.git' --exclude='slurmlogs/*.out' --exclude='slurmlogs/*.err' \
+		--exclude='slurmlogs/progress_*.csv' --exclude='slurmlogs/progress_*.csv.lock' \
 		./ $(RIVANNA_HOST):$(RIVANNA_PROJECT)/
 	@echo "✓ Synced to $(RIVANNA_HOST):$(RIVANNA_PROJECT)"
 

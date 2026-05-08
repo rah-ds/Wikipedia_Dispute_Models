@@ -170,6 +170,85 @@
   margin-bottom: 24px;
 }
 
+/* ── D3 screen ───────────────────────────────── */
+.d3-screen {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.d3-grid {
+  display: grid;
+  gap: 20px;
+}
+
+.d3-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.d3-card__header {
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.d3-card__header h2 {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.d3-card__header p {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--text-muted);
+  max-width: 760px;
+}
+
+.d3-card__link {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.d3-card__link:hover {
+  text-decoration: underline;
+}
+
+.d3-frame-wrap {
+  background: #0d1117;
+  padding: 0;
+}
+
+.d3-frame {
+  display: block;
+  width: 100%;
+  min-height: 760px;
+  border: 0;
+  background: #0d1117;
+}
+
+.d3-card--tall .d3-frame {
+  min-height: 1080px;
+}
+
+@media (max-width: 760px) {
+  .d3-card__header {
+    flex-direction: column;
+  }
+
+  .d3-frame {
+    min-height: 620px;
+  }
+}
+
 /* ── BPMN screen ─────────────────────────────── */
 .bpmn-screen {
   display: flex;

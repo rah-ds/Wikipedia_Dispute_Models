@@ -157,19 +157,21 @@ def test_api_connectivity(timeout: float = 10.0) -> ValidationResult:
     result = ValidationResult(valid=True)
 
     try:
-        import pywikibot
+        import requests
 
-        site = pywikibot.Site("en", "wikipedia")
-
-        # Try a simple API call
-        page = pywikibot.Page(site, "Main Page")
-        if not page.exists():
+        resp = requests.get(
+            "https://en.wikipedia.org/w/api.php",
+            params={"action": "query", "titles": "Main Page", "format": "json"},
+            timeout=timeout,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        pages = data.get("query", {}).get("pages", {})
+        if all(int(pid) < 0 for pid in pages):
             result.add_error("Failed to fetch Main Page - API connectivity issue")
         else:
             result.credentials["API_CONNECTION"] = CredentialStatus.VALID
 
-    except ImportError:
-        result.add_error("pywikibot not installed. Run: pip install pywikibot")
     except Exception as e:
         result.add_error(f"API connectivity test failed: {e}")
         result.credentials["API_CONNECTION"] = CredentialStatus.INVALID
@@ -187,14 +189,22 @@ def test_authentication() -> ValidationResult:
         return result
 
     try:
-        import pywikibot
+        import requests
 
-        site = pywikibot.Site("en", "wikipedia")
-        setattr(site, "_custom_headers", {"Authorization": f"Bearer {token}"})
-
-        # Try to get user info - requires authentication
-        # This is a basic check; actual auth validation depends on the endpoint
-        result.credentials["WIKIPEDIA_ACCESS_TOKEN"] = CredentialStatus.VALID
+        resp = requests.get(
+            "https://en.wikipedia.org/w/api.php",
+            params={"action": "query", "meta": "userinfo", "format": "json"},
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=10,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        userinfo = data.get("query", {}).get("userinfo", {})
+        if userinfo.get("id", 0) == 0:
+            result.add_error("Authentication failed: token not recognized")
+            result.credentials["WIKIPEDIA_ACCESS_TOKEN"] = CredentialStatus.INVALID
+        else:
+            result.credentials["WIKIPEDIA_ACCESS_TOKEN"] = CredentialStatus.VALID
 
     except Exception as e:
         result.add_error(f"Authentication test failed: {e}")

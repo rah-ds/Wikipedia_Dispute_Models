@@ -45,9 +45,9 @@ report_job_type() {
         return
     fi
 
-    local started=$(grep -c ',STARTED,' "$log_file" 2>/dev/null || echo 0)
-    local success=$(grep -c ',SUCCESS,' "$log_file" 2>/dev/null || echo 0)
-    local failed=$(grep -c ',FAILED,' "$log_file" 2>/dev/null || echo 0)
+    local started=$(grep -c ',STARTED,' "$log_file" 2>/dev/null || true)
+    local success=$(grep -c ',SUCCESS,' "$log_file" 2>/dev/null || true)
+    local failed=$(grep -c ',FAILED,' "$log_file" 2>/dev/null || true)
 
     printf "  ${GREEN}Succeeded${NC}: %d\n" "$success"
     printf "  ${RED}Failed${NC}:    %d\n" "$failed"
@@ -88,7 +88,7 @@ show_pending() {
     completed_cases=$(grep ',SUCCESS,' "$log_file" | cut -d',' -f4 | sort -u)
 
     local completed_count
-    completed_count=$(echo "$completed_cases" | grep -c . 2>/dev/null || echo 0)
+    completed_count=$(echo "$completed_cases" | grep -c . 2>/dev/null || true)
 
     local pending_count=$((total_cases - completed_count))
 

@@ -62,6 +62,13 @@ _HEADING_RE = re.compile(r"^(={2,4})\s*(.+?)\s*\1\s*$", re.MULTILINE)
 #: Vote-category labels on ArbCom pages
 _VOTE_LABELS = {"support", "oppose", "abstain"}
 
+#: Template-style vote detection for pre-2012 pages
+#: Matches {{support}}, {{Support}}, {{oppose}}, {{abstain}} etc. on list lines
+_TEMPLATE_VOTE_RE = re.compile(
+    r"^[*#:]+\s*\{\{(support|oppose|abstain)[^}]*\}\}",
+    re.IGNORECASE | re.MULTILINE,
+)
+
 
 # ---------------------------------------------------------------------------
 # Data classes
@@ -274,11 +281,15 @@ def _parse_votes_from_section(section_text: str) -> VoteTally:
     """
     Given the text of a single proposal item section, find the
     Support / Oppose / Abstain blocks and tally votes.
+
+    Handles two historical vote formats:
+    - Post-2012 colon format:  ``:Support:`` / ``:Oppose:`` labels
+    - Pre-2012 template format: ``{{support}}``, ``{{oppose}}``, ``{{abstain}}``
+      on bullet/hash lines (``* {{support}} [[User:...]]``)
     """
     tally = VoteTally()
 
-    # Split on the vote-category labels
-    # Pattern:  :Support:  or  :Oppose:  or  :Abstain:  (at line start)
+    # --- Format 1: colon-style blocks (post-2012) ---
     vote_block_re = re.compile(
         r"^:+(Support|Oppose|Abstain)\s*:", re.IGNORECASE | re.MULTILINE
     )
@@ -300,6 +311,35 @@ def _parse_votes_from_section(section_text: str) -> VoteTally:
         elif category == "abstain":
             tally.abstain = len(voters)
             tally.abstain_voters = voters
+
+    # --- Format 2: template-style lines (pre-2012 fallback) ---
+    if tally.total_votes == 0:
+        support_voters: list[str] = []
+        oppose_voters: list[str] = []
+        abstain_voters: list[str] = []
+        seen: set[str] = set()
+
+        for m in _TEMPLATE_VOTE_RE.finditer(section_text):
+            category = m.group(1).lower()
+            line = section_text[m.start() : section_text.find("\n", m.start())]
+            for vm in _VOTER_RE.finditer(line):
+                username = vm.group(1).strip()
+                if username and username not in seen:
+                    seen.add(username)
+                    if category == "support":
+                        support_voters.append(username)
+                    elif category == "oppose":
+                        oppose_voters.append(username)
+                    elif category == "abstain":
+                        abstain_voters.append(username)
+
+        if support_voters or oppose_voters or abstain_voters:
+            tally.support = len(support_voters)
+            tally.support_voters = support_voters
+            tally.oppose = len(oppose_voters)
+            tally.oppose_voters = oppose_voters
+            tally.abstain = len(abstain_voters)
+            tally.abstain_voters = abstain_voters
 
     return tally
 
@@ -369,16 +409,17 @@ def parse_decision(wikitext: str) -> DecisionOutcome:
             number = _extract_number(title, body)
             votes = _parse_votes_from_section(section_text)
 
-            # Only include items that actually have votes
-            if votes.total_votes > 0:
-                outcome.items.append(
-                    ProposalItem(
-                        kind=active_kind,
-                        number=number,
-                        title=title,
-                        body=body[:500],  # truncate for storage
-                        votes=votes,
-                    )
+            # Include all proposal items regardless of vote count.
+            # Pre-2012 pages used different vote formats; dropping zero-vote
+            # items caused findings and principles to be silently omitted.
+            outcome.items.append(
+                ProposalItem(
+                    kind=active_kind,
+                    number=number,
+                    title=title,
+                    body=body[:500],  # truncate for storage
+                    votes=votes,
                 )
+            )
 
     return outcome

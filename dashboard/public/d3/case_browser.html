@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Wikipedia Arbitration Cases</title>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+:root{
+  --bg:#F8FCFF;--surface:#FFF;--surface2:#EAF3FB;
+  --border:#A2A9B1;--border-light:#EAECF0;
+  --text:#202122;--muted:#54595D;--faint:#A2A9B1;
+  --link:#3366CC;--red:#B60000;--green:#006733;--orange:#E97500;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+
+/* ── NAV ── */
+#nav{display:flex;align-items:center;border-bottom:1px solid var(--border);background:var(--surface);padding:0 20px;height:42px;gap:8px;flex-shrink:0;}
+.brand{font-size:.78rem;font-weight:700;color:var(--text);}
+#nav-analysis-btn{margin-left:12px;font-size:.72rem;color:var(--muted);cursor:pointer;padding:3px 10px;
+  border-radius:4px;border:1px solid transparent;}
+#nav-analysis-btn:hover{color:var(--link);border-color:var(--border-light);}
+#nav-analysis-btn.active{color:var(--link);border-color:var(--link);background:var(--surface2);}
+.nav-sep{color:var(--faint);margin:0 2px;}
+.nav-crumb{font-size:.75rem;color:var(--link);cursor:pointer;}
+.nav-crumb:hover{text-decoration:underline;}
+.nav-leaf{font-size:.75rem;color:var(--muted);}
+#back-btn{margin-left:auto;font-size:.7rem;color:var(--link);border:1px solid var(--border-light);
+  border-radius:4px;padding:3px 10px;background:var(--surface);cursor:pointer;display:none;white-space:nowrap;}
+#back-btn:hover{background:var(--surface2);}
+
+/* ── SHELL ── */
+.pane{display:none;flex:1;overflow:hidden;flex-direction:column;}
+.pane.active{display:flex;}
+
+/* ══════════════════════════════════
+   OVERVIEW
+══════════════════════════════════ */
+#pane-overview{flex-direction:column;}
+
+.ov-head{padding:16px 20px 12px;border-bottom:1px solid var(--border-light);flex-shrink:0;}
+.ov-head h1{font-size:1rem;font-weight:700;margin-bottom:8px;}
+.stat-row{display:flex;gap:24px;align-items:baseline;}
+.stat-pill{display:flex;align-items:baseline;gap:5px;}
+.stat-pill .num{font-size:1.4rem;font-weight:700;}
+.stat-pill .lbl{font-size:.7rem;color:var(--muted);}
+.stat-pill.green .num{color:var(--green);}
+.stat-pill.grey .num{color:var(--faint);}
+
+.ov-controls{padding:8px 20px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:8px;flex-shrink:0;background:var(--surface);}
+#search{padding:5px 9px;font-size:.73rem;border:1px solid var(--border);border-radius:4px;
+  background:var(--bg);color:var(--text);width:220px;outline:none;}
+#search:focus{border-color:var(--link);background:var(--surface);}
+.filter-btns{display:flex;border:1px solid var(--border);border-radius:4px;overflow:hidden;}
+.fb{padding:4px 10px;font-size:.7rem;color:var(--muted);cursor:pointer;background:var(--surface);border:none;}
+.fb.active{background:var(--link);color:#fff;}
+.fb:not(:last-child){border-right:1px solid var(--border);}
+#sort-sel{padding:4px 8px;font-size:.7rem;border:1px solid var(--border);border-radius:4px;
+  background:var(--surface);color:var(--text);outline:none;cursor:pointer;}
+.row-count{font-size:.68rem;color:var(--muted);margin-left:auto;}
+
+/* TABLE */
+.tbl-wrap{flex:1;overflow-y:auto;}
+table{width:100%;border-collapse:collapse;font-size:.72rem;}
+thead{position:sticky;top:0;z-index:2;background:var(--surface);border-bottom:2px solid var(--border);}
+thead th{padding:7px 10px;text-align:left;font-size:.63rem;font-weight:600;
+  color:var(--muted);letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;}
+thead th:first-child{width:28px;padding-left:16px;}
+tbody tr{border-bottom:1px solid var(--border-light);cursor:pointer;transition:background .08s;}
+tbody tr.no-data{cursor:default;opacity:.45;}
+tbody tr:hover:not(.no-data){background:var(--surface2);}
+tbody td{padding:7px 10px;vertical-align:middle;}
+tbody td:first-child{padding-left:16px;}
+.status-dot{width:7px;height:7px;border-radius:50%;display:inline-block;}
+.dot-has{background:var(--green);}
+.dot-no{background:var(--faint);}
+.case-name{font-weight:500;color:var(--text);max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+tbody tr:hover:not(.no-data) .case-name{color:var(--link);}
+.yr{color:var(--muted);}
+.phase-mini{display:flex;height:5px;border-radius:2px;overflow:hidden;width:70px;}
+.sanct-chip{font-size:.6rem;background:#FFF0F0;color:var(--red);border:1px solid rgba(182,0,0,.2);
+  border-radius:3px;padding:1px 5px;white-space:nowrap;}
+.no-data-lbl{font-size:.65rem;color:var(--faint);font-style:italic;}
+
+/* ══════════════════════════════════
+   CASE SUMMARY
+══════════════════════════════════ */
+#pane-summary{flex-direction:column;}
+
+.sum-header{padding:14px 22px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.sum-header h2{font-size:1.05rem;font-weight:700;margin-bottom:6px;}
+.sum-meta{font-size:.73rem;color:var(--muted);display:flex;gap:16px;flex-wrap:wrap;align-items:center;}
+.sum-meta strong{color:var(--text);}
+.sum-meta .tag{font-size:.65rem;background:var(--surface2);border:1px solid var(--border-light);
+  border-radius:3px;padding:1px 7px;color:var(--muted);}
+
+.sum-kpi{display:flex;gap:0;flex-shrink:0;border-bottom:1px solid var(--border);}
+.kpi{flex:1;padding:12px 16px;border-right:1px solid var(--border-light);text-align:center;}
+.kpi:last-child{border-right:none;}
+.kpi-v{font-size:1.35rem;font-weight:700;margin-bottom:2px;}
+.kpi-l{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+
+.sum-body{flex:1;overflow-y:auto;padding:18px 22px;display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.sum-panel{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:14px 16px;}
+.sum-panel h3{font-size:.63rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--muted);margin-bottom:10px;}
+
+/* Phase bar in summary */
+.phase-bar-wrap{display:flex;flex-direction:column;gap:6px;}
+.phase-row{display:flex;align-items:center;gap:8px;font-size:.7rem;}
+.phase-label{width:130px;color:var(--muted);white-space:nowrap;}
+.phase-track{flex:1;height:14px;background:rgba(0,0,0,.04);border-radius:3px;overflow:hidden;}
+.phase-fill{height:100%;border-radius:3px;display:flex;align-items:center;justify-content:flex-end;padding-right:4px;}
+.phase-pct{font-size:.6rem;color:rgba(255,255,255,.85);font-weight:600;}
+
+/* Editor list */
+.editor-list{display:flex;flex-direction:column;gap:4px;max-height:220px;overflow-y:auto;}
+.ed-row{display:flex;align-items:center;gap:6px;font-size:.7rem;padding:3px 0;
+  border-bottom:1px solid var(--border-light);}
+.ed-row:last-child{border-bottom:none;}
+.ed-role-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.ed-name{flex:1;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ed-edits{color:var(--muted);white-space:nowrap;}
+.ed-badge{font-size:.58rem;background:#FFF0F0;color:var(--red);
+  border:1px solid rgba(182,0,0,.2);border-radius:2px;padding:0 4px;}
+.ed-dep{font-size:.65rem;color:var(--faint);}
+
+/* Viz launch */
+.viz-launch{display:flex;gap:10px;padding:14px 22px;border-top:1px solid var(--border-light);flex-shrink:0;background:var(--surface);}
+.viz-btn{padding:7px 18px;font-size:.75rem;font-weight:600;border-radius:5px;cursor:pointer;
+  border:1px solid var(--link);color:var(--link);background:var(--surface);transition:background .1s;}
+.viz-btn:hover{background:var(--surface2);}
+.viz-btn.primary{background:var(--link);color:#fff;border-color:var(--link);}
+.viz-btn.primary:hover{background:#2255AA;}
+
+/* ══════════════════════════════════
+   VIZ PANE
+══════════════════════════════════ */
+#pane-viz{flex-direction:column;}
+.viz-header{padding:8px 20px;border-bottom:1px solid var(--border);flex-shrink:0;
+  display:flex;align-items:center;gap:10px;}
+.viz-header .vh-name{font-size:.85rem;font-weight:600;}
+.sub-tabs{display:flex;gap:0;border:1px solid var(--border);border-radius:4px;overflow:hidden;}
+.sub-tab{padding:5px 14px;font-size:.72rem;color:var(--muted);cursor:pointer;background:var(--surface);border:none;}
+.sub-tab.active{background:var(--link);color:#fff;}
+.sub-tab:not(:last-child){border-right:1px solid var(--border);}
+.legend-strip{padding:5px 20px;border-bottom:1px solid var(--border);display:flex;gap:12px;
+  flex-wrap:wrap;flex-shrink:0;background:var(--surface);align-items:center;}
+.legend-item{display:flex;align-items:center;gap:4px;font-size:.65rem;color:var(--muted);}
+.ldot{width:7px;height:7px;border-radius:50%;}
+.hint{font-size:.63rem;color:var(--faint);margin-left:auto;}
+.sub-view{display:none;flex:1;overflow:hidden;}
+.sub-view.active{display:flex;flex-direction:column;}
+.chart-scroll{flex:1;overflow:auto;}
+.net-controls{padding:6px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;
+  gap:12px;flex-shrink:0;font-size:.7rem;color:var(--muted);}
+.net-controls input[type=range]{width:80px;accent-color:var(--link);}
+.net-legend{display:flex;align-items:center;gap:10px;margin-left:auto;flex-wrap:wrap;}
+.nli{display:flex;align-items:center;gap:3px;font-size:.65rem;}
+.loading{padding:40px;text-align:center;color:var(--muted);font-size:.78rem;}
+
+/* ══════════════════════════════════
+   ANALYSIS
+══════════════════════════════════ */
+#pane-analysis{overflow-y:auto;flex-direction:column;}
+.an-body{padding:22px 28px;max-width:1100px;}
+.an-section{margin-bottom:36px;}
+.an-section h2{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
+  color:var(--muted);margin-bottom:4px;padding-bottom:6px;border-bottom:1px solid var(--border-light);}
+.an-section .lede{font-size:.8rem;color:var(--text);line-height:1.6;margin-bottom:14px;max-width:700px;}
+.an-section .lede strong{font-weight:600;}
+.an-section .lede em{color:var(--muted);font-style:normal;}
+.an-chart{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:14px 16px;margin-bottom:10px;}
+.an-chart-title{font-size:.68rem;font-weight:600;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.05em;margin-bottom:10px;}
+.an-finding{font-size:.73rem;color:var(--muted);line-height:1.5;margin-top:6px;}
+.an-finding strong{color:var(--text);}
+.an-two{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px;}
+.an-callout{background:var(--surface2);border-left:3px solid var(--link);border-radius:0 5px 5px 0;
+  padding:10px 14px;margin-bottom:14px;font-size:.77rem;line-height:1.55;color:var(--text);}
+.an-callout strong{color:var(--link);}
+
+/* ── SVG ── */
+.axis text{fill:#54595D;font-size:10px;}
+.axis line,.axis path{stroke:#A2A9B1;}
+.axis .domain{display:none;}
+.grid-line{stroke:#EAECF0;stroke-width:.5;}
+.stage-band{opacity:1;}
+.stage-label-text{font-size:7.5px;fill:#54595D;text-transform:uppercase;letter-spacing:.06em;opacity:.55;}
+.lane-label{font-size:9.5px;fill:#54595D;dominant-baseline:middle;}
+.section-label{font-size:7.5px;fill:#A2A9B1;font-weight:700;letter-spacing:.05em;text-transform:uppercase;}
+.edit-dot{cursor:pointer;}
+.revert-arc{fill:none;stroke:#B60000;stroke-width:1.5;stroke-dasharray:4 2;opacity:.4;}
+.departed-marker{font-size:7.5px;fill:#A2A9B1;opacity:.55;}
+.sanction-marker{font-size:11px;cursor:pointer;}
+.net-link{stroke-opacity:.35;fill:none;}
+.net-node{cursor:grab;}
+.net-label{font-size:9px;fill:#54595D;pointer-events:none;}
+
+/* ── TOOLTIP ── */
+#tip{position:fixed;background:#FFF;border:1px solid #A2A9B1;border-radius:5px;
+  padding:8px 11px;font-size:11px;line-height:1.5;pointer-events:none;max-width:260px;
+  z-index:999;display:none;color:#202122;box-shadow:0 2px 8px rgba(0,0,0,.1);}
+#tip strong{font-weight:600;}
+#tip .m{color:#54595D;}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<div id="nav">
+  <div class="brand">Wikipedia Arbitration</div>
+  <span class="nav-sep" id="ns1" style="display:none">›</span>
+  <div class="nav-crumb" id="nc-overview" style="display:none" onclick="goOverview()">All Cases</div>
+  <span class="nav-sep" id="ns2" style="display:none">›</span>
+  <div class="nav-crumb" id="nc-summary" style="display:none" onclick="goSummary()"></div>
+  <span class="nav-sep" id="ns3" style="display:none">›</span>
+  <div class="nav-leaf" id="nc-viz" style="display:none"></div>
+  <button id="back-btn" onclick="goBack()">← Back</button>
+  <div id="nav-analysis-btn" onclick="goAnalysis()">Analysis</div>
+</div>
+
+<!-- OVERVIEW -->
+<div id="pane-overview" class="pane active">
+  <div class="ov-head">
+    <h1>Wikipedia Arbitration Cases</h1>
+    <div class="stat-row" id="stat-row"><span style="color:var(--muted);font-size:.75rem">Loading…</span></div>
+  </div>
+  <div class="ov-controls">
+    <input id="search" type="text" placeholder="Search cases…" oninput="filterTable()"/>
+    <div class="filter-btns">
+      <div class="fb active" data-f="all" onclick="setFilter('all',this)">All</div>
+      <div class="fb" data-f="data" onclick="setFilter('data',this)">Has data</div>
+      <div class="fb" data-f="none" onclick="setFilter('none',this)">Not collected</div>
+    </div>
+    <select id="sort-sel" onchange="filterTable()">
+      <option value="name">Name A→Z</option>
+      <option value="name_d">Name Z→A</option>
+      <option value="date_d">Most recent first</option>
+      <option value="date_a">Earliest first</option>
+      <option value="editors">Most editors</option>
+      <option value="duration">Longest</option>
+      <option value="depart">Highest departure</option>
+      <option value="sanct">Sanctioned first</option>
+    </select>
+    <span class="row-count" id="row-count"></span>
+  </div>
+  <div class="tbl-wrap">
+    <table id="case-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Case</th>
+          <th>Year</th>
+          <th>Duration</th>
+          <th>Editors</th>
+          <th>Activity by phase</th>
+          <th>Departed</th>
+          <th>Retention</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tbl-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- CASE SUMMARY -->
+<div id="pane-summary" class="pane">
+  <div class="sum-header">
+    <h2 id="sum-title"></h2>
+    <div class="sum-meta" id="sum-meta"></div>
+  </div>
+  <div class="sum-kpi" id="sum-kpi"></div>
+  <div class="sum-body" id="sum-body"></div>
+  <div class="viz-launch">
+    <button class="viz-btn primary" onclick="openViz('timeline')">Open Timeline →</button>
+    <button class="viz-btn" onclick="openViz('network')">Open Network →</button>
+  </div>
+</div>
+
+<!-- VIZ -->
+<div id="pane-viz" class="pane">
+  <div class="viz-header">
+    <div class="vh-name" id="viz-title"></div>
+    <div class="sub-tabs">
+      <div class="sub-tab active" data-sv="timeline" onclick="switchSV('timeline')">Timeline</div>
+      <div class="sub-tab" data-sv="network" onclick="switchSV('network')">Network</div>
+    </div>
+    <button id="back-btn-viz" style="margin-left:auto;font-size:.7rem;color:var(--link);
+      border:1px solid var(--border-light);border-radius:4px;padding:3px 10px;
+      background:var(--surface);cursor:pointer;" onclick="goSummary()">← Case summary</button>
+  </div>
+  <div class="sub-view active" id="sv-timeline">
+    <div class="legend-strip">
+      <div id="tl-legend"></div>
+      <div class="hint">Scroll to zoom · Drag to pan</div>
+    </div>
+    <div class="chart-scroll" id="tl-area"></div>
+  </div>
+  <div class="sub-view" id="sv-network">
+    <div class="net-controls">
+      <label>Min interactions: <input type="range" min="1" max="10" value="2" id="net-thr"/>
+        <span id="net-thr-val">2</span></label>
+      <div class="net-legend" id="net-legend"></div>
+    </div>
+    <div class="chart-scroll" id="net-area"></div>
+  </div>
+</div>
+
+<!-- ANALYSIS -->
+<div id="pane-analysis" class="pane">
+  <div class="an-body" id="an-body">
+    <div class="loading">Loading analysis…</div>
+  </div>
+</div>
+
+<div id="tip"></div>
+
+<script>
+// ═════════════════════════════════════════════════════════
+// CONSTANTS
+// ═════════════════════════════════════════════════════════
+const CASE_COLORS=['#B60000','#C46C00','#7A6200','#4D7A00','#006733',
+                   '#006B7B','#0057AF','#3344AF','#5C3D99','#8B2252'];
+function caseColor(n){let h=0;for(const c of n)h=(h*31+c.charCodeAt(0))&0xffff;return CASE_COLORS[h%CASE_COLORS.length];}
+
+const PAGE_COLOR={main:'#595959',article:'#3366CC',evidence:'#E97500',
+  workshop:'#7600EC',proposed_decision:'#006733',outcome:'#B60000'};
+const STAGE_FILL={main:'#F5F5F5',article:'#EEF3FF',evidence:'#FFF8F0',
+  workshop:'#F8F4FF',proposed_decision:'#F0FFF6'};
+const ROLE_COLOR={arbitrator:'#0057AF',participant:'#006733',
+  arbitrator_candidate:'#C46C00',observer:'#595959'};
+const ROLE_ORDER={arbitrator:0,participant:1,arbitrator_candidate:2,observer:3};
+const LANE_H=19,LANE_PAD=3,LABEL_W=146,DOT_R=3;
+const M={top:38,right:40,bottom:12,left:LABEL_W};
+
+// ── Tip ──
+const tip=document.getElementById('tip');
+function showTip(ev,html){tip.innerHTML=html;tip.style.display='block';moveTip(ev);}
+function moveTip(ev){
+  const p=12,tw=tip.offsetWidth,th=tip.offsetHeight;
+  let l=ev.clientX+p,t=ev.clientY+p;
+  if(l+tw>window.innerWidth-p)l=ev.clientX-tw-p;
+  if(t+th>window.innerHeight-p)t=ev.clientY-th-p;
+  tip.style.left=l+'px';tip.style.top=t+'px';
+}
+function hideTip(){tip.style.display='none';}
+
+// ═════════════════════════════════════════════════════════
+// STATE
+// ═════════════════════════════════════════════════════════
+let ALL=[], FILTERED=[], filterMode='all', currentRec=null;
+const D3_CACHE={};
+
+// ═════════════════════════════════════════════════════════
+// NAVIGATION
+// ═════════════════════════════════════════════════════════
+function showPane(id){
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  document.getElementById('pane-'+id).classList.add('active');
+}
+function setNav(crumbs){
+  // crumbs: [{id, label, onclick}] — last is leaf (no click)
+  const els=['nc-overview','nc-summary','nc-viz'];
+  const seps=['ns1','ns2','ns3'];
+  els.forEach(id=>{document.getElementById(id).style.display='none';});
+  seps.forEach(id=>{document.getElementById(id).style.display='none';});
+  document.getElementById('back-btn').style.display='none';
+
+  if(crumbs.length===0) return;
+  document.getElementById('back-btn').style.display='block';
+
+  // Always show "All Cases" once we're deeper
+  document.getElementById('nc-overview').style.display='';
+  document.getElementById('ns1').style.display='';
+
+  if(crumbs.length>=1){
+    const el=document.getElementById('nc-summary');
+    el.textContent=crumbs[0].label;
+    el.style.display='';
+    if(crumbs[0].onclick){el.style.cursor='pointer';el.onclick=crumbs[0].onclick;}
+    else{el.style.cursor='default';el.onclick=null;}
+    document.getElementById('ns2').style.display=crumbs.length>1?'':'none';
+  }
+  if(crumbs.length>=2){
+    const el=document.getElementById('nc-viz');
+    el.textContent=crumbs[1].label;
+    el.style.display='';
+  }
+}
+
+function goAnalysis(){
+  showPane('analysis');
+  setNav([]);
+  document.getElementById('back-btn').style.display='none';
+  document.getElementById('nav-analysis-btn').classList.add('active');
+  if(ALL.length && !document.getElementById('an-body').dataset.built){
+    buildAnalysis();
+    document.getElementById('an-body').dataset.built='1';
+  }
+}
+
+function goOverview(){
+  showPane('overview');
+  setNav([]);
+  document.getElementById('back-btn').style.display='none';
+  document.getElementById('nav-analysis-btn').classList.remove('active');
+}
+function goSummary(){
+  if(!currentRec) return;
+  showPane('summary');
+  setNav([{label:currentRec.case_name}]);
+  document.getElementById('nav-analysis-btn').classList.remove('active');
+}
+function goBack(){
+  const active=document.querySelector('.pane.active')?.id;
+  if(active==='pane-viz') goSummary();
+  else goOverview();
+}
+
+// ═════════════════════════════════════════════════════════
+// LOAD MANIFEST
+// ═════════════════════════════════════════════════════════
+d3.json('/data/d3/manifest.json').then(m=>{
+  ALL=m.cases.map(c=>({...c,color:c.has_data?caseColor(c.case_name):'#A2A9B1'}));
+  buildStatRow(m);
+  filterTable();
+  // Pre-build analysis so it's ready instantly when clicked
+  buildAnalysis();
+  document.getElementById('an-body').dataset.built='1';
+}).catch(err=>{
+  document.getElementById('tbl-body').innerHTML=
+    `<tr><td colspan="9" style="padding:40px;color:#B60000">
+      Error: ${err.message}<br>Run <code>python3 scripts/export_d3_all.py</code> then
+      <code>python3 -m http.server 8765</code></td></tr>`;
+});
+
+function buildStatRow(m){
+  document.getElementById('stat-row').innerHTML=`
+    <div class="stat-pill green"><span class="num">${m.cases_with_data}</span><span class="lbl">cases with data</span></div>
+    <div class="stat-pill grey"><span class="num">${m.cases_no_data}</span><span class="lbl">not yet collected</span></div>
+    <div class="stat-pill"><span class="num">${m.total_cases}</span><span class="lbl">total known cases</span></div>
+  `;
+}
+
+// ═════════════════════════════════════════════════════════
+// TABLE
+// ═════════════════════════════════════════════════════════
+function setFilter(f,btn){
+  filterMode=f;
+  document.querySelectorAll('.fb').forEach(b=>b.classList.toggle('active',b.dataset.f===f));
+  filterTable();
+}
+
+function filterTable(){
+  const q=(document.getElementById('search')?.value||'').toLowerCase();
+  const srt=document.getElementById('sort-sel')?.value||'name';
+  const sf={
+    name:(a,b)=>a.case_name.localeCompare(b.case_name),
+    name_d:(a,b)=>b.case_name.localeCompare(a.case_name),
+    date_d:(a,b)=>(b.case_start||'z').localeCompare(a.case_start||'z'),
+    date_a:(a,b)=>(a.case_start||'z').localeCompare(b.case_start||'z'),
+    editors:(a,b)=>(b.total_editors||0)-(a.total_editors||0),
+    duration:(a,b)=>(b.case_duration_days||0)-(a.case_duration_days||0),
+    depart:(a,b)=>(b.departure_rate||0)-(a.departure_rate||0),
+    sanct:(a,b)=>(b.sanctioned_count||0)-(a.sanctioned_count||0),
+  };
+  FILTERED=ALL
+    .filter(c=>c.case_name.toLowerCase().includes(q))
+    .filter(c=>filterMode==='all'?true:filterMode==='data'?c.has_data:!c.has_data)
+    .sort((a,b)=>{
+      // has_data always floats to top when mixed
+      if(filterMode==='all'){
+        const dd=(b.has_data?1:0)-(a.has_data?1:0);
+        if(dd) return dd;
+      }
+      return (sf[srt]||sf.name)(a,b);
+    });
+
+  document.getElementById('row-count').textContent=`${FILTERED.length} of ${ALL.length} cases`;
+  renderTable();
+}
+
+function renderTable(){
+  const phases=['main','evidence','workshop','proposed_decision'];
+  const rows=FILTERED.map(c=>{
+    if(!c.has_data){
+      return `<tr class="no-data">
+        <td><span class="status-dot dot-no"></span></td>
+        <td><span class="case-name">${c.case_name}</span></td>
+        <td class="yr">${c.last_edit?c.last_edit.slice(0,4):''}</td>
+        <td colspan="6"><span class="no-data-lbl">Not yet collected</span></td>
+      </tr>`;
+    }
+    const yr0=c.case_start?.slice(0,4)||'?', yr1=c.case_end?.slice(0,4)||'?';
+    const dur=c.case_duration_days>=365?(c.case_duration_days/365).toFixed(1)+'y':c.case_duration_days+'d';
+    const dep=c.departure_rate!=null?Math.round(c.departure_rate*100)+'%':'—';
+    const ret=c.starters>0?Math.round((c.retention_rate||0)*100)+'%':'—';
+    const pe=c.phase_edits||{};
+    const ptot=phases.reduce((s,p)=>s+(pe[p]||0),0)||1;
+    const bar=phases.map(p=>{
+      const pct=Math.round((pe[p]||0)/ptot*100);
+      return pct>0?`<div style="width:${pct}%;background:${PAGE_COLOR[p]}"></div>`:'';
+    }).join('');
+    const sanct=c.sanctioned_count>0?`<span class="sanct-chip">⚖ ${c.sanctioned_count}</span>`:'';
+    const dataRec=JSON.stringify(c).replace(/'/g,'&apos;');
+    return `<tr onclick='clickCase(${dataRec})'>
+      <td><span class="status-dot dot-has"></span></td>
+      <td><span class="case-name" title="${c.case_name}">${c.case_name}</span></td>
+      <td class="yr">${yr0===yr1?yr0:yr0+'–'+yr1}</td>
+      <td>${dur}</td>
+      <td>${c.total_editors}</td>
+      <td><div class="phase-mini">${bar}</div></td>
+      <td>${dep}</td>
+      <td>${ret}</td>
+      <td>${sanct}</td>
+    </tr>`;
+  });
+  document.getElementById('tbl-body').innerHTML=rows.join('');
+}
+
+// ═════════════════════════════════════════════════════════
+// CASE SUMMARY
+// ═════════════════════════════════════════════════════════
+function clickCase(rec){
+  currentRec=rec;
+  buildSummary(rec);
+  showPane('summary');
+  setNav([{label:rec.case_name}]);
+}
+
+const PAGE_LABELS={main:'Main',evidence:'Evidence',workshop:'Workshop',
+  proposed_decision:'Proposed decision',article:'Article pages'};
+
+function buildSummary(rec){
+  const color=rec.color||caseColor(rec.case_name);
+  const yr0=rec.case_start?.slice(0,4)||'?', yr1=rec.case_end?.slice(0,4)||'?';
+  const dur=rec.case_duration_days>=365
+    ?(rec.case_duration_days/365).toFixed(1)+' years'
+    :rec.case_duration_days+' days';
+
+  // Header
+  document.getElementById('sum-title').style.color=color;
+  document.getElementById('sum-title').textContent=rec.case_name;
+  document.getElementById('sum-meta').innerHTML=`
+    <span><strong>${yr0===yr1?yr0:yr0+'–'+yr1}</strong> · ${dur}</span>
+    ${rec.outcome_status?`<span class="tag">${rec.outcome_status}</span>`:''}
+    ${rec.sanctioned_count?`<span class="tag" style="background:#FFF0F0;color:#B60000;border-color:rgba(182,0,0,.2)">⚖ ${rec.sanctioned_count} sanctioned</span>`:''}
+  `;
+
+  // KPIs
+  const kpis=[
+    {v:rec.total_editors, l:'Editors'},
+    {v:rec.total_events??'—', l:'Edits'},
+    {v:rec.departed_count??'—', l:'Departed'},
+    {v:rec.starters>0?Math.round((rec.retention_rate||0)*100)+'%':'—', l:'Starter retention'},
+    {v:rec.sanctioned_count||0, l:'Sanctioned'},
+  ];
+  document.getElementById('sum-kpi').innerHTML=kpis.map(k=>
+    `<div class="kpi"><div class="kpi-v">${k.v}</div><div class="kpi-l">${k.l}</div></div>`).join('');
+
+  // Body panels — will be filled from D3 json if loaded, else from manifest
+  document.getElementById('sum-body').innerHTML=`
+    <div class="sum-panel">
+      <h3>Activity by phase</h3>
+      <div class="phase-bar-wrap" id="sum-phase"></div>
+    </div>
+    <div class="sum-panel">
+      <h3>Editors <span style="font-weight:400;color:var(--faint)">(by edit count)</span></h3>
+      <div class="editor-list" id="sum-editors"><div class="loading" style="padding:16px">Loading…</div></div>
+    </div>
+  `;
+
+  // Phase bars from manifest data (instant)
+  buildSummaryPhase(rec);
+
+  // Load full D3 data for editor list
+  loadD3(rec.slug).then(data=>{
+    buildSummaryEditors(data.nodes);
+  }).catch(()=>{
+    document.getElementById('sum-editors').innerHTML=
+      `<div style="font-size:.7rem;color:var(--muted);padding:8px">Could not load editor detail</div>`;
+  });
+}
+
+function buildSummaryPhase(rec){
+  const phases=['main','evidence','workshop','proposed_decision','article'];
+  const pe=rec.phase_edits||{};
+  const tot=Object.values(pe).reduce((s,v)=>s+v,0)||1;
+  const el=document.getElementById('sum-phase');
+  if(!el) return;
+  el.innerHTML=phases.filter(p=>pe[p]>0).map(p=>{
+    const pct=Math.round((pe[p]||0)/tot*100);
+    return `<div class="phase-row">
+      <span class="phase-label">${PAGE_LABELS[p]||p}</span>
+      <div class="phase-track">
+        <div class="phase-fill" style="width:${pct}%;background:${PAGE_COLOR[p]}">
+          ${pct>=8?`<span class="phase-pct">${pct}%</span>`:''}
+        </div>
+      </div>
+      <span style="font-size:.66rem;color:var(--muted);width:28px;text-align:right">${pct}%</span>
+    </div>`;
+  }).join('');
+}
+
+function buildSummaryEditors(nodes){
+  const el=document.getElementById('sum-editors');
+  if(!el) return;
+  const sorted=[...nodes].sort((a,b)=>b.total_edits-a.total_edits);
+  el.innerHTML=sorted.map(n=>{
+    const col=ROLE_COLOR[n.role]||'#595959';
+    const sanctBadge=n.sanctions?.length?`<span class="ed-badge">⚖</span>`:'';
+    const depLabel=n.departed?`<span class="ed-dep">→∅</span>`:'';
+    return `<div class="ed-row" title="${n.username} · ${n.role} · ${n.total_edits} edits">
+      <span class="ed-role-dot" style="background:${col}"></span>
+      <span class="ed-name">${n.username}</span>
+      ${sanctBadge}${depLabel}
+      <span class="ed-edits">${n.total_edits} edits</span>
+    </div>`;
+  }).join('');
+}
+
+function openViz(tab){
+  if(!currentRec) return;
+  showPane('viz');
+  setNav([
+    {label:currentRec.case_name, onclick:goSummary},
+    {label:tab==='timeline'?'Timeline':'Network'}
+  ]);
+  document.getElementById('viz-title').textContent=currentRec.case_name;
+  document.getElementById('viz-title').style.color=currentRec.color||caseColor(currentRec.case_name||'');
+
+  // Build legends
+  buildVizLegends();
+
+  // Switch to correct tab
+  switchSV(tab, true);
+}
+
+function buildVizLegends(){
+  // Timeline legend
+  const phases=['main','evidence','workshop','proposed_decision'];
+  document.getElementById('tl-legend').innerHTML=
+    phases.map(p=>`<div class="legend-item"><div class="ldot" style="background:${PAGE_COLOR[p]}"></div>${p.replace(/_/g,' ')}</div>`).join('')+
+    `<div class="legend-item"><span style="font-size:11px">⚖</span> Sanctioned</div>
+     <div class="legend-item"><span style="font-size:9px;opacity:.5">→∅</span> Departed</div>`;
+
+  // Network legend
+  document.getElementById('net-legend').innerHTML=
+    Object.entries(ROLE_COLOR).map(([r,c])=>`<div class="nli"><div class="ldot" style="background:${c}"></div>${r.replace(/_/g,' ')}</div>`).join('')+
+    `<div class="nli"><div style="width:16px;border-top:1.5px dashed #B60000;"></div>Revert</div>
+     <div class="nli"><div style="width:10px;height:10px;border-radius:50%;border:1.5px dashed rgba(50,102,204,.5);"></div>Filed early</div>`;
+}
+
+function switchSV(view, forceLoad=false){
+  document.querySelectorAll('.sub-tab').forEach(t=>t.classList.toggle('active',t.dataset.sv===view));
+  document.querySelectorAll('.sub-view').forEach(v=>v.classList.toggle('active',v.id==='sv-'+view));
+  if(!currentRec) return;
+  if(view==='timeline'){
+    const area=document.getElementById('tl-area');
+    if(area && (forceLoad || !area.dataset.rendered)){
+      area.dataset.rendered='1';
+      area.innerHTML='<div class="loading">Loading…</div>';
+      loadD3(currentRec.slug).then(d=>renderTimeline(d, area)).catch(e=>{
+        area.innerHTML=`<p style="padding:30px;color:#B60000">${e.message}</p>`;
+      });
+    }
+  }
+  if(view==='network'){
+    const area=document.getElementById('net-area');
+    if(area && (forceLoad || !area.dataset.rendered)){
+      area.dataset.rendered='1';
+      area.innerHTML='<div class="loading">Loading…</div>';
+      loadD3(currentRec.slug).then(d=>renderNetwork(d, area)).catch(e=>{
+        area.innerHTML=`<p style="padding:30px;color:#B60000">${e.message}</p>`;
+      });
+    }
+  }
+}
+
+// ═════════════════════════════════════════════════════════
+// D3 DATA
+// ═════════════════════════════════════════════════════════
+function loadD3(slug){
+  if(D3_CACHE[slug]) return Promise.resolve(D3_CACHE[slug]);
+  return d3.json(`/data/d3/${slug}.json`).then(d=>{D3_CACHE[slug]=d;return d;});
+}
+
+// ═════════════════════════════════════════════════════════
+// TIMELINE
+// ═════════════════════════════════════════════════════════
+function renderTimeline(data, container){
+  container.innerHTML='';
+  const {meta,nodes,events}=data;
+  const ordered=[...nodes].sort((a,b)=>{
+    const r=(ROLE_ORDER[a.role]??9)-(ROLE_ORDER[b.role]??9);
+    return r||+(a.first_active>b.first_active)||-+(a.first_active<b.first_active);
+  });
+  const yIdx={};
+  ordered.forEach((n,i)=>yIdx[n.username]=i);
+  const rows=ordered.length;
+  const chartW=Math.max(860,container.clientWidth-M.left-M.right-20);
+  const svgH=M.top+rows*(LANE_H+LANE_PAD)+M.bottom;
+  const svgW=M.left+chartW+M.right;
+
+  const xOrig=d3.scaleTime()
+    .domain([new Date(meta.case_start),new Date(meta.case_end)])
+    .range([0,chartW]);
+
+  const svg=d3.select(container).append('svg')
+    .attr('width',svgW).attr('height',svgH).style('cursor','crosshair');
+
+  const clipId='clip_'+meta.case_name.replace(/\W/g,'_');
+  svg.append('defs').append('clipPath').attr('id',clipId)
+    .append('rect').attr('x',0).attr('y',-M.top).attr('width',chartW).attr('height',svgH+M.top);
+
+  const labG=svg.append('g').attr('transform',`translate(${M.left},${M.top})`);
+  const cG  =svg.append('g').attr('transform',`translate(${M.left},${M.top})`).attr('clip-path',`url(#${clipId})`);
+
+  const bandData=meta.stages.filter(s=>s.name!=='outcome');
+  bandData.forEach(s=>{
+    cG.append('rect').attr('class','stage-band').attr('data-start',s.start).attr('data-end',s.end)
+      .attr('y',-M.top+16).attr('height',svgH).attr('fill',STAGE_FILL[s.name]||'#F5F5F5');
+    cG.append('text').attr('class','stage-label-text').attr('data-ts',s.start).attr('dy',-M.top+9)
+      .text(s.name.replace(/_/g,' '));
+  });
+
+  const tickInterval=meta.case_duration_days>500?d3.timeMonth.every(3):d3.timeMonth.every(1);
+  const tickFmt=meta.case_duration_days>500?d3.timeFormat('%b %y'):d3.timeFormat('%b %Y');
+  const xAxisG=cG.append('g').attr('class','axis');
+  const gridG=cG.append('g');
+
+  let lastRole=null;
+  ordered.forEach((node,i)=>{
+    const y=i*(LANE_H+LANE_PAD)+LANE_H/2;
+    if(node.role!==lastRole){
+      lastRole=node.role;
+      labG.append('text').attr('class','section-label')
+        .attr('x',-LABEL_W+4).attr('y',y-LANE_H/2-2)
+        .text(node.role.replace(/_/g,' ').toUpperCase());
+    }
+    labG.append('text').attr('class','lane-label').attr('x',-6).attr('y',y)
+      .attr('text-anchor','end').style('fill',ROLE_COLOR[node.role]||'#595959').text(node.username);
+  });
+
+  const editEvents=events.filter(e=>e.type==='edit'||e.type==='revert');
+  const dots=cG.append('g').selectAll('circle').data(editEvents).join('circle')
+    .attr('class','edit-dot')
+    .attr('cy',d=>{const i=yIdx[d.actor]??0;return i*(LANE_H+LANE_PAD)+LANE_H/2;})
+    .attr('r',d=>d.type==='revert'?DOT_R+1.2:DOT_R)
+    .attr('fill',d=>PAGE_COLOR[d.page_type]||'#595959')
+    .attr('stroke',d=>d.type==='revert'?'#B60000':'none').attr('stroke-width',1.2)
+    .on('mouseover',function(ev,d){
+      const nd=nodes.find(n=>n.username===d.actor)||{};
+      const ts=new Date(d.timestamp).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'});
+      showTip(ev,`<strong>${d.actor}</strong> <span class="m">${nd.role||''}</span><br>
+        <span class="m">${ts} · ${d.page_type.replace(/_/g,' ')}</span>
+        ${d.section?`<br><span class="m">§ ${d.section}</span>`:''}
+        ${d.comment?`<br><span style="color:#54595D;font-size:10px">${d.comment}</span>`:''}
+        ${d.type==='revert'?`<br><span style="color:#B60000">⟳ revert${d.reverted?' of '+d.reverted:''}</span>`:''}`);
+    })
+    .on('mousemove',moveTip).on('mouseout',hideTip);
+
+  const depNodes=nodes.filter(n=>n.departed&&!n.sanctions?.length);
+  const depMarks=cG.append('g').selectAll('text').data(depNodes).join('text')
+    .attr('class','departed-marker')
+    .attr('y',d=>{const i=yIdx[d.username]??0;return i*(LANE_H+LANE_PAD)+LANE_H/2+4;})
+    .text('→∅')
+    .on('mouseover',(ev,d)=>showTip(ev,`<strong>${d.username}</strong><br><span class="m">Last: ${d.last_active.slice(0,10)}</span><br>Departed before resolution`))
+    .on('mousemove',moveTip).on('mouseout',hideTip);
+
+  const sanctNodes=nodes.filter(n=>n.sanctions?.length>0);
+  const sanctMarks=cG.append('g').selectAll('text').data(sanctNodes).join('text')
+    .attr('class','sanction-marker')
+    .attr('y',d=>{const i=yIdx[d.username]??0;return i*(LANE_H+LANE_PAD)+LANE_H/2+5;})
+    .text('⚖')
+    .on('mouseover',(ev,d)=>showTip(ev,
+      `<strong>${d.username}</strong> — Sanctioned<br>`+
+      d.sanctions.map(s=>`<span class="m">${s.sanction_type}</span>: ${s.description.slice(0,120)}…`).join('<br>')))
+    .on('mousemove',moveTip).on('mouseout',hideTip);
+
+  events.filter(e=>e.type==='revert'&&e.reverted).forEach(e=>{
+    const si=yIdx[e.actor],ti=yIdx[e.reverted];
+    if(si===undefined||ti===undefined) return;
+    const y1=si*(LANE_H+LANE_PAD)+LANE_H/2, y2=ti*(LANE_H+LANE_PAD)+LANE_H/2;
+    cG.append('path').attr('class','revert-arc').attr('data-ts',e.timestamp).attr('y1',y1).attr('y2',y2);
+  });
+
+  ordered.forEach((_,i)=>{
+    labG.append('line').attr('x1',-LABEL_W).attr('x2',0)
+      .attr('y1',i*(LANE_H+LANE_PAD)+LANE_H+LANE_PAD-1).attr('y2',i*(LANE_H+LANE_PAD)+LANE_H+LANE_PAD-1)
+      .attr('stroke','rgba(0,0,0,.05)').attr('stroke-width',.5);
+  });
+
+  function updateX(x){
+    xAxisG.call(d3.axisTop(x).ticks(tickInterval).tickFormat(tickFmt));
+    gridG.selectAll('line').data(x.ticks(tickInterval)).join('line').attr('class','grid-line')
+      .attr('x1',d=>x(d)).attr('x2',d=>x(d)).attr('y1',0).attr('y2',rows*(LANE_H+LANE_PAD));
+    dots.attr('cx',d=>x(new Date(d.timestamp)));
+    depMarks.attr('x',d=>x(new Date(d.last_active))+4);
+    sanctMarks.attr('x',d=>x(new Date(meta.case_end))+4);
+    cG.selectAll('.stage-band')
+      .attr('x',function(){return x(new Date(this.dataset.start));})
+      .attr('width',function(){return Math.max(1,x(new Date(this.dataset.end))-x(new Date(this.dataset.start)));});
+    cG.selectAll('.stage-label-text')
+      .attr('x',function(){return x(new Date(this.dataset.ts))+3;});
+    cG.selectAll('.revert-arc').each(function(){
+      const ts=this.dataset.ts; if(!ts) return;
+      const xc=x(new Date(ts));
+      const y1=+this.getAttribute('y1'), y2=+this.getAttribute('y2');
+      const cx=xc+Math.abs(y2-y1)*.4;
+      d3.select(this).attr('d',`M${xc},${y1} C${cx},${y1} ${cx},${y2} ${xc},${y2}`);
+    });
+  }
+  updateX(xOrig);
+
+  const s0=+new Date(meta.case_start), s1=+new Date(meta.case_end);
+  const zoom=d3.zoom().scaleExtent([1,80]).on('zoom',function(ev){
+    let nx=ev.transform.rescaleX(xOrig);
+    const [d0,d1]=nx.domain(), span=+d1-+d0;
+    if(+d0<s0) nx=xOrig.copy().domain([new Date(s0),new Date(s0+span)]);
+    if(+d1>s1) nx=xOrig.copy().domain([new Date(s1-span),new Date(s1)]);
+    updateX(nx);
+  });
+  svg.call(zoom);
+
+  if(meta.case_duration_days>500){
+    const fe=new Date(meta.case_start);
+    fe.setMonth(fe.getMonth()+18);
+    const k=chartW/(xOrig(fe)-xOrig(new Date(meta.case_start)));
+    svg.call(zoom.transform,d3.zoomIdentity.scale(k).translate(-xOrig(new Date(meta.case_start)),0));
+  }
+}
+
+// ═════════════════════════════════════════════════════════
+// NETWORK
+// ═════════════════════════════════════════════════════════
+function extractLinks(events,wh=6){
+  const edits=events.filter(e=>(e.type==='edit'||e.type==='revert')&&e.page_type!=='article');
+  const byPage=d3.group(edits,d=>d.page_type);
+  const lm=new Map();
+  byPage.forEach(pe=>{
+    const sorted=[...pe].sort((a,b)=>+(a.timestamp>b.timestamp)||-+(a.timestamp<b.timestamp));
+    for(let i=0;i<sorted.length;i++){
+      const e1=sorted[i],t1=+new Date(e1.timestamp);
+      for(let j=i+1;j<sorted.length;j++){
+        const e2=sorted[j];
+        if(e1.actor===e2.actor) continue;
+        if(+new Date(e2.timestamp)-t1>wh*3_600_000) break;
+        const k=[e1.actor,e2.actor].sort().join('|');
+        if(!lm.has(k)) lm.set(k,{source:e1.actor,target:e2.actor,weight:0,hasRevert:false});
+        const lk=lm.get(k);
+        lk.weight+=1;
+        if(e1.section&&e1.section===e2.section) lk.weight+=3;
+      }
+    }
+  });
+  events.filter(e=>e.type==='revert'&&e.reverted).forEach(e=>{
+    const k=[e.actor,e.reverted].sort().join('|');
+    if(!lm.has(k)) lm.set(k,{source:e.actor,target:e.reverted,weight:0,hasRevert:false});
+    const lk=lm.get(k);
+    lk.weight+=10; lk.hasRevert=true; lk.source=e.actor; lk.target=e.reverted;
+  });
+  return [...lm.values()];
+}
+
+// ═════════════════════════════════════════════════════════
+// ANALYSIS TAB
+// ═════════════════════════════════════════════════════════
+function buildAnalysis(){
+  const cases = ALL.filter(c=>c.has_data);
+  const el = document.getElementById('an-body');
+  if(!el || !cases.length) return;
+
+  // Pre-compute derived stats
+  const durs   = cases.map(c=>c.case_duration_days||0);
+  const short  = cases.filter(c=>c.case_duration_days<=90);
+  const long_  = cases.filter(c=>c.case_duration_days>90);
+  const vlong  = cases.filter(c=>c.case_duration_days>365);
+  const sanctioned = cases.filter(c=>c.sanctioned_count>0);
+  const noSanct    = cases.filter(c=>c.sanctioned_count===0);
+
+  const pct = (v,t) => t?Math.round(v/t*100)+'%':'—';
+  const avg = arr => arr.length ? Math.round(d3.mean(arr)) : 0;
+  const med = arr => arr.length ? Math.round(d3.median(arr)) : 0;
+
+  el.innerHTML=`
+  <div class="an-section">
+    <h2>Why does Wikipedia arbitration take so long?</h2>
+    <p class="lede">
+      Arbitration cases at the English Wikipedia are often framed as judicial proceedings — a committee
+      of elected arbitrators reviews evidence, hears arguments, and issues remedies. In principle a case
+      should resolve in weeks. In practice, <strong>30% of cases last more than a year</strong>, and the
+      longest ran for <strong>${Math.round(Math.max(...durs)/365)} years</strong>. The data from ${cases.length} closed
+      cases tells a clear story: duration is driven not by complexity but by <em>participation collapse</em> —
+      the slow exit of everyone involved before the committee actually decides anything.
+    </p>
+    <div class="an-callout">
+      <strong>Key finding:</strong> The median case lasts ${med(durs)} days, but the distribution is
+      sharply bimodal. ${short.length} cases resolve within 90 days (usually individual editor conduct).
+      ${vlong.length} cases exceed one year — these are almost always topic or content disputes where
+      consensus is structurally impossible without an external decision.
+    </div>
+  </div>
+
+  <div class="an-section">
+    <h2>1 · Duration is not normally distributed</h2>
+    <p class="lede">
+      Most cases are short and administrative. A long tail of ideologically contested topics drives the
+      average up dramatically — and skews every aggregate statistic.
+    </p>
+    <div class="an-chart"><div class="an-chart-title">Case duration distribution (days, log scale)</div>
+      <div id="ch-hist"></div>
+      <div class="an-finding">
+        <strong>${short.length} cases</strong> resolve in ≤90 days (${pct(short.length,cases.length)} of total).
+        <strong>${vlong.length} cases</strong> exceed one year. The gap between 90d and 365d has only
+        <strong>${cases.filter(c=>c.case_duration_days>90&&c.case_duration_days<=365).length} cases</strong> —
+        once a case escapes the fast lane, it tends to drag on for years.
+      </div>
+    </div>
+  </div>
+
+  <div class="an-section">
+    <h2>2 · Long cases have more editors — who then leave</h2>
+    <p class="lede">
+      More participants means more perspectives to reconcile, which delays evidence filing. But the more
+      damning pattern is <strong>departure rate</strong>: editors who filed or commented early simply stop
+      engaging long before the committee votes.
+    </p>
+    <div class="an-two">
+      <div class="an-chart"><div class="an-chart-title">Avg editors — short vs long cases</div>
+        <div id="ch-eds"></div></div>
+      <div class="an-chart"><div class="an-chart-title">Departure rate — short vs long cases</div>
+        <div id="ch-dep"></div></div>
+    </div>
+    <div class="an-finding">
+      Cases lasting &gt;90 days average <strong>${avg(long_.map(c=>c.total_editors))} editors</strong>
+      vs <strong>${avg(short.map(c=>c.total_editors))}</strong> for short cases.
+      But departure rate jumps from <strong>${avg(short.map(c=>c.departure_rate*100))}%</strong> to
+      <strong>${avg(long_.map(c=>c.departure_rate*100))}%</strong> — meaning in a long case,
+      nearly two-thirds of participants give up before resolution.
+    </div>
+  </div>
+
+  <div class="an-section">
+    <h2>3 · Retention collapses — most starters don't finish</h2>
+    <p class="lede">
+      "Starter retention" tracks editors active in the first quarter of a case who are still active
+      in the final quarter. This is the most direct measure of whether participants believe the process
+      will produce a fair outcome.
+    </p>
+    <div class="an-chart"><div class="an-chart-title">Starter retention by case (sorted by duration)</div>
+      <div id="ch-ret"></div>
+      <div class="an-finding">
+        Across all ${cases.length} cases, median retention is
+        <strong>${med(cases.filter(c=>c.starters>0).map(c=>Math.round(c.retention_rate*100)))}%</strong>.
+        <strong>${cases.filter(c=>c.starters>0&&c.retention_rate<0.25).length}</strong> of
+        ${cases.filter(c=>c.starters>0).length} cases with enough starters saw fewer than 25% remain.
+        The arbitrators who must ultimately decide are deliberating largely without the parties who
+        filed the case.
+      </div>
+    </div>
+  </div>
+
+  <div class="an-section">
+    <h2>4 · Evidence and Workshop dominate — main page is theatre</h2>
+    <p class="lede">
+      ArbCom's process has four formal stages. The main filing page captures the accusation;
+      evidence is where participants try to win the argument; workshop and proposed decision are
+      the committee's deliberative space. The editing data reveals where participants actually focus.
+    </p>
+    <div class="an-chart"><div class="an-chart-title">Edit share by phase across all cases</div>
+      <div id="ch-phase"></div>
+      <div class="an-finding">
+        Evidence + Workshop together account for a median of
+        <strong>${med(cases.map(c=>{const pe=c.phase_edits||{};const t=Object.values(pe).reduce((s,v)=>s+v,0)||1;return Math.round(((pe.evidence||0)+(pe.workshop||0))/t*100);}))}%</strong>
+        of edits per case. The proposed decision page — where the actual remedy is written — receives
+        comparatively little traffic, because by the time arbitrators are writing it, most participants
+        have already disengaged.
+      </div>
+    </div>
+  </div>
+
+  <div class="an-section">
+    <h2>5 · Sanctions predict duration, not the reverse</h2>
+    <p class="lede">
+      Cases that result in sanctions (blocks, bans, topic restrictions) are the longest in the dataset.
+      But this is not because sanctions take longer to deliberate — it's because sanctionable behavior
+      tends to be chronic, involving repeat offenders whose conduct generates iterative rounds of
+      evidence and dispute.
+    </p>
+    <div class="an-chart"><div class="an-chart-title">Duration: sanctioned outcomes vs no sanction</div>
+      <div id="ch-sanct"></div>
+      <div class="an-finding">
+        Cases with sanctions average <strong>${avg(sanctioned.map(c=>c.case_duration_days))} days</strong>
+        vs <strong>${avg(noSanct.map(c=>c.case_duration_days))} days</strong> for cases without.
+        All ${sanctioned.length} sanctioned cases in this dataset lasted more than
+        <strong>${Math.min(...sanctioned.map(c=>c.case_duration_days))} days</strong>.
+      </div>
+    </div>
+  </div>
+
+  <div class="an-section">
+    <h2>Duration vs editors — scatter</h2>
+    <p class="lede">
+      More participants correlates with longer cases, but the relationship is noisy.
+      A few multi-year cases with many editors (climate, politics) pull the trend line up.
+      Small cases can run long too — chronic individual conduct cases often have few participants
+      but draw out as evidence accumulates.
+    </p>
+    <div class="an-chart"><div id="ch-scatter"></div></div>
+  </div>
+  `;
+
+  // Render all charts
+  _anHist(cases);
+  _anGroupBars('ch-eds', [
+    {label:'≤90 days',  v: avg(short.map(c=>c.total_editors))},
+    {label:'>90 days',  v: avg(long_.map(c=>c.total_editors))},
+  ], 'Avg editors', '#3366CC');
+  _anGroupBars('ch-dep', [
+    {label:'≤90 days',  v: avg(short.map(c=>c.departure_rate*100))},
+    {label:'>90 days',  v: avg(long_.map(c=>c.departure_rate*100))},
+  ], 'Avg departure %', '#B60000', 100);
+  _anRetention(cases);
+  _anPhaseStack(cases);
+  _anSanctBars(sanctioned, noSanct);
+  _anScatter(cases);
+}
+
+// ── Duration histogram (log-binned) ──
+function _anHist(cases){
+  const el=document.getElementById('ch-hist');
+  if(!el) return;
+  const W=el.clientWidth||640, H=120;
+  const mL=32,mR=12,mT=6,mB=28;
+  const iW=W-mL-mR, iH=H-mT-mB;
+
+  // Bins: 0-7, 7-14, 14-30, 30-60, 60-90, 90-180, 180-365, 365-730, 730-1460, 1460+
+  const bins=[
+    {lo:0,hi:7,label:'<1w'},
+    {lo:7,hi:14,label:'1-2w'},
+    {lo:14,hi:30,label:'2-4w'},
+    {lo:30,hi:60,label:'1-2m'},
+    {lo:60,hi:90,label:'2-3m'},
+    {lo:90,hi:180,label:'3-6m'},
+    {lo:180,hi:365,label:'6-12m'},
+    {lo:365,hi:730,label:'1-2y'},
+    {lo:730,hi:1460,label:'2-4y'},
+    {lo:1460,hi:99999,label:'4y+'},
+  ];
+  bins.forEach(b=>{
+    b.count=cases.filter(c=>c.case_duration_days>=b.lo&&c.case_duration_days<b.hi).length;
+  });
+
+  const xS=d3.scaleBand().domain(bins.map(b=>b.label)).range([0,iW]).padding(.15);
+  const yS=d3.scaleLinear().domain([0,d3.max(bins,b=>b.count)]).range([iH,0]);
+
+  const svg=d3.select(el).append('svg').attr('width',W).attr('height',H);
+  const g=svg.append('g').attr('transform',`translate(${mL},${mT})`);
+
+  g.append('g').attr('class','axis').attr('transform',`translate(0,${iH})`)
+    .call(d3.axisBottom(xS).tickSize(0)).select('.domain').remove();
+  g.append('g').attr('class','axis')
+    .call(d3.axisLeft(yS).ticks(4).tickSize(-iW))
+    .call(ax=>{ax.selectAll('.tick line').attr('stroke','#EAECF0');ax.select('.domain').remove();});
+
+  // Colour: short=green, medium=orange, long=red
+  function barColor(b){
+    if(b.hi<=90) return '#006733';
+    if(b.hi<=365) return '#E97500';
+    return '#B60000';
+  }
+
+  g.selectAll('rect').data(bins).join('rect')
+    .attr('x',b=>xS(b.label)).attr('y',b=>yS(b.count))
+    .attr('width',xS.bandwidth()).attr('height',b=>iH-yS(b.count))
+    .attr('fill',barColor).attr('rx',2)
+    .on('mouseover',(ev,b)=>showTip(ev,`<strong>${b.label}</strong><br>${b.count} cases`))
+    .on('mousemove',moveTip).on('mouseout',hideTip);
+
+  // Count labels on bars
+  g.selectAll('text.bl').data(bins.filter(b=>b.count>0)).join('text')
+    .attr('class','bl').attr('x',b=>xS(b.label)+xS.bandwidth()/2)
+    .attr('y',b=>yS(b.count)-3).attr('text-anchor','middle')
+    .attr('font-size',9).attr('fill','#54595D').text(b=>b.count);
+}
+
+// ── Simple bar group ──
+function _anGroupBars(id, data, label, color, maxVal=null){
+  const el=document.getElementById(id);
+  if(!el) return;
+  const W=el.clientWidth||280, H=90;
+  const mL=8,mR=8,mT=10,mB=22;
+  const iW=W-mL-mR, iH=H-mT-mB;
+  const xS=d3.scaleBand().domain(data.map(d=>d.label)).range([0,iW]).padding(.25);
+  const yMax=maxVal||d3.max(data,d=>d.v)*1.25;
+  const yS=d3.scaleLinear().domain([0,yMax]).range([iH,0]);
+  const svg=d3.select(el).append('svg').attr('width',W).attr('height',H);
+  const g=svg.append('g').attr('transform',`translate(${mL},${mT})`);
+  g.append('g').attr('class','axis').attr('transform',`translate(0,${iH})`)
+    .call(d3.axisBottom(xS).tickSize(0)).select('.domain').remove();
+  g.selectAll('rect').data(data).join('rect')
+    .attr('x',d=>xS(d.label)).attr('y',d=>yS(d.v))
+    .attr('width',xS.bandwidth()).attr('height',d=>iH-yS(d.v))
+    .attr('fill',(_,i)=>i===0?'#A2A9B1':color).attr('rx',2);
+  g.selectAll('text.vl').data(data).join('text').attr('class','vl')
+    .attr('x',d=>xS(d.label)+xS.bandwidth()/2).attr('y',d=>yS(d.v)-4)
+    .attr('text-anchor','middle').attr('font-size',10).attr('font-weight',600)
+    .attr('fill','#202122').text(d=>Math.round(d.v)+(maxVal?'%':''));
+}
+
+// ── Retention scatter (sorted by duration) ──
+function _anRetention(cases){
+  const el=document.getElementById('ch-ret');
+  if(!el) return;
+  const W=el.clientWidth||640, H=100;
+  const mL=32,mR=12,mT=6,mB=16;
+  const iW=W-mL-mR, iH=H-mT-mB;
+  const sorted=[...cases.filter(c=>c.starters>0)].sort((a,b)=>a.case_duration_days-b.case_duration_days);
+  const xS=d3.scaleBand().domain(sorted.map(c=>c.case_name)).range([0,iW]).padding(.1);
+  const yS=d3.scaleLinear().domain([0,1]).range([iH,0]);
+  const svg=d3.select(el).append('svg').attr('width',W).attr('height',H);
+  const g=svg.append('g').attr('transform',`translate(${mL},${mT})`);
+  g.append('g').attr('class','axis')
+    .call(d3.axisLeft(yS).ticks(3).tickFormat(d=>d*100+'%').tickSize(-iW))
+    .call(ax=>{ax.selectAll('.tick line').attr('stroke','#EAECF0');ax.select('.domain').remove();});
+  // 25% threshold line
+  g.append('line').attr('x1',0).attr('x2',iW).attr('y1',yS(.25)).attr('y2',yS(.25))
+    .attr('stroke','#E97500').attr('stroke-width',1).attr('stroke-dasharray','4 3').attr('opacity',.7);
+  g.append('text').attr('x',iW+2).attr('y',yS(.25)+4).attr('fill','#E97500').attr('font-size',8).text('25%');
+
+  g.selectAll('rect').data(sorted).join('rect')
+    .attr('x',c=>xS(c.case_name)).attr('y',c=>yS(c.retention_rate))
+    .attr('width',xS.bandwidth()).attr('height',c=>iH-yS(c.retention_rate))
+    .attr('fill',c=>c.retention_rate<.25?'#B60000':c.retention_rate<.5?'#E97500':'#006733').attr('rx',1)
+    .on('mouseover',(ev,c)=>showTip(ev,`<strong>${c.case_name}</strong><br>Retention: ${Math.round(c.retention_rate*100)}%<br>${c.saw_through}/${c.starters} starters remained`))
+    .on('mousemove',moveTip).on('mouseout',hideTip);
+}
+
+// ── Phase stack ──
+function _anPhaseStack(cases){
+  const el=document.getElementById('ch-phase');
+  if(!el) return;
+  const phases=['main','evidence','workshop','proposed_decision','article'];
+  const W=el.clientWidth||640, rowH=16, pad=3, labelW=110;
+  const iW=W-labelW-12;
+  const sorted=[...cases].sort((a,b)=>{
+    const pa=a.phase_edits||{}, pb=b.phase_edits||{};
+    const ea=(pa.evidence||0)/(Object.values(pa).reduce((s,v)=>s+v,0)||1);
+    const eb=(pb.evidence||0)/(Object.values(pb).reduce((s,v)=>s+v,0)||1);
+    return eb-ea;
+  });
+  const H=sorted.length*(rowH+pad)+20;
+  const svg=d3.select(el).append('svg').attr('width',W).attr('height',H);
+  const g=svg.append('g').attr('transform',`translate(${labelW},12)`);
+
+  // Legend
+  phases.forEach((p,i)=>{
+    const lx=(i/phases.length)*iW;
+    g.append('rect').attr('x',lx).attr('y',-12).attr('width',7).attr('height',7).attr('fill',PAGE_COLOR[p]).attr('rx',1.5);
+    g.append('text').attr('x',lx+9).attr('y',-5).attr('fill','#54595D').attr('font-size',7.5)
+      .text(p.replace(/_/g,' ').replace('proposed ','prop. '));
+  });
+
+  sorted.forEach((c,ri)=>{
+    const y=ri*(rowH+pad);
+    const pe=c.phase_edits||{};
+    const tot=Object.values(pe).reduce((s,v)=>s+v,0)||1;
+    let cx=0;
+    svg.append('text').attr('x',labelW-4).attr('y',y+rowH/2+4)
+      .attr('text-anchor','end').attr('font-size',8).attr('fill',c.color||'#595959')
+      .text(c.case_name.length>16?c.case_name.slice(0,15)+'…':c.case_name);
+    phases.forEach(p=>{
+      const val=pe[p]||0, w=(val/tot)*iW;
+      if(w<1){cx+=w;return;}
+      g.append('rect').attr('x',cx).attr('y',y).attr('width',w).attr('height',rowH)
+        .attr('fill',PAGE_COLOR[p]).attr('rx',1)
+        .on('mouseover',ev=>showTip(ev,`<strong>${c.case_name}</strong><br>${p.replace(/_/g,' ')}: ${val} edits (${Math.round(val/tot*100)}%)`))
+        .on('mousemove',moveTip).on('mouseout',hideTip);
+      cx+=w;
+    });
+  });
+}
+
+// ── Sanction bars ──
+function _anSanctBars(sanctioned, noSanct){
+  const el=document.getElementById('ch-sanct');
+  if(!el) return;
+  const data=[
+    {label:'No sanctions',v:d3.median(noSanct.map(c=>c.case_duration_days)),color:'#A2A9B1'},
+    {label:'Sanctioned',  v:d3.median(sanctioned.map(c=>c.case_duration_days)),color:'#B60000'},
+  ];
+  const W=el.clientWidth||320, H=90;
+  const mL=40,mR=12,mT=10,mB=22;
+  const iW=W-mL-mR, iH=H-mT-mB;
+  const xS=d3.scaleBand().domain(data.map(d=>d.label)).range([0,iW]).padding(.3);
+  const yS=d3.scaleLinear().domain([0,d3.max(data,d=>d.v)*1.3]).range([iH,0]);
+  const svg=d3.select(el).append('svg').attr('width',W).attr('height',H);
+  const g=svg.append('g').attr('transform',`translate(${mL},${mT})`);
+  g.append('g').attr('class','axis').attr('transform',`translate(0,${iH})`)
+    .call(d3.axisBottom(xS).tickSize(0)).select('.domain').remove();
+  g.append('g').attr('class','axis')
+    .call(d3.axisLeft(yS).ticks(4).tickSize(-iW))
+    .call(ax=>{ax.selectAll('.tick line').attr('stroke','#EAECF0');ax.select('.domain').remove();});
+  g.selectAll('rect').data(data).join('rect')
+    .attr('x',d=>xS(d.label)).attr('y',d=>yS(d.v))
+    .attr('width',xS.bandwidth()).attr('height',d=>iH-yS(d.v))
+    .attr('fill',d=>d.color).attr('rx',2);
+  g.selectAll('text.vl').data(data).join('text').attr('class','vl')
+    .attr('x',d=>xS(d.label)+xS.bandwidth()/2).attr('y',d=>yS(d.v)-4)
+    .attr('text-anchor','middle').attr('font-size',10).attr('font-weight',600)
+    .attr('fill','#202122').text(d=>Math.round(d.v)+'d');
+  svg.append('text').attr('x',8).attr('y',10).attr('font-size',8).attr('fill','#54595D').text('Median days');
+}
+
+// ── Duration vs editors scatter ──
+function _anScatter(cases){
+  const el=document.getElementById('ch-scatter');
+  if(!el) return;
+  const W=el.clientWidth||640, H=200;
+  const mL=44,mR=16,mT=10,mB=28;
+  const iW=W-mL-mR, iH=H-mT-mB;
+  const xS=d3.scaleLinear().domain([0,d3.max(cases,c=>c.total_editors)+2]).range([0,iW]);
+  const yS=d3.scaleLog().base(10)
+    .domain([Math.max(1,d3.min(cases,c=>c.case_duration_days||1)),d3.max(cases,c=>c.case_duration_days)+100])
+    .range([iH,0]).clamp(true);
+  const svg=d3.select(el).append('svg').attr('width',W).attr('height',H);
+  const g=svg.append('g').attr('transform',`translate(${mL},${mT})`);
+  g.append('g').attr('class','axis').attr('transform',`translate(0,${iH})`).call(d3.axisBottom(xS).ticks(8));
+  g.append('g').attr('class','axis')
+    .call(d3.axisLeft(yS).tickValues([7,30,90,365,730,1825]).tickFormat(v=>v>=365?Math.round(v/365)+'y':v+'d'));
+  svg.append('text').attr('x',mL+iW/2).attr('y',H-2).attr('text-anchor','middle')
+    .attr('font-size',9).attr('fill','#54595D').text('Editors');
+  svg.append('text').attr('transform',`translate(11,${mT+iH/2}) rotate(-90)`)
+    .attr('text-anchor','middle').attr('font-size',9).attr('fill','#54595D').text('Duration (log)');
+
+  g.selectAll('circle').data(cases.filter(c=>c.case_duration_days>0)).join('circle')
+    .attr('cx',c=>xS(c.total_editors)).attr('cy',c=>yS(Math.max(1,c.case_duration_days)))
+    .attr('r',c=>c.sanctioned_count?5.5:3.5)
+    .attr('fill',c=>c.sanctioned_count?'#B60000':c.case_duration_days>365?'#E97500':'#3366CC')
+    .attr('opacity',.65).attr('stroke','rgba(255,255,255,.5)').attr('stroke-width',.8)
+    .on('mouseover',(ev,c)=>showTip(ev,
+      `<strong>${c.case_name}</strong><br><span class="m">${c.total_editors} editors · ${c.case_duration_days}d${c.sanctioned_count?' · ⚖ sanctioned':''}</span>`))
+    .on('mousemove',moveTip).on('mouseout',hideTip);
+
+  // Legend
+  const leg=[{label:'Short (<1yr)',color:'#3366CC'},{label:'Long (>1yr)',color:'#E97500'},{label:'Sanctioned',color:'#B60000'}];
+  leg.forEach((l,i)=>{
+    svg.append('circle').attr('cx',mL+i*110+6).attr('cy',8).attr('r',4).attr('fill',l.color).attr('opacity',.75);
+    svg.append('text').attr('x',mL+i*110+14).attr('y',12).attr('font-size',8.5).attr('fill','#54595D').text(l.label);
+  });
+}
+
+function renderNetwork(data, container){
+  container.innerHTML='';
+  const {meta,nodes,events}=data;
+  const W=container.clientWidth||880;
+  const H=Math.max(460,window.innerHeight-220);
+  container.style.height=H+'px';
+
+  const allLinks=extractLinks(events);
+  const slider=document.getElementById('net-thr');
+  const thrVal=document.getElementById('net-thr-val');
+
+  const svg=d3.select(container).append('svg').attr('width','100%').attr('height',H).style('cursor','grab');
+  const aid='ar_'+meta.case_name.replace(/\W/g,'_');
+  svg.append('defs').append('marker').attr('id',aid)
+    .attr('viewBox','0 -4 8 8').attr('refX',14).attr('refY',0)
+    .attr('markerWidth',6).attr('markerHeight',6).attr('orient','auto')
+    .append('path').attr('d','M0,-4L8,0L0,4').attr('fill','#B60000').attr('opacity',.6);
+
+  const g=svg.append('g');
+  svg.call(d3.zoom().scaleExtent([.2,4]).on('zoom',ev=>g.attr('transform',ev.transform)));
+
+  const s0=+new Date(meta.case_start), s1=+new Date(meta.case_end);
+  const em=(s1-s0)*.25;
+  let sim, linkSel, nodeSel, labelSel;
+
+  function rebuild(thr){
+    const links=allLinks.filter(l=>l.weight>=thr);
+    const ns=new Set(links.flatMap(l=>[l.source,l.target]));
+    nodes.forEach(n=>{if(n.total_edits>=2)ns.add(n.username);});
+    const nd=nodes.filter(n=>ns.has(n.username)).map(n=>({
+      id:n.username,role:n.role,edits:n.total_edits,
+      r:Math.max(4,Math.sqrt(n.total_edits)*2.8),
+      sanctioned:n.sanctions?.length>0,departed:n.departed,
+      first:n.first_active,last:n.last_active,
+      isEarlyFiler:+new Date(n.first_active)<=s0+em&&n.total_edits>=2,
+      sawItThrough:+new Date(n.last_active)>=s1-em,
+    }));
+    const nById=new Map(nd.map(n=>[n.id,n]));
+    const ld=links.filter(l=>nById.has(l.source)&&nById.has(l.target)).map(l=>({...l}));
+
+    const cx=W/2,cy=H/2;
+    const rr={arbitrator:.12,participant:.32,arbitrator_candidate:.22,observer:.48};
+    nd.forEach(n=>{
+      const r=(rr[n.role]||.4)*Math.min(W,H)*.9, a=Math.random()*2*Math.PI;
+      n.x=cx+r*Math.cos(a); n.y=cy+r*Math.sin(a);
+    });
+    if(sim) sim.stop();
+    g.selectAll('*').remove();
+
+    linkSel=g.append('g').selectAll('line').data(ld).join('line')
+      .attr('class','net-link')
+      .attr('stroke',d=>d.hasRevert?'#B60000':'#A2A9B1')
+      .attr('stroke-width',d=>Math.min(Math.log(d.weight+1)*1.5,6))
+      .attr('stroke-dasharray',d=>d.hasRevert?'5 3':null)
+      .attr('marker-end',d=>d.hasRevert?`url(#${aid})`:null)
+      .on('mouseover',(ev,d)=>showTip(ev,
+        `<strong>${d.source.id||d.source}</strong> ↔ <strong>${d.target.id||d.target}</strong><br>
+         <span class="m">Interactions: ${d.weight}${d.hasRevert?' (includes revert)':''}</span>`))
+      .on('mousemove',moveTip).on('mouseout',hideTip);
+
+    const frg=g.append('g');
+    frg.selectAll('circle.fr').data(nd.filter(n=>n.isEarlyFiler)).join('circle')
+      .attr('class','fr').attr('r',d=>d.r+7).attr('fill','none')
+      .attr('stroke','rgba(50,102,204,.5)').attr('stroke-width',1.5)
+      .attr('stroke-dasharray','3 2').attr('pointer-events','none');
+
+    nodeSel=g.append('g').selectAll('circle').data(nd).join('circle')
+      .attr('class','net-node').attr('r',d=>d.r)
+      .attr('fill',d=>ROLE_COLOR[d.role]||'#595959')
+      .attr('opacity',d=>d.sawItThrough?1:.55)
+      .attr('stroke',d=>d.sanctioned?'#B60000':'rgba(0,0,0,.15)')
+      .attr('stroke-width',d=>d.sanctioned?2.5:1)
+      .call(d3.drag()
+        .on('start',(ev,d)=>{if(!ev.active)sim.alphaTarget(.2).restart();d.fx=d.x;d.fy=d.y;})
+        .on('drag',(ev,d)=>{d.fx=ev.x;d.fy=ev.y;})
+        .on('end',(ev,d)=>{if(!ev.active)sim.alphaTarget(0);d.fx=null;d.fy=null;}))
+      .on('mouseover',function(ev,d){
+        const conn=new Set();
+        ld.forEach(l=>{const s=l.source.id||l.source,t=l.target.id||l.target;
+          if(s===d.id)conn.add(t);if(t===d.id)conn.add(s);});
+        linkSel.attr('opacity',l=>{const s=l.source.id||l.source,t=l.target.id||l.target;
+          return(s===d.id||t===d.id)?.85:.04;});
+        nodeSel.attr('opacity',n=>n.id===d.id||conn.has(n.id)?1:.08);
+        labelSel.attr('opacity',n=>n.id===d.id||conn.has(n.id)?1:.04);
+        frg.selectAll('circle').attr('opacity',n=>n.id===d.id||conn.has(n.id)?.9:.04);
+        const rl=d.role==='arbitrator'?`<span style="color:#0057AF">⚖ Arbitrator</span>`:
+                  d.role==='participant'?`<span style="color:#006733">Participant</span>`:
+                  d.role==='arbitrator_candidate'?`<span style="color:#C46C00">Arb candidate</span>`:
+                  '<span class="m">Observer</span>';
+        showTip(ev,`<strong>${d.id}</strong> · ${rl}
+          ${d.isEarlyFiler?'<br><span style="color:#202122">📋 Filed early</span>':''}
+          ${d.sawItThrough?'<br><span style="color:#006733">✓ Saw it through</span>':'<br><span style="color:#595959">→∅ Departed early</span>'}
+          ${d.sanctioned?'<br><span style="color:#B60000">⚖ Sanctioned</span>':''}
+          <br><span class="m">${d.edits} edits</span>`);
+      })
+      .on('mousemove',moveTip)
+      .on('mouseout',()=>{
+        linkSel.attr('opacity',.35);
+        nodeSel.attr('opacity',d=>d.sawItThrough?1:.55);
+        labelSel.attr('opacity',d=>d.edits>=3?.9:.45);
+        frg.selectAll('circle').attr('opacity',1);
+        hideTip();
+      });
+
+    labelSel=g.append('g').selectAll('text').data(nd).join('text')
+      .attr('class','net-label').attr('dy','0.32em').text(d=>d.id).attr('x',d=>d.r+4)
+      .style('font-size',d=>d.edits>10?'10px':'8.5px')
+      .style('fill',d=>ROLE_COLOR[d.role]||'#595959')
+      .style('opacity',d=>d.edits>=3?.9:.45);
+
+    g.append('g').selectAll('circle.sr').data(nd.filter(n=>n.sanctioned)).join('circle')
+      .attr('class','sr').attr('r',d=>d.r+5).attr('fill','none')
+      .attr('stroke','#B60000').attr('stroke-width',1.5).attr('stroke-dasharray','3 2').attr('opacity',.5);
+
+    sim=d3.forceSimulation(nd)
+      .force('link',d3.forceLink(ld).id(d=>d.id)
+        .distance(d=>80/Math.log(d.weight+2)).strength(d=>Math.min(d.weight/30,.6)))
+      .force('charge',d3.forceManyBody().strength(d=>-Math.max(80,d.r*25)))
+      .force('center',d3.forceCenter(W/2,H/2).strength(.05))
+      .force('collide',d3.forceCollide(d=>d.r+10))
+      .on('tick',()=>{
+        linkSel.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y)
+               .attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+        nodeSel.attr('cx',d=>d.x).attr('cy',d=>d.y);
+        labelSel.attr('x',d=>d.x+d.r+4).attr('y',d=>d.y);
+        g.selectAll('circle.sr').attr('cx',d=>d.x).attr('cy',d=>d.y);
+        frg.selectAll('circle').attr('cx',d=>d.x).attr('cy',d=>d.y);
+      });
+  }
+
+  rebuild(+(slider?.value||2));
+  slider?.addEventListener('input',function(){
+    if(thrVal) thrVal.textContent=this.value;
+    rebuild(+this.value);
+  });
+}
+</script>
+</body>
+</html>

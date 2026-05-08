@@ -10,78 +10,79 @@ from unittest.mock import MagicMock, patch
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 
+def _make_client():
+    """Create a WikiClient with mocked session (no real HTTP)."""
+    with patch.dict("os.environ", {"WIKIPEDIA_ACCESS_TOKEN": "test"}):
+        from wiki import WikiClient
+
+        client = WikiClient(use_oauth=True)
+    return client
+
+
 class TestEditTags:
     """Tests for edit tags in revision fetching."""
 
     def test_get_revisions_includes_tags_by_default(self):
         """Verify tags field is included when include_tags=True."""
-        with patch("wiki.pywikibot") as mock_pwb:
-            mock_site = MagicMock()
-            mock_pwb.Site.return_value = mock_site
+        client = _make_client()
+        client._api_request = MagicMock(
+            return_value={
+                "query": {
+                    "pages": {
+                        "1": {
+                            "title": "Test Page",
+                            "revisions": [
+                                {
+                                    "revid": 123,
+                                    "parentid": 122,
+                                    "timestamp": "2024-01-01T00:00:00Z",
+                                    "user": "TestUser",
+                                    "comment": "Test edit",
+                                    "size": 1000,
+                                    "tags": ["mw-rollback", "mw-reverted"],
+                                }
+                            ],
+                        }
+                    }
+                }
+            }
+        )
 
-            # Mock page and revision
-            mock_page = MagicMock()
-            mock_page.exists.return_value = True
+        revisions = client.get_revisions("Test Page", limit=1, include_tags=True)
 
-            mock_rev = MagicMock()
-            mock_rev.revid = 123
-            mock_rev.parentid = 122
-            mock_rev.timestamp = "2024-01-01T00:00:00Z"
-            mock_rev.user = "TestUser"
-            mock_rev.comment = "Test edit"
-            mock_rev.size = 1000
-            mock_rev.tags = ["mw-rollback", "mw-reverted"]
-
-            mock_page.revisions.return_value = iter([mock_rev])
-            mock_pwb.Page.return_value = mock_page
-
-            from wiki import WikiClient
-
-            with patch.dict("os.environ", {"WIKIPEDIA_ACCESS_TOKEN": "test"}):
-                client = WikiClient(use_oauth=True)
-                client.get_page = MagicMock(return_value=mock_page)
-
-                revisions = client.get_revisions(
-                    "Test Page", limit=1, include_tags=True
-                )
-
-                assert len(revisions) == 1
-                assert "tags" in revisions[0]
-                assert revisions[0]["tags"] == ["mw-rollback", "mw-reverted"]
+        assert len(revisions) == 1
+        assert "tags" in revisions[0]
+        assert revisions[0]["tags"] == ["mw-rollback", "mw-reverted"]
 
     def test_get_revisions_without_tags(self):
         """Verify tags field is excluded when include_tags=False."""
-        with patch("wiki.pywikibot") as mock_pwb:
-            mock_site = MagicMock()
-            mock_pwb.Site.return_value = mock_site
+        client = _make_client()
+        client._api_request = MagicMock(
+            return_value={
+                "query": {
+                    "pages": {
+                        "1": {
+                            "title": "Test Page",
+                            "revisions": [
+                                {
+                                    "revid": 123,
+                                    "parentid": 122,
+                                    "timestamp": "2024-01-01T00:00:00Z",
+                                    "user": "TestUser",
+                                    "comment": "Test edit",
+                                    "size": 1000,
+                                }
+                            ],
+                        }
+                    }
+                }
+            }
+        )
 
-            mock_page = MagicMock()
-            mock_page.exists.return_value = True
+        revisions = client.get_revisions("Test Page", limit=1, include_tags=False)
 
-            mock_rev = MagicMock()
-            mock_rev.revid = 123
-            mock_rev.parentid = 122
-            mock_rev.timestamp = "2024-01-01T00:00:00Z"
-            mock_rev.user = "TestUser"
-            mock_rev.comment = "Test edit"
-            mock_rev.size = 1000
-            mock_rev.tags = ["mw-rollback"]
-
-            mock_page.revisions.return_value = iter([mock_rev])
-            mock_pwb.Page.return_value = mock_page
-
-            from wiki import WikiClient
-
-            with patch.dict("os.environ", {"WIKIPEDIA_ACCESS_TOKEN": "test"}):
-                client = WikiClient(use_oauth=True)
-                client.get_page = MagicMock(return_value=mock_page)
-
-                revisions = client.get_revisions(
-                    "Test Page", limit=1, include_tags=False
-                )
-
-                assert len(revisions) == 1
-                assert "tags" not in revisions[0]
+        assert len(revisions) == 1
+        assert "tags" not in revisions[0]
 
 
 class TestUserInfo:
@@ -89,11 +90,9 @@ class TestUserInfo:
 
     def test_get_user_info_returns_expected_fields(self):
         """Verify get_user_info returns all expected fields."""
-        with patch("wiki.pywikibot") as mock_pwb:
-            mock_site = MagicMock()
-            mock_pwb.Site.return_value = mock_site
-
-            mock_response = {
+        client = _make_client()
+        client._api_request = MagicMock(
+            return_value={
                 "query": {
                     "users": [
                         {
@@ -107,28 +106,21 @@ class TestUserInfo:
                     ]
                 }
             }
+        )
+        info = client.get_user_info("TestUser")
 
-            from wiki import WikiClient
-
-            with patch.dict("os.environ", {"WIKIPEDIA_ACCESS_TOKEN": "test"}):
-                client = WikiClient(use_oauth=True)
-                client._api_request = MagicMock(return_value=mock_response)
-                info = client.get_user_info("TestUser")
-
-                assert info is not None
-                assert info["username"] == "TestUser"
-                assert info["edit_count"] == 1000
-                assert info["is_admin"] is False
-                assert info["is_bot"] is False
-                assert "groups" in info
+        assert info is not None
+        assert info["username"] == "TestUser"
+        assert info["edit_count"] == 1000
+        assert info["is_admin"] is False
+        assert info["is_bot"] is False
+        assert "groups" in info
 
     def test_get_user_info_admin_detection(self):
         """Verify admin detection works correctly."""
-        with patch("wiki.pywikibot") as mock_pwb:
-            mock_site = MagicMock()
-            mock_pwb.Site.return_value = mock_site
-
-            mock_response = {
+        client = _make_client()
+        client._api_request = MagicMock(
+            return_value={
                 "query": {
                     "users": [
                         {
@@ -140,23 +132,15 @@ class TestUserInfo:
                     ]
                 }
             }
-
-            from wiki import WikiClient
-
-            with patch.dict("os.environ", {"WIKIPEDIA_ACCESS_TOKEN": "test"}):
-                client = WikiClient(use_oauth=True)
-                client._api_request = MagicMock(return_value=mock_response)
-                info = client.get_user_info("AdminUser")
-
-                assert info["is_admin"] is True
+        )
+        info = client.get_user_info("AdminUser")
+        assert info["is_admin"] is True
 
     def test_get_user_info_missing_user(self):
         """Verify None returned for missing user."""
-        with patch("wiki.pywikibot") as mock_pwb:
-            mock_site = MagicMock()
-            mock_pwb.Site.return_value = mock_site
-
-            mock_response = {
+        client = _make_client()
+        client._api_request = MagicMock(
+            return_value={
                 "query": {
                     "users": [
                         {
@@ -166,23 +150,15 @@ class TestUserInfo:
                     ]
                 }
             }
-
-            from wiki import WikiClient
-
-            with patch.dict("os.environ", {"WIKIPEDIA_ACCESS_TOKEN": "test"}):
-                client = WikiClient(use_oauth=True)
-                client._api_request = MagicMock(return_value=mock_response)
-                info = client.get_user_info("NonexistentUser")
-
-                assert info is None
+        )
+        info = client.get_user_info("NonexistentUser")
+        assert info is None
 
     def test_get_users_info_batch(self):
         """Verify batch user info fetching."""
-        with patch("wiki.pywikibot") as mock_pwb:
-            mock_site = MagicMock()
-            mock_pwb.Site.return_value = mock_site
-
-            mock_response = {
+        client = _make_client()
+        client._api_request = MagicMock(
+            return_value={
                 "query": {
                     "users": [
                         {"name": "User1", "userid": 1, "editcount": 100, "groups": []},
@@ -190,18 +166,13 @@ class TestUserInfo:
                     ]
                 }
             }
+        )
+        info = client.get_users_info(["User1", "User2"])
 
-            from wiki import WikiClient
-
-            with patch.dict("os.environ", {"WIKIPEDIA_ACCESS_TOKEN": "test"}):
-                client = WikiClient(use_oauth=True)
-                client._api_request = MagicMock(return_value=mock_response)
-                info = client.get_users_info(["User1", "User2"])
-
-                assert "User1" in info
-                assert "User2" in info
-                assert info["User1"]["edit_count"] == 100
-                assert info["User2"]["edit_count"] == 200
+        assert "User1" in info
+        assert "User2" in info
+        assert info["User1"]["edit_count"] == 100
+        assert info["User2"]["edit_count"] == 200
 
 
 class TestBlockHistory:
@@ -209,11 +180,9 @@ class TestBlockHistory:
 
     def test_get_user_blocks_returns_blocks(self):
         """Verify get_user_blocks returns block data."""
-        with patch("wiki.pywikibot") as mock_pwb:
-            mock_site = MagicMock()
-            mock_pwb.Site.return_value = mock_site
-
-            mock_response = {
+        client = _make_client()
+        client._api_request = MagicMock(
+            return_value={
                 "query": {
                     "blocks": [
                         {
@@ -227,26 +196,19 @@ class TestBlockHistory:
                     ]
                 }
             }
+        )
+        blocks = client.get_user_blocks("BlockedUser")
 
-            from wiki import WikiClient
-
-            with patch.dict("os.environ", {"WIKIPEDIA_ACCESS_TOKEN": "test"}):
-                client = WikiClient(use_oauth=True)
-                client._api_request = MagicMock(return_value=mock_response)
-                blocks = client.get_user_blocks("BlockedUser")
-
-                assert len(blocks) == 1
-                assert blocks[0]["block_id"] == 1
-                assert blocks[0]["blocked_by"] == "AdminUser"
-                assert blocks[0]["reason"] == "Vandalism"
+        assert len(blocks) == 1
+        assert blocks[0]["block_id"] == 1
+        assert blocks[0]["blocked_by"] == "AdminUser"
+        assert blocks[0]["reason"] == "Vandalism"
 
     def test_get_block_log_returns_events(self):
         """Verify get_block_log returns log entries."""
-        with patch("wiki.pywikibot") as mock_pwb:
-            mock_site = MagicMock()
-            mock_pwb.Site.return_value = mock_site
-
-            mock_response = {
+        client = _make_client()
+        client._api_request = MagicMock(
+            return_value={
                 "query": {
                     "logevents": [
                         {
@@ -271,17 +233,12 @@ class TestBlockHistory:
                     ]
                 }
             }
+        )
+        log = client.get_block_log("BlockedUser")
 
-            from wiki import WikiClient
-
-            with patch.dict("os.environ", {"WIKIPEDIA_ACCESS_TOKEN": "test"}):
-                client = WikiClient(use_oauth=True)
-                client._api_request = MagicMock(return_value=mock_response)
-                log = client.get_block_log("BlockedUser")
-
-                assert len(log) == 2
-                assert log[0]["action"] == "block"
-                assert log[1]["action"] == "unblock"
+        assert len(log) == 2
+        assert log[0]["action"] == "block"
+        assert log[1]["action"] == "unblock"
 
 
 class TestLogEvents:
@@ -289,11 +246,9 @@ class TestLogEvents:
 
     def test_get_log_events_filters_by_type(self):
         """Verify log events are filtered by type."""
-        with patch("wiki.pywikibot") as mock_pwb:
-            mock_site = MagicMock()
-            mock_pwb.Site.return_value = mock_site
-
-            mock_response = {
+        client = _make_client()
+        client._api_request = MagicMock(
+            return_value={
                 "query": {
                     "logevents": [
                         {
@@ -308,25 +263,18 @@ class TestLogEvents:
                     ]
                 }
             }
+        )
+        events = client.get_log_events("protect", title="Test Page")
 
-            from wiki import WikiClient
-
-            with patch.dict("os.environ", {"WIKIPEDIA_ACCESS_TOKEN": "test"}):
-                client = WikiClient(use_oauth=True)
-                client._api_request = MagicMock(return_value=mock_response)
-                events = client.get_log_events("protect", title="Test Page")
-
-                assert len(events) == 1
-                assert events[0]["log_type"] == "protect"
-                assert events[0]["action"] == "protect"
+        assert len(events) == 1
+        assert events[0]["log_type"] == "protect"
+        assert events[0]["action"] == "protect"
 
     def test_get_protection_log(self):
         """Verify protection log fetching."""
-        with patch("wiki.pywikibot") as mock_pwb:
-            mock_site = MagicMock()
-            mock_pwb.Site.return_value = mock_site
-
-            mock_response = {
+        client = _make_client()
+        client._api_request = MagicMock(
+            return_value={
                 "query": {
                     "logevents": [
                         {
@@ -344,17 +292,12 @@ class TestLogEvents:
                     ]
                 }
             }
+        )
+        events = client.get_protection_log("Test Page")
 
-            from wiki import WikiClient
-
-            with patch.dict("os.environ", {"WIKIPEDIA_ACCESS_TOKEN": "test"}):
-                client = WikiClient(use_oauth=True)
-                client._api_request = MagicMock(return_value=mock_response)
-                events = client.get_protection_log("Test Page")
-
-                assert len(events) == 1
-                assert events[0]["protection_level"] == "edit=autoconfirmed"
-                assert events[0]["cascade"] is True
+        assert len(events) == 1
+        assert events[0]["protection_level"] == "edit=autoconfirmed"
+        assert events[0]["cascade"] is True
 
 
 class TestPageAssessments:
@@ -362,11 +305,9 @@ class TestPageAssessments:
 
     def test_get_page_assessments_returns_ratings(self):
         """Verify page assessments are returned."""
-        with patch("wiki.pywikibot") as mock_pwb:
-            mock_site = MagicMock()
-            mock_pwb.Site.return_value = mock_site
-
-            mock_response = {
+        client = _make_client()
+        client._api_request = MagicMock(
+            return_value={
                 "query": {
                     "pages": {
                         "123": {
@@ -385,26 +326,19 @@ class TestPageAssessments:
                     }
                 }
             }
+        )
+        assessments = client.get_page_assessments("Climate change")
 
-            from wiki import WikiClient
-
-            with patch.dict("os.environ", {"WIKIPEDIA_ACCESS_TOKEN": "test"}):
-                client = WikiClient(use_oauth=True)
-                client._api_request = MagicMock(return_value=mock_response)
-                assessments = client.get_page_assessments("Climate change")
-
-                assert assessments["title"] == "Climate change"
-                assert "WikiProject Climate change" in assessments["assessments"]
-                assert assessments["highest_quality"] == "B"
-                assert assessments["highest_importance"] == "Top"
+        assert assessments["title"] == "Climate change"
+        assert "WikiProject Climate change" in assessments["assessments"]
+        assert assessments["highest_quality"] == "B"
+        assert assessments["highest_importance"] == "Top"
 
     def test_get_page_assessments_missing_page(self):
         """Verify empty assessments for missing page."""
-        with patch("wiki.pywikibot") as mock_pwb:
-            mock_site = MagicMock()
-            mock_pwb.Site.return_value = mock_site
-
-            mock_response = {
+        client = _make_client()
+        client._api_request = MagicMock(
+            return_value={
                 "query": {
                     "pages": {
                         "-1": {
@@ -415,12 +349,6 @@ class TestPageAssessments:
                     }
                 }
             }
-
-            from wiki import WikiClient
-
-            with patch.dict("os.environ", {"WIKIPEDIA_ACCESS_TOKEN": "test"}):
-                client = WikiClient(use_oauth=True)
-                client._api_request = MagicMock(return_value=mock_response)
-                assessments = client.get_page_assessments("Nonexistent Page")
-
-                assert assessments["assessments"] == {}
+        )
+        assessments = client.get_page_assessments("Nonexistent Page")
+        assert assessments["assessments"] == {}

@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import OverviewScreen from './screens/OverviewScreen'
 import BpmnScreen from './screens/BpmnScreen'
+import D3Screen from './screens/D3Screen'
 import './App.css'
 
 const TABS = [
   { id: 'overview', label: 'Arbitration Overview' },
+  { id: 'd3', label: 'D3 Visuals' },
   { id: 'bpmn', label: 'Process Diagrams' },
 ]
 
@@ -35,6 +37,7 @@ export default function App() {
 
       <main className="app-main">
         {activeTab === 'overview' && <OverviewScreen />}
+        {activeTab === 'd3'       && <D3Screen />}
         {activeTab === 'bpmn'     && <BpmnScreen />}
       </main>
     </div>

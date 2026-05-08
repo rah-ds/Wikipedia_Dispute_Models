@@ -290,8 +290,11 @@ class TestParseDecision:
 1) Description without any vote sections.
 """
         outcome = parse_decision(text)
-        # Items without votes should not be included
-        assert outcome.total_items == 0
+        # Items are included even without votes (pre-2012 pages used
+        # different vote formats; dropping them caused silent omissions).
+        assert outcome.total_items == 1
+        assert outcome.items[0].votes.support == 0
+        assert outcome.items[0].votes.oppose == 0
 
     def test_proposal_number_extraction(self):
         outcome = parse_decision(SAMPLE_FULL_PAGE)
