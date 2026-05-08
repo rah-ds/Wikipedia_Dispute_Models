@@ -86,6 +86,10 @@ in the values:
 cp .env.example .env
 ```
 
+For authenticated Wikimedia requests, make sure your `.env` also includes
+`WIKIPEDIA_ACCESS_TOKEN`. If `.env.example` does not already contain that
+variable, add it manually after copying the file.
+
 ### 2. Validate the Python project
 
 ```bash
