@@ -16,6 +16,13 @@ handoff. It is the detailed companion to the top-level `README.md`.
 | Extracted participant mentions | 22,255 | From raw per-case summaries |
 | Extracted article mentions | 14,826 | From raw per-case summaries |
 
+The broader venue-count chart below is useful for presentations, but it is not
+the canonical source for ArbCom coverage. Use the table above for final handoff
+counts and the chart only as a high-level view of collected dispute-resolution
+record types.
+
+![Record counts by dispute-resolution type](assets/dispute_resolution_counts.png)
+
 Zero-data records to inspect or refetch:
 
 - `CoolKatt number 99999`

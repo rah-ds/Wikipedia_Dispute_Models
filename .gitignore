@@ -33,9 +33,11 @@ artifacts/archives/
 !artifacts/results/F
 !artifacts/imgs/publish/
 
-# Node.js (puppeteer for SVG export)
+# Node.js / Vite
 node_modules/
 package-lock.json
+dashboard/.vite/
+dashboard/dist/
 
 # Test / coverage artifacts
 .coverage
