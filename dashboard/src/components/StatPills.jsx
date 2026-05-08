@@ -11,9 +11,14 @@ export default function StatPills({ data, style }) {
       sub: 'distinct [[User:…]] mentions',
     },
     {
-      label: 'Admin Talk Links',
-      value: data.totalAdminLinks.toLocaleString(),
+      label: 'User Talk Links',
+      value: (data.totalUserTalkLinks ?? data.totalAdminLinks ?? 0).toLocaleString(),
       sub: 'distinct [[User talk:…]] mentions',
+    },
+    {
+      label: 'Wikipedia References',
+      value: (data.totalWikipediaRefs ?? 0).toLocaleString(),
+      sub: '[[Wikipedia:]] or [[WP:]] mentions',
     },
   ]
 

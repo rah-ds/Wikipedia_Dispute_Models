@@ -1,4 +1,4 @@
-.PHONY: install install-dev clean data-dirs help lint fetch-all fetch-full fetch-arb fetch-drn fetch-small test test-unit test-cov fetch-venues fetch-ani fetch-talk fetch-arb-dfs fetch-arb-dfs-sample fetch-arb-dfs-sample-full fetch-arb-dfs-all fetch-arb-dfs-all-full update-arb-cases-list fetch-lifecycle fetch-lifecycle-dry fetch-lifecycle-sample fetch-lifecycle-all setup pull pull-status pull-reset validate archive clear-results pull-full-arb pull-full-arb-estimate pull-full-arb-force paper-overleaf-status paper-overleaf-diff paper-overleaf-pull paper-overleaf-push
+.PHONY: install install-dev clean data-dirs help lint fetch-all fetch-full fetch-arb fetch-drn fetch-small test test-unit test-cov fetch-venues fetch-ani fetch-talk fetch-arb-dfs fetch-arb-dfs-sample fetch-arb-dfs-sample-full fetch-arb-dfs-all fetch-arb-dfs-all-full update-arb-cases-list fetch-lifecycle fetch-lifecycle-dry fetch-lifecycle-sample fetch-lifecycle-all setup pull pull-status pull-reset validate archive clear-results pull-full-arb pull-full-arb-estimate pull-full-arb-force paper-overleaf-status paper-overleaf-diff paper-overleaf-pull paper-overleaf-push rivanna-sync rivanna-setup rivanna-submit rivanna-status rivanna-logs rivanna-pull rivanna-clean rivanna-ssh rivanna-train
 
 OVERLEAF_FINAL_PAPER_URL ?= https://git@git.overleaf.com/69d7f5837aeb48de51af6f12
 OVERLEAF_FINAL_PAPER_BRANCH ?= master
@@ -11,78 +11,99 @@ OVERLEAF_FINAL_PAPER_BRANCH ?= master
 # make pull   - Fetch data (resumable, uses sample config by default)
 # =============================================================================
 
+# ANSI color codes
+BOLD    := \033[1m
+RESET   := \033[0m
+CYAN    := \033[36m
+GREEN   := \033[32m
+YELLOW  := \033[33m
+MAGENTA := \033[35m
+DIM     := \033[2m
+
 # Default target
 help:
-	@echo "Wikipedia Dispute Models"
-	@echo "========================"
-	@echo ""
-	@echo "Quick Start (recommended):"
-	@echo "  make setup       Set up environment (install + validate)"
-	@echo "  make test        Run all tests"
-	@echo "  make pull        Fetch data (resumable, sample config)"
-	@echo ""
-	@echo "Pull Commands:"
-	@echo "  make pull                     Fetch with sample config (5 cases)"
-	@echo "  make pull CONFIG=full         Fetch all data (hours)"
-	@echo "  make pull CONFIG=dev          Minimal fetch for testing"
-	@echo "  make pull-status              Show current pull progress"
-	@echo "  make pull-reset               Reset state for fresh start"
-	@echo "  make validate                 Check environment is ready"
-	@echo ""
-	@echo "Full Arbitration Pull (COMPREHENSIVE):"
-	@echo "  make pull-full-arb            Pull ALL arb cases with full enrichment"
-	@echo "                                (shows estimate first, resumable)"
-	@echo "  make pull-full-arb-estimate   Show time/storage estimate only"
-	@echo "  make pull-full-arb-force      Pull without storage check"
-	@echo ""
-	@echo "Data Management:"
-	@echo "  make archive         Archive results to timestamped zip file"
-	@echo "  make clear-results   Clear all results (data/raw, data/processed)"
-	@echo ""
-	@echo "Paper / Overleaf:"
-	@echo "  make paper-overleaf-status  Show the paper sync configuration"
-	@echo "  make paper-overleaf-diff    Diff final_paper/ against Overleaf"
-	@echo "  make paper-overleaf-pull    Pull Overleaf changes into final_paper/"
-	@echo "  make paper-overleaf-push    Push committed final_paper/ changes to Overleaf"
-	@echo ""
-	@echo "Development:"
-	@echo "  make install     Install base dependencies"
-	@echo "  make install-dev Install with dev dependencies + pre-commit hooks"
-	@echo "  make lint        Run ruff linter and formatter"
-	@echo "  make test-unit   Run unit tests only (no network)"
-	@echo "  make test-cov    Run tests with coverage"
-	@echo "  make data-dirs   Create data directory structure"
-	@echo "  make clean       Remove generated files (cache, pycache)"
-	@echo ""
-	@echo "Legacy Data Collection (still supported):"
-	@echo "  fetch-small     Fetch sample dataset (10 articles, 5 arb cases)"
-	@echo "  fetch-small-dry Preview what fetch-small would fetch"
-	@echo "  fetch-full      Fetch full dataset (51 articles, 50 arb cases)"
-	@echo "  fetch-full-dry  Preview what fetch-full would fetch"
-	@echo "  fetch-all       Run arb + drn collectors only (no articles)"
-	@echo "  fetch-arb       Fetch arbitration cases only"
-	@echo "  fetch-drn       Fetch DRN cases only"
-	@echo ""
-	@echo "Phase 2 - Dispute Venues:"
-	@echo "  fetch-venues ARTICLE=<title>  Fetch all dispute venues for article"
-	@echo "  fetch-ani TERM=<term>         Search ANI archives for term"
-	@echo "  fetch-talk ARTICLE=<title>    Fetch talk page revisions"
-	@echo ""
-	@echo "Arbitration Case DFS:"
-	@echo "  fetch-arb-dfs CASE=<name>     DFS from arb case to all related pages"
-	@echo "  fetch-arb-dfs-dry CASE=<name> Preview what fetch-arb-dfs would fetch"
-	@echo "  fetch-arb-dfs-sample          Fetch 5 example arb cases with DFS (limited)"
-	@echo "  fetch-arb-dfs-sample-full     Fetch 5 example arb cases with ALL pages"
-	@echo "  fetch-arb-dfs-all             Fetch ALL arb cases (~481 cases from Wikipedia)"
-	@echo "  fetch-arb-dfs-all-full        Fetch ALL arb cases with ALL pages (very long)"
-	@echo "  update-arb-cases-list         Update artifacts/arb_cases.txt from Wikipedia"
-	@echo ""
-	@echo "Full Dispute Lifecycle (RECOMMENDED - captures all escalation stages):"
-	@echo "  fetch-lifecycle CASE=<name>   Fetch full lifecycle: Talk→DRN→ANI→ArbCom"
-	@echo "  fetch-lifecycle-dry CASE=<n>  Preview lifecycle fetch"
-	@echo "  fetch-lifecycle-sample        Fetch 5 sample cases with full lifecycle"
-	@echo "  fetch-lifecycle-all           Fetch ALL cases with full lifecycle"
-	@echo ""
+	@printf "\n"
+	@printf "$(BOLD)$(CYAN)  Wikipedia Dispute Models$(RESET)\n"
+	@printf "$(DIM)  ════════════════════════$(RESET)\n"
+	@printf "\n"
+	@printf "$(BOLD)$(GREEN)  Quick Start$(RESET) $(DIM)(recommended)$(RESET)\n"
+	@printf "    $(CYAN)make setup$(RESET)       Set up environment (install + validate)\n"
+	@printf "    $(CYAN)make test$(RESET)        Run all tests\n"
+	@printf "    $(CYAN)make pull$(RESET)        Fetch data (resumable, sample config)\n"
+	@printf "\n"
+	@printf "$(BOLD)$(GREEN)  Pull Commands$(RESET)\n"
+	@printf "    $(CYAN)make pull$(RESET)                     Fetch with sample config (5 cases)\n"
+	@printf "    $(CYAN)make pull CONFIG=full$(RESET)         Fetch all data (hours)\n"
+	@printf "    $(CYAN)make pull CONFIG=dev$(RESET)          Minimal fetch for testing\n"
+	@printf "    $(CYAN)make pull-status$(RESET)              Show current pull progress\n"
+	@printf "    $(CYAN)make pull-reset$(RESET)               Reset state for fresh start\n"
+	@printf "    $(CYAN)make validate$(RESET)                 Check environment is ready\n"
+	@printf "\n"
+	@printf "$(BOLD)$(GREEN)  Full Arbitration Pull$(RESET) $(DIM)(COMPREHENSIVE)$(RESET)\n"
+	@printf "    $(CYAN)make pull-full-arb$(RESET)            Pull ALL arb cases with full enrichment\n"
+	@printf "    $(DIM)                                (shows estimate first, resumable)$(RESET)\n"
+	@printf "    $(CYAN)make pull-full-arb-estimate$(RESET)   Show time/storage estimate only\n"
+	@printf "    $(CYAN)make pull-full-arb-force$(RESET)      Pull without storage check\n"
+	@printf "\n"
+	@printf "$(BOLD)$(GREEN)  Data Management$(RESET)\n"
+	@printf "    $(CYAN)make archive$(RESET)         Archive results to timestamped zip file\n"
+	@printf "    $(CYAN)make clear-results$(RESET)   Clear all results (data/raw, data/processed)\n"
+	@printf "\n"
+	@printf "$(BOLD)$(GREEN)  Paper / Overleaf$(RESET)\n"
+	@printf "    $(CYAN)make paper-overleaf-status$(RESET)  Show the paper sync configuration\n"
+	@printf "    $(CYAN)make paper-overleaf-diff$(RESET)    Diff final_paper/ against Overleaf\n"
+	@printf "    $(CYAN)make paper-overleaf-pull$(RESET)    Pull Overleaf changes into final_paper/\n"
+	@printf "    $(CYAN)make paper-overleaf-push$(RESET)    Push committed final_paper/ changes to Overleaf\n"
+	@printf "\n"
+	@printf "$(BOLD)$(YELLOW)  Development$(RESET)\n"
+	@printf "    $(CYAN)make install$(RESET)     Install base dependencies\n"
+	@printf "    $(CYAN)make install-dev$(RESET) Install with dev dependencies + pre-commit hooks\n"
+	@printf "    $(CYAN)make lint$(RESET)        Run ruff linter and formatter\n"
+	@printf "    $(CYAN)make test-unit$(RESET)   Run unit tests only (no network)\n"
+	@printf "    $(CYAN)make test-cov$(RESET)    Run tests with coverage\n"
+	@printf "    $(CYAN)make data-dirs$(RESET)   Create data directory structure\n"
+	@printf "    $(CYAN)make clean$(RESET)       Remove generated files (cache, pycache)\n"
+	@printf "\n"
+	@printf "$(BOLD)$(YELLOW)  Legacy Data Collection$(RESET) $(DIM)(still supported)$(RESET)\n"
+	@printf "    $(CYAN)fetch-small$(RESET)     Fetch sample dataset (10 articles, 5 arb cases)\n"
+	@printf "    $(CYAN)fetch-small-dry$(RESET) Preview what fetch-small would fetch\n"
+	@printf "    $(CYAN)fetch-full$(RESET)      Fetch full dataset (51 articles, 50 arb cases)\n"
+	@printf "    $(CYAN)fetch-full-dry$(RESET)  Preview what fetch-full would fetch\n"
+	@printf "    $(CYAN)fetch-all$(RESET)       Run arb + drn collectors only (no articles)\n"
+	@printf "    $(CYAN)fetch-arb$(RESET)       Fetch arbitration cases only\n"
+	@printf "    $(CYAN)fetch-drn$(RESET)       Fetch DRN cases only\n"
+	@printf "\n"
+	@printf "$(BOLD)$(YELLOW)  Phase 2 — Dispute Venues$(RESET)\n"
+	@printf "    $(CYAN)fetch-venues ARTICLE=<title>$(RESET)  Fetch all dispute venues for article\n"
+	@printf "    $(CYAN)fetch-ani TERM=<term>$(RESET)         Search ANI archives for term\n"
+	@printf "    $(CYAN)fetch-talk ARTICLE=<title>$(RESET)    Fetch talk page revisions\n"
+	@printf "\n"
+	@printf "$(BOLD)$(YELLOW)  Arbitration Case DFS$(RESET)\n"
+	@printf "    $(CYAN)fetch-arb-dfs CASE=<name>$(RESET)     DFS from arb case to all related pages\n"
+	@printf "    $(CYAN)fetch-arb-dfs-dry CASE=<name>$(RESET) Preview what fetch-arb-dfs would fetch\n"
+	@printf "    $(CYAN)fetch-arb-dfs-sample$(RESET)          Fetch 5 example arb cases with DFS (limited)\n"
+	@printf "    $(CYAN)fetch-arb-dfs-sample-full$(RESET)     Fetch 5 example arb cases with ALL pages\n"
+	@printf "    $(CYAN)fetch-arb-dfs-all$(RESET)             Fetch ALL arb cases (~481 cases from Wikipedia)\n"
+	@printf "    $(CYAN)fetch-arb-dfs-all-full$(RESET)        Fetch ALL arb cases with ALL pages (very long)\n"
+	@printf "    $(CYAN)update-arb-cases-list$(RESET)         Update artifacts/arb_cases.txt from Wikipedia\n"
+	@printf "\n"
+	@printf "$(BOLD)$(YELLOW)  Full Dispute Lifecycle$(RESET) $(DIM)(RECOMMENDED — captures all escalation stages)$(RESET)\n"
+	@printf "    $(CYAN)fetch-lifecycle CASE=<name>$(RESET)   Fetch full lifecycle: Talk→DRN→ANI→ArbCom\n"
+	@printf "    $(CYAN)fetch-lifecycle-dry CASE=<n>$(RESET)  Preview lifecycle fetch\n"
+	@printf "    $(CYAN)fetch-lifecycle-sample$(RESET)        Fetch 5 sample cases with full lifecycle\n"
+	@printf "    $(CYAN)fetch-lifecycle-all$(RESET)           Fetch ALL cases with full lifecycle\n"
+	@printf "\n"
+	@printf "$(BOLD)$(MAGENTA)  Rivanna HPC$(RESET) $(DIM)(requires RIVANNA_ID in .env + SSH key)$(RESET)\n"
+	@printf "    $(CYAN)make rivanna-sync$(RESET)    Sync project to Rivanna /scratch\n"
+	@printf "    $(CYAN)make rivanna-setup$(RESET)   One-time setup (uv, venv, deps)\n"
+	@printf "    $(CYAN)make rivanna-submit$(RESET)  Submit all SLURM jobs\n"
+	@printf "    $(CYAN)make rivanna-status$(RESET)  Show SLURM job progress\n"
+	@printf "    $(CYAN)make rivanna-logs$(RESET)    Tail recent SLURM log output\n"
+	@printf "    $(CYAN)make rivanna-pull$(RESET)    Download collected data locally\n"
+	@printf "    $(CYAN)make rivanna-clean$(RESET)   Cancel jobs and clear remote data\n"
+	@printf "    $(CYAN)make rivanna-ssh$(RESET)     SSH into Rivanna interactively\n"
+	@printf "    $(CYAN)make rivanna-train$(RESET)   Submit Gemma4 BPMN GPU job\n"
+	@printf "\n"
 
 # =============================================================================
 # QUICK START COMMANDS
@@ -514,3 +535,70 @@ pull-full-arb-force: data-dirs
 	@echo "Use Ctrl+C to interrupt (progress is saved, resume with same command)"
 	@echo ""
 	uv run python scripts/pull.py --config full
+
+# =============================================================================
+# RIVANNA HPC TARGETS
+# =============================================================================
+# Local convenience targets that SSH into Rivanna to manage SLURM jobs.
+# Requires: RIVANNA_ID set in .env, SSH key configured (see docs/rivanna_guide.md)
+
+# Load RIVANNA_ID from .env if not already set
+RIVANNA_ID ?= $(shell grep '^RIVANNA_ID=' .env 2>/dev/null | cut -d= -f2)
+RIVANNA_HOST := $(RIVANNA_ID)@login.hpc.virginia.edu
+RIVANNA_PROJECT := /scratch/$(RIVANNA_ID)/Wikipedia_Dispute_Models
+
+# Sync project files to Rivanna (excludes large/generated dirs)
+rivanna-sync:
+	@if [ -z "$(RIVANNA_ID)" ]; then echo "Error: RIVANNA_ID not set. Add it to .env"; exit 1; fi
+	rsync -avz --delete \
+		--exclude='.venv' --exclude='__pycache__' --exclude='node_modules' \
+		--exclude='data/raw' --exclude='data/processed' --exclude='apicache' \
+		--exclude='.git' --exclude='slurmlogs/*.out' --exclude='slurmlogs/*.err' \
+		./ $(RIVANNA_HOST):$(RIVANNA_PROJECT)/
+	@echo "✓ Synced to $(RIVANNA_HOST):$(RIVANNA_PROJECT)"
+
+# One-time setup: install uv, create venv, install deps, smoke test
+rivanna-setup: rivanna-sync
+	ssh $(RIVANNA_HOST) 'cd $(RIVANNA_PROJECT) && bash scripts/slurm/setup_rivanna.sh'
+
+# Submit all SLURM jobs (update cases → fetch_full, arb_dfs, lifecycle)
+rivanna-submit:
+	ssh $(RIVANNA_HOST) 'cd $(RIVANNA_PROJECT) && bash scripts/slurm/submit_all.sh'
+
+# Show SLURM job progress and data collection status
+rivanna-status:
+	ssh $(RIVANNA_HOST) 'cd $(RIVANNA_PROJECT) && bash scripts/slurm/status.sh'
+
+# Tail recent SLURM log output
+rivanna-logs:
+	ssh $(RIVANNA_HOST) 'cd $(RIVANNA_PROJECT) && for f in $$(ls -t slurmlogs/*.out 2>/dev/null | head -5); do echo "=== $$f ==="; tail -20 "$$f"; echo; done'
+
+# Pull collected data from Rivanna to local machine
+rivanna-pull:
+	@if [ -z "$(RIVANNA_ID)" ]; then echo "Error: RIVANNA_ID not set. Add it to .env"; exit 1; fi
+	rsync -avz $(RIVANNA_HOST):$(RIVANNA_PROJECT)/data/raw/ data/raw/
+	rsync -avz $(RIVANNA_HOST):$(RIVANNA_PROJECT)/data/processed/ data/processed/
+	rsync -avz $(RIVANNA_HOST):$(RIVANNA_PROJECT)/slurmlogs/ slurmlogs/
+	rsync -avz --include='*.txt' --include='*.yaml' --include='*.json' --exclude='*' \
+		$(RIVANNA_HOST):$(RIVANNA_PROJECT)/artifacts/ artifacts/
+	@echo "✓ Pulled data from Rivanna"
+
+# Cancel all SLURM jobs and clear remote data
+rivanna-clean:
+	@echo "This will cancel all your SLURM jobs and delete remote data/raw/*"
+	@read -p "Are you sure? [y/N] " confirm; \
+	if [ "$$confirm" = "y" ] || [ "$$confirm" = "Y" ]; then \
+		ssh $(RIVANNA_HOST) 'scancel -u $(RIVANNA_ID) 2>/dev/null; \
+			cd $(RIVANNA_PROJECT) && rm -rf data/raw/* slurmlogs/*.out slurmlogs/*.err'; \
+		echo "✓ Cancelled jobs and cleared data on Rivanna"; \
+	else \
+		echo "Cancelled"; \
+	fi
+
+# SSH into Rivanna interactively
+rivanna-ssh:
+	ssh $(RIVANNA_HOST)
+
+# Submit Gemma4 BPMN GPU job to Rivanna
+rivanna-train: rivanna-sync
+	ssh $(RIVANNA_HOST) 'cd $(RIVANNA_PROJECT) && mkdir -p logs && sbatch scripts/rivanna_gemma4.slurm'

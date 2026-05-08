@@ -1,0 +1,201 @@
+<?xml version="1.0" ?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Defs_13de12c1" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Gemma4-ARB-BPMN-Generator" exporterVersion="3.0">
+  <bpmn:collaboration id="Collab_da282a39">
+    <bpmn:participant id="Participant_6b616ea2" name="Power Electronics" processRef="Process_e0472e5c"/>
+  </bpmn:collaboration>
+  <bpmn:process id="Process_e0472e5c" isExecutable="false">
+    <bpmn:laneSet id="LS_030449fd">
+      <bpmn:lane id="Lane_b3c77698" name="Filing Party">
+        <bpmn:flowNodeRef>startE_5b3002a0</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>userTa_4c69b83f</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_05867020" name="Other Parties">
+        <bpmn:flowNodeRef>userTa_77cf51f9</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_79dc73b2" name="Volunteer Mediator">
+        <bpmn:flowNodeRef>exclus_401cda51</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>userTa_bddbb2a6</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>userTa_a97f1a1d</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>userTa_d51898a7</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_b635c9ab" name="Closer">
+        <bpmn:flowNodeRef>endEve_75470e36</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>userTa_3445c7db</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>endEve_aa2fe160</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>endEve_18296572</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="startE_5b3002a0" name="Content Dispute Identified">
+      <bpmn:documentation>P-Tronics is disputing edits made to the Power electronics article by Wtshymanski and DaCozyMan, claiming their improvements are &quot;awful&quot; and requesting assistance in resolving the disagreement.</bpmn:documentation>
+      <bpmn:outgoing>Flow_842a6023</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="userTa_4c69b83f" name="File DRN: P-Tronics re: Power electronics">
+      <bpmn:documentation>P-Tronics is disputing edits made to the Power electronics article by Wtshymanski and DaCozyMan, claiming their improvements are &quot;awful&quot; and requesting assistance in resolving the disagreement.</bpmn:documentation>
+      <bpmn:incoming>Flow_842a6023</bpmn:incoming>
+      <bpmn:outgoing>Flow_270d90a5</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="userTa_77cf51f9" name="Opening statements from 2 other parties">
+      <bpmn:documentation>Wtshymanski, DaCozyMan</bpmn:documentation>
+      <bpmn:incoming>Flow_270d90a5</bpmn:incoming>
+      <bpmn:outgoing>Flow_b50b2cc5</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="exclus_401cda51" name="Volunteer picks up case?">
+      <bpmn:incoming>Flow_b50b2cc5</bpmn:incoming>
+      <bpmn:outgoing>Flow_5c8740ff</bpmn:outgoing>
+      <bpmn:outgoing>Flow_fe86fef6</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="endEve_75470e36" name="Closed: no volunteer">
+      <bpmn:documentation>14-day archival without pickup</bpmn:documentation>
+      <bpmn:incoming>Flow_5c8740ff</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:userTask id="userTa_bddbb2a6" name="Volunteer mediation: TransporterMan">
+      <bpmn:incoming>Flow_fe86fef6</bpmn:incoming>
+      <bpmn:outgoing>Flow_cf2a170a</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="userTa_a97f1a1d" name="Phase 1: Initial dispute report">
+      <bpmn:incoming>Flow_cf2a170a</bpmn:incoming>
+      <bpmn:outgoing>Flow_526e38a2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="userTa_d51898a7" name="Phase 2: User feedback and edit history">
+      <bpmn:incoming>Flow_526e38a2</bpmn:incoming>
+      <bpmn:outgoing>Flow_4a6af54f</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="userTa_3445c7db" name="Closer determines outcome: TransporterMan">
+      <bpmn:documentation>No discussion at talk page as required by this noticeboard. Listing editor should file an RFC if s/he cannot otherwise get discussion started there.</bpmn:documentation>
+      <bpmn:incoming>Flow_4a6af54f</bpmn:incoming>
+      <bpmn:outgoing>Flow_e2cd0a72</bpmn:outgoing>
+      <bpmn:outgoing>Flow_7a6c8d28</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="endEve_aa2fe160" name="Closed unsuitable (out of scope)">
+      <bpmn:documentation>No discussion at talk page as required by this noticeboard. Listing editor should file an RFC if s/he cannot otherwise get discussion started there.</bpmn:documentation>
+      <bpmn:incoming>Flow_e2cd0a72</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="endEve_18296572" name="Escalated to RFC">
+      <bpmn:documentation>Closer recommended escalation to RFC</bpmn:documentation>
+      <bpmn:incoming>Flow_7a6c8d28</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_842a6023" sourceRef="startE_5b3002a0" targetRef="userTa_4c69b83f"/>
+    <bpmn:sequenceFlow id="Flow_270d90a5" sourceRef="userTa_4c69b83f" targetRef="userTa_77cf51f9"/>
+    <bpmn:sequenceFlow id="Flow_b50b2cc5" sourceRef="userTa_77cf51f9" targetRef="exclus_401cda51"/>
+    <bpmn:sequenceFlow id="Flow_5c8740ff" sourceRef="exclus_401cda51" targetRef="endEve_75470e36" name="No"/>
+    <bpmn:sequenceFlow id="Flow_fe86fef6" sourceRef="exclus_401cda51" targetRef="userTa_bddbb2a6" name="Yes"/>
+    <bpmn:sequenceFlow id="Flow_cf2a170a" sourceRef="userTa_bddbb2a6" targetRef="userTa_a97f1a1d"/>
+    <bpmn:sequenceFlow id="Flow_526e38a2" sourceRef="userTa_a97f1a1d" targetRef="userTa_d51898a7"/>
+    <bpmn:sequenceFlow id="Flow_4a6af54f" sourceRef="userTa_d51898a7" targetRef="userTa_3445c7db"/>
+    <bpmn:sequenceFlow id="Flow_e2cd0a72" sourceRef="userTa_3445c7db" targetRef="endEve_aa2fe160"/>
+    <bpmn:sequenceFlow id="Flow_7a6c8d28" sourceRef="userTa_3445c7db" targetRef="endEve_18296572"/>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diag_5019aa08">
+    <bpmndi:BPMNPlane id="Plane_04709796" bpmnElement="Collab_da282a39">
+      <bpmndi:BPMNShape id="Participant_6b616ea2_di" bpmnElement="Participant_6b616ea2" isHorizontal="true">
+        <dc:Bounds x="100" y="80" width="2060" height="640"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_b3c77698_di" bpmnElement="Lane_b3c77698" isHorizontal="true">
+        <dc:Bounds x="130" y="80" width="2030" height="160"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_05867020_di" bpmnElement="Lane_05867020" isHorizontal="true">
+        <dc:Bounds x="130" y="240" width="2030" height="160"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_79dc73b2_di" bpmnElement="Lane_79dc73b2" isHorizontal="true">
+        <dc:Bounds x="130" y="400" width="2030" height="160"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_b635c9ab_di" bpmnElement="Lane_b635c9ab" isHorizontal="true">
+        <dc:Bounds x="130" y="560" width="2030" height="160"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="startE_5b3002a0_di" bpmnElement="startE_5b3002a0">
+        <dc:Bounds x="210" y="142" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="200" y="182" width="56" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="userTa_4c69b83f_di" bpmnElement="userTa_4c69b83f">
+        <dc:Bounds x="380" y="130" width="130" height="60"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="userTa_77cf51f9_di" bpmnElement="userTa_77cf51f9">
+        <dc:Bounds x="550" y="290" width="130" height="60"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="exclus_401cda51_di" bpmnElement="exclus_401cda51">
+        <dc:Bounds x="720" y="455" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="710" y="509" width="70" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="endEve_75470e36_di" bpmnElement="endEve_75470e36">
+        <dc:Bounds x="890" y="622" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="880" y="662" width="56" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="userTa_bddbb2a6_di" bpmnElement="userTa_bddbb2a6">
+        <dc:Bounds x="1060" y="450" width="130" height="60"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="userTa_a97f1a1d_di" bpmnElement="userTa_a97f1a1d">
+        <dc:Bounds x="1230" y="450" width="130" height="60"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="userTa_d51898a7_di" bpmnElement="userTa_d51898a7">
+        <dc:Bounds x="1400" y="450" width="130" height="60"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="userTa_3445c7db_di" bpmnElement="userTa_3445c7db">
+        <dc:Bounds x="1570" y="610" width="130" height="60"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="endEve_aa2fe160_di" bpmnElement="endEve_aa2fe160">
+        <dc:Bounds x="1740" y="622" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1730" y="662" width="56" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="endEve_18296572_di" bpmnElement="endEve_18296572">
+        <dc:Bounds x="1910" y="622" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1900" y="662" width="56" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_842a6023_di" bpmnElement="Flow_842a6023">
+        <di:waypoint x="246" y="160"/>
+        <di:waypoint x="380" y="160"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_270d90a5_di" bpmnElement="Flow_270d90a5">
+        <di:waypoint x="510" y="160"/>
+        <di:waypoint x="550" y="320"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_b50b2cc5_di" bpmnElement="Flow_b50b2cc5">
+        <di:waypoint x="680" y="320"/>
+        <di:waypoint x="720" y="480"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_5c8740ff_di" bpmnElement="Flow_5c8740ff">
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="806" y="541" width="60" height="20"/>
+        </bpmndi:BPMNLabel>
+        <di:waypoint x="770" y="480"/>
+        <di:waypoint x="890" y="640"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_fe86fef6_di" bpmnElement="Flow_fe86fef6">
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="915" y="479" width="60" height="20"/>
+        </bpmndi:BPMNLabel>
+        <di:waypoint x="770" y="480"/>
+        <di:waypoint x="1060" y="480"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_cf2a170a_di" bpmnElement="Flow_cf2a170a">
+        <di:waypoint x="1190" y="480"/>
+        <di:waypoint x="1230" y="480"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_526e38a2_di" bpmnElement="Flow_526e38a2">
+        <di:waypoint x="1360" y="480"/>
+        <di:waypoint x="1400" y="480"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_4a6af54f_di" bpmnElement="Flow_4a6af54f">
+        <di:waypoint x="1530" y="480"/>
+        <di:waypoint x="1570" y="640"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_e2cd0a72_di" bpmnElement="Flow_e2cd0a72">
+        <di:waypoint x="1700" y="640"/>
+        <di:waypoint x="1740" y="640"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_7a6c8d28_di" bpmnElement="Flow_7a6c8d28">
+        <di:waypoint x="1700" y="640"/>
+        <di:waypoint x="1910" y="640"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

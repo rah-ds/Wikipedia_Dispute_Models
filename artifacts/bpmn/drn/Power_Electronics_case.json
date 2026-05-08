@@ -1,0 +1,98 @@
+{
+  "title": "Power Electronics",
+  "venue": "drn",
+  "venue_label": "DRN",
+  "rule_invocations": {
+    "total_invocations": 0,
+    "unique_rules": 0,
+    "by_type": {
+      "policy": 0,
+      "guideline": 0,
+      "essay": 0,
+      "other": 0
+    },
+    "top_rules": [],
+    "namespace_links": [
+      {
+        "namespace": "User",
+        "count": 2,
+        "meaning": "editor conduct \u2014 personal user page evidence"
+      },
+      {
+        "namespace": "User_talk",
+        "count": 2,
+        "meaning": "editor conduct \u2014 user-talk-page discussions"
+      }
+    ]
+  },
+  "filing_party": "P-Tronics",
+  "other_parties": [
+    "Wtshymanski",
+    "DaCozyMan"
+  ],
+  "article_subject": "Power electronics",
+  "talk_page_url": "https://en.wikipedia.org/wiki/Talk:Power_electronics",
+  "dispute_summary": "P-Tronics is disputing edits made to the Power electronics article by Wtshymanski and DaCozyMan, claiming their improvements are \"awful\" and requesting assistance in resolving the disagreement.",
+  "filing_date": "2012-04-12",
+  "_parties_pass": {
+    "filing_party": "P-Tronics",
+    "other_parties": [
+      "Wtshymanski",
+      "DaCozyMan"
+    ],
+    "article_subject": "Power electronics",
+    "talk_page_url": "https://en.wikipedia.org/wiki/Talk:Power_electronics",
+    "dispute_summary": "P-Tronics is disputing edits made to the Power electronics article by Wtshymanski and DaCozyMan, claiming their improvements are \"awful\" and requesting assistance in resolving the disagreement.",
+    "filing_date": "2012-04-12"
+  },
+  "volunteer_mediators": [
+    "TransporterMan"
+  ],
+  "opening_statements": [
+    {
+      "editor": "P-Tronics",
+      "summary": "Claims that edits are 'awful' and requests assistance in resolving the dispute, citing negative feedback and a previous edit deletion."
+    }
+  ],
+  "discussion_phases": [
+    "Initial dispute report",
+    "User feedback and edit history"
+  ],
+  "compromise_proposed": false,
+  "compromise_accepted": false,
+  "off_topic_warnings": 0,
+  "policies_discussed": [],
+  "_discussion_pass": {
+    "volunteer_mediators": [
+      "TransporterMan"
+    ],
+    "opening_statements": [
+      {
+        "editor": "P-Tronics",
+        "summary": "Claims that edits are 'awful' and requests assistance in resolving the dispute, citing negative feedback and a previous edit deletion."
+      }
+    ],
+    "discussion_phases": [
+      "Initial dispute report",
+      "User feedback and edit history"
+    ],
+    "compromise_proposed": false,
+    "compromise_accepted": false,
+    "off_topic_warnings": 0,
+    "policies_discussed": []
+  },
+  "closure_type": "closed-unsuitable",
+  "closer": "TransporterMan",
+  "closure_reason": "No discussion at talk page as required by this noticeboard. Listing editor should file an RFC if s/he cannot otherwise get discussion started there.",
+  "closure_date": "2012-04-13",
+  "next_venue_recommended": "RFC",
+  "duration_days": 0,
+  "_closure_pass": {
+    "closure_type": "closed-unsuitable",
+    "closer": "TransporterMan",
+    "closure_reason": "No discussion at talk page as required by this noticeboard. Listing editor should file an RFC if s/he cannot otherwise get discussion started there.",
+    "closure_date": "2012-04-13",
+    "next_venue_recommended": "RFC",
+    "duration_days": 0
+  }
+}

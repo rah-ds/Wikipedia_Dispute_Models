@@ -25,8 +25,10 @@ import argparse
 import json
 import re
 import uuid
-from collections import Counter
+from collections import Counter, defaultdict
 from pathlib import Path
+from xml.dom import minidom
+from xml.etree import ElementTree as ET
 
 import processpiper.lane as _pp_lane
 from processpiper.text2diagram import render as _render_piperflow_raw
@@ -76,161 +78,289 @@ def render_piperflow(dsl: str, output_file: str) -> None:
 
 
 # ---------------------------------------------------------------------------
-# BPMN 2.0 XML Builder (zero-dependency, stdlib only)
+# BPMN 2.0 XML namespaces and layout constants
+# ---------------------------------------------------------------------------
+
+_NS_BPMN = "http://www.omg.org/spec/BPMN/20100524/MODEL"
+_NS_BPMNDI = "http://www.omg.org/spec/BPMN/20100524/DI"
+_NS_DC = "http://www.omg.org/spec/DD/20100524/DC"
+_NS_DI = "http://www.omg.org/spec/DD/20100524/DI"
+
+_POOL_X = 100
+_POOL_Y = 80
+_POOL_HEADER_W = 30
+_LANE_H = 160
+_TASK_W = 130
+_TASK_H = 60
+_GW_W = 50
+_GW_H = 50
+_EVT_W = 36
+_EVT_H = 36
+_STEP_GAP = 160
+_FIRST_X = _POOL_X + _POOL_HEADER_W + 80
+
+ARB_LANES = ["Requesting Party", "Clerk", "Arbitrators", "Enforcement"]
+
+
+# ---------------------------------------------------------------------------
+# Swimlane BPMN 2.0 XML Builder
 # ---------------------------------------------------------------------------
 
 
-class BpmnXmlBuilder:
-    EVENT_SIZE = 36
-    GATEWAY_SIZE = 50
-    NODE_W = 120
-    NODE_H = 60
-    X_STEP = 180
-    Y_CENTER = 200
+class SwimlaneBpmnBuilder:
+    """Builds BPMN 2.0 XML with a collaboration pool containing swimlanes."""
 
-    def __init__(self, name: str):
-        self.name = name
-        self.process_id = "Process_" + self._uid()
-        self.nodes: list[dict] = []
-        self.flows: list[tuple] = []
-        self._x = 80
+    def __init__(self, process_name: str, lanes: list[str]):
+        self.process_name = process_name
+        self.lanes = lanes
+        self._lane_ids = {name: "Lane_" + uuid.uuid4().hex[:8] for name in lanes}
+        self._collab_id = "Collab_" + uuid.uuid4().hex[:8]
+        self._part_id = "Participant_" + uuid.uuid4().hex[:8]
+        self._proc_id = "Process_" + uuid.uuid4().hex[:8]
+        # (eid, label, elem_type, lane_name, step)
+        self._elements: list[tuple[str, str, str, str, int]] = []
+        # (fid, source_id, target_id, label)
+        self._flows: list[tuple[str, str, str, str]] = []
+        self._step = 0
 
-    def add_start(self, label: str) -> str:
-        nid = "StartEvent_" + self._uid()
-        self.nodes.append(
-            {
-                "id": nid,
-                "type": "startEvent",
-                "label": label,
-                "x": self._x,
-                "y": self.Y_CENTER,
-                "w": self.EVENT_SIZE,
-                "h": self.EVENT_SIZE,
-            }
+    def _add(self, label: str, etype: str, lane: str) -> str:
+        eid = (
+            etype[:6].replace("Event", "Evt").replace("Gatew", "GW_")
+            + "_"
+            + uuid.uuid4().hex[:8]
         )
-        self._x += self.X_STEP
-        return nid
+        self._elements.append((eid, label, etype, lane, self._step))
+        self._step += 1
+        return eid
 
-    def add_end(self, label: str, x_off: int = 0, y_off: int = 0) -> str:
-        nid = "EndEvent_" + self._uid()
-        self.nodes.append(
-            {
-                "id": nid,
-                "type": "endEvent",
-                "label": label,
-                "x": self._x + x_off,
-                "y": self.Y_CENTER + y_off,
-                "w": self.EVENT_SIZE,
-                "h": self.EVENT_SIZE,
-            }
+    def start(self, label: str, lane: str) -> str:
+        return self._add(label, "startEvent", lane)
+
+    def end(self, label: str, lane: str) -> str:
+        return self._add(label, "endEvent", lane)
+
+    def task(self, label: str, lane: str, user: bool = False) -> str:
+        return self._add(label, "userTask" if user else "task", lane)
+
+    def gateway(self, label: str, lane: str, exclusive: bool = True) -> str:
+        return self._add(
+            label, "exclusiveGateway" if exclusive else "parallelGateway", lane
         )
-        return nid
 
-    def add_task(
-        self, label: str, task_type: str = "userTask", x_off: int = 0, y_off: int = 0
-    ) -> str:
-        nid = "Task_" + self._uid()
-        self.nodes.append(
-            {
-                "id": nid,
-                "type": task_type,
-                "label": label,
-                "x": self._x + x_off,
-                "y": self.Y_CENTER - self.NODE_H // 2 + y_off,
-                "w": self.NODE_W,
-                "h": self.NODE_H,
-            }
-        )
-        self._x += self.X_STEP
-        return nid
-
-    def add_gateway(self, label: str, x_off: int = 0, y_off: int = 0) -> str:
-        nid = "Gateway_" + self._uid()
-        self.nodes.append(
-            {
-                "id": nid,
-                "type": "exclusiveGateway",
-                "label": label,
-                "x": self._x + x_off,
-                "y": self.Y_CENTER - self.GATEWAY_SIZE // 2 + y_off,
-                "w": self.GATEWAY_SIZE,
-                "h": self.GATEWAY_SIZE,
-            }
-        )
-        self._x += self.X_STEP
-        return nid
-
-    def connect(self, src: str, tgt: str, label: str | None = None) -> str:
-        fid = "Flow_" + self._uid()
-        self.flows.append((fid, src, tgt, label))
+    def flow(self, src: str, tgt: str, label: str = "") -> str:
+        fid = "Flow_" + uuid.uuid4().hex[:8]
+        self._flows.append((fid, src, tgt, label))
         return fid
 
-    @staticmethod
-    def _esc(text: str) -> str:
-        return (
-            text.replace("&", "&amp;")
-            .replace("<", "&lt;")
-            .replace(">", "&gt;")
-            .replace('"', "&quot;")
-            .replace("'", "&apos;")
-        )
-
-    @staticmethod
-    def _uid() -> str:
-        return uuid.uuid4().hex[:8]
+    def _bounds(self, etype: str, lane: str, step: int) -> tuple[int, int, int, int]:
+        lane_idx = self.lanes.index(lane)
+        lane_top = _POOL_Y + lane_idx * _LANE_H
+        cx = _FIRST_X + step * _STEP_GAP
+        if etype in ("startEvent", "endEvent"):
+            w, h = _EVT_W, _EVT_H
+        elif "Gateway" in etype:
+            w, h = _GW_W, _GW_H
+        else:
+            w, h = _TASK_W, _TASK_H
+        y = lane_top + (_LANE_H - h) // 2
+        return cx, y, w, h
 
     def to_xml(self) -> str:
-        ind = "  "
-        nodes_xml, shapes_xml, edges_xml = [], [], []
-        for n in self.nodes:
-            nid, ntype, lbl = n["id"], n["type"], self._esc(n["label"])
-            if ntype in ("startEvent", "endEvent"):
-                nodes_xml.append(f'{ind*2}<{ntype} id="{nid}" name="{lbl}"/>')
-            elif ntype == "exclusiveGateway":
-                nodes_xml.append(
-                    f'{ind*2}<exclusiveGateway id="{nid}" name="{lbl}" '
-                    f'gatewayDirection="Diverging"/>'
+        for prefix, uri in (
+            ("bpmn", _NS_BPMN),
+            ("bpmndi", _NS_BPMNDI),
+            ("dc", _NS_DC),
+            ("di", _NS_DI),
+        ):
+            ET.register_namespace(prefix, uri)
+
+        root = ET.Element(
+            f"{{{_NS_BPMN}}}definitions",
+            {
+                "id": "Defs_" + uuid.uuid4().hex[:8],
+                "targetNamespace": "http://bpmn.io/schema/bpmn",
+                "exporter": "ARB-BPMN-Generator",
+                "exporterVersion": "2.0",
+            },
+        )
+
+        collab = ET.SubElement(
+            root, f"{{{_NS_BPMN}}}collaboration", {"id": self._collab_id}
+        )
+        ET.SubElement(
+            collab,
+            f"{{{_NS_BPMN}}}participant",
+            {
+                "id": self._part_id,
+                "name": self.process_name,
+                "processRef": self._proc_id,
+            },
+        )
+
+        process = ET.SubElement(
+            root,
+            f"{{{_NS_BPMN}}}process",
+            {"id": self._proc_id, "isExecutable": "false"},
+        )
+
+        lane_set = ET.SubElement(
+            process, f"{{{_NS_BPMN}}}laneSet", {"id": "LS_" + uuid.uuid4().hex[:8]}
+        )
+        for lane_name in self.lanes:
+            lane_el = ET.SubElement(
+                lane_set,
+                f"{{{_NS_BPMN}}}lane",
+                {"id": self._lane_ids[lane_name], "name": lane_name},
+            )
+            for eid, _lbl, _et, elane, _step in self._elements:
+                if elane == lane_name:
+                    ET.SubElement(lane_el, f"{{{_NS_BPMN}}}flowNodeRef").text = eid
+
+        incoming: dict[str, list[str]] = defaultdict(list)
+        outgoing: dict[str, list[str]] = defaultdict(list)
+        for fid, src, tgt, _lbl in self._flows:
+            outgoing[src].append(fid)
+            incoming[tgt].append(fid)
+
+        for eid, label, etype, _lane, _step in self._elements:
+            el = ET.SubElement(
+                process, f"{{{_NS_BPMN}}}{etype}", {"id": eid, "name": label}
+            )
+            for fid in incoming.get(eid, []):
+                ET.SubElement(el, f"{{{_NS_BPMN}}}incoming").text = fid
+            for fid in outgoing.get(eid, []):
+                ET.SubElement(el, f"{{{_NS_BPMN}}}outgoing").text = fid
+
+        for fid, src, tgt, label in self._flows:
+            attrs: dict[str, str] = {"id": fid, "sourceRef": src, "targetRef": tgt}
+            if label:
+                attrs["name"] = label
+            ET.SubElement(process, f"{{{_NS_BPMN}}}sequenceFlow", attrs)
+
+        max_step = max((e[4] for e in self._elements), default=0)
+        pool_w = _FIRST_X - _POOL_X + (max_step + 1) * _STEP_GAP + 80
+        pool_h = _LANE_H * len(self.lanes)
+
+        diagram = ET.SubElement(
+            root, f"{{{_NS_BPMNDI}}}BPMNDiagram", {"id": "Diag_" + uuid.uuid4().hex[:8]}
+        )
+        plane = ET.SubElement(
+            diagram,
+            f"{{{_NS_BPMNDI}}}BPMNPlane",
+            {"id": "Plane_" + uuid.uuid4().hex[:8], "bpmnElement": self._collab_id},
+        )
+
+        ps = ET.SubElement(
+            plane,
+            f"{{{_NS_BPMNDI}}}BPMNShape",
+            {
+                "id": self._part_id + "_di",
+                "bpmnElement": self._part_id,
+                "isHorizontal": "true",
+            },
+        )
+        ET.SubElement(
+            ps,
+            f"{{{_NS_DC}}}Bounds",
+            {
+                "x": str(_POOL_X),
+                "y": str(_POOL_Y),
+                "width": str(pool_w),
+                "height": str(pool_h),
+            },
+        )
+
+        for i, lane_name in enumerate(self.lanes):
+            lid = self._lane_ids[lane_name]
+            ls = ET.SubElement(
+                plane,
+                f"{{{_NS_BPMNDI}}}BPMNShape",
+                {"id": lid + "_di", "bpmnElement": lid, "isHorizontal": "true"},
+            )
+            ET.SubElement(
+                ls,
+                f"{{{_NS_DC}}}Bounds",
+                {
+                    "x": str(_POOL_X + _POOL_HEADER_W),
+                    "y": str(_POOL_Y + i * _LANE_H),
+                    "width": str(pool_w - _POOL_HEADER_W),
+                    "height": str(_LANE_H),
+                },
+            )
+
+        bounds_cache: dict[str, tuple[int, int, int, int]] = {}
+        for eid, _label, etype, lane, step in self._elements:
+            x, y, w, h = self._bounds(etype, lane, step)
+            bounds_cache[eid] = (x, y, w, h)
+            shape = ET.SubElement(
+                plane,
+                f"{{{_NS_BPMNDI}}}BPMNShape",
+                {"id": eid + "_di", "bpmnElement": eid},
+            )
+            ET.SubElement(
+                shape,
+                f"{{{_NS_DC}}}Bounds",
+                {
+                    "x": str(x),
+                    "y": str(y),
+                    "width": str(w),
+                    "height": str(h),
+                },
+            )
+            if etype in ("startEvent", "endEvent") or "Gateway" in etype:
+                lbl_el = ET.SubElement(shape, f"{{{_NS_BPMNDI}}}BPMNLabel")
+                ET.SubElement(
+                    lbl_el,
+                    f"{{{_NS_DC}}}Bounds",
+                    {
+                        "x": str(x - 10),
+                        "y": str(y + h + 4),
+                        "width": str(w + 20),
+                        "height": "40",
+                    },
                 )
-            else:
-                nodes_xml.append(f'{ind*2}<{ntype} id="{nid}" name="{lbl}"/>')
-            shapes_xml.append(
-                f'{ind*2}<bpmndi:BPMNShape id="{nid}_di" bpmnElement="{nid}">\n'
-                f'{ind*3}<dc:Bounds x="{n["x"]}" y="{n["y"]}" '
-                f'width="{n["w"]}" height="{n["h"]}"/>\n'
-                f'{ind*3}<bpmndi:BPMNLabel/>\n'
-                f'{ind*2}</bpmndi:BPMNShape>'
+
+        for fid, src, tgt, label in self._flows:
+            edge = ET.SubElement(
+                plane,
+                f"{{{_NS_BPMNDI}}}BPMNEdge",
+                {"id": fid + "_di", "bpmnElement": fid},
             )
-        for fid, src, tgt, lbl in self.flows:
-            name_attr = f' name="{self._esc(lbl)}"' if lbl else ""
-            nodes_xml.append(
-                f'{ind*2}<sequenceFlow id="{fid}" sourceRef="{src}" '
-                f'targetRef="{tgt}"{name_attr}/>'
+            if label:
+                le = ET.SubElement(edge, f"{{{_NS_BPMNDI}}}BPMNLabel")
+                sx, sy, sw, sh = bounds_cache.get(src, (0, 0, 0, 0))
+                tx, ty, tw, th = bounds_cache.get(tgt, (0, 0, 0, 0))
+                ET.SubElement(
+                    le,
+                    f"{{{_NS_DC}}}Bounds",
+                    {
+                        "x": str(int((sx + sw / 2 + tx + tw / 2) / 2 - 20)),
+                        "y": str(int((sy + sh / 2 + ty + th / 2) / 2 - 10)),
+                        "width": "60",
+                        "height": "20",
+                    },
+                )
+            sx, sy, sw, sh = bounds_cache.get(src, (0, 0, 0, 0))
+            tx, ty, tw, th = bounds_cache.get(tgt, (0, 0, 0, 0))
+            ET.SubElement(
+                edge,
+                f"{{{_NS_DI}}}waypoint",
+                {
+                    "x": str(sx + sw),
+                    "y": str(int(sy + sh / 2)),
+                },
             )
-            edges_xml.append(
-                f'{ind*2}<bpmndi:BPMNEdge id="{fid}_di" bpmnElement="{fid}">\n'
-                f"{ind*3}<bpmndi:BPMNLabel/>\n"
-                f"{ind*2}</bpmndi:BPMNEdge>"
+            ET.SubElement(
+                edge,
+                f"{{{_NS_DI}}}waypoint",
+                {
+                    "x": str(tx),
+                    "y": str(int(ty + th / 2)),
+                },
             )
-        nl = "\n"
-        return f"""<?xml version="1.0" encoding="UTF-8"?>
-<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
-             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
-             xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
-             xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
-             targetNamespace="http://bpmn.io/schema/bpmn"
-             id="Definitions_{self._uid()}">
-  <process id="{self.process_id}" name="{self._esc(self.name)}" isExecutable="false">
-{nl.join(nodes_xml)}
-  </process>
-  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="{self.process_id}">
-{nl.join(shapes_xml)}
-{nl.join(edges_xml)}
-    </bpmndi:BPMNPlane>
-  </bpmndi:BPMNDiagram>
-</definitions>
-"""
+
+        xml_str = ET.tostring(root, encoding="unicode")
+        return minidom.parseString(xml_str).toprettyxml(indent="  ")
 
 
 # ---------------------------------------------------------------------------
@@ -547,7 +677,7 @@ def _piperflow_case(parsed: dict) -> str:
     if parsed["has_injunction"]:
         injunction_def = "        [Temporary Injunction Issued] as injunction\n"
         flow_chain = (
-            "evidence->workshop->injunction->proposed" "->final->enforce->end_main"
+            "evidence->workshop->injunction->proposed->final->enforce->end_main"
         )
     else:
         injunction_def = ""
@@ -648,7 +778,7 @@ def _piperflow_aggregate(all_parsed: list[dict]) -> str:
         "",
         "    lane: Arbitrators",
         "        [Evidence Phase - Parties and Witnesses] as evidence",
-        "        [Workshop - Draft Principles, Findings, Remedies]" " as workshop",
+        "        [Workshop - Draft Principles, Findings, Remedies] as workshop",
         "        [Proposed Decision Voting] as proposed",
         "        [Final Decision Published] as final",
         "",
@@ -717,49 +847,47 @@ def create_arb_case_bpmn(
         + "R"
     )
 
-    b = BpmnXmlBuilder("ARB Case: " + parsed["title"][:60])
-    start = b.add_start("Request Filed")
-    submit = b.add_task("Submission - " + filed, "userTask")
-    review = b.add_task("Preliminary Review\n(ArbCom Votes)", "userTask")
-    gw_accept = b.add_gateway("Accepted?")
-    declined_end = b.add_end("Declined", y_off=-160)
+    b = SwimlaneBpmnBuilder("ARB Case: " + parsed["title"][:60], ARB_LANES)
+    start = b.start("Request Filed", "Requesting Party")
+    submit = b.task("Submission - " + filed, "Requesting Party", user=True)
+    review = b.task("Preliminary Review (ArbCom Votes)", "Clerk", user=True)
+    gw_accept = b.gateway("Accepted?", "Clerk")
+    declined_end = b.end("Declined", "Clerk")
 
-    evidence = b.add_task("Evidence Phase", "userTask")
-    workshop = b.add_task("Workshop\n(Draft Decision)", "userTask")
-    proposed = b.add_task("Proposed Decision\nVoting", "userTask")
-
-    if parsed["has_injunction"]:
-        injunction = b.add_task("Temporary\nInjunction", "serviceTask")
-
-    final = b.add_task("Final Decision\nPublished", "serviceTask")
-    enforce = b.add_task("Enforcement", "userTask")
-    gw_out = b.add_gateway("Outcome?")
-
-    b.connect(start, submit)
-    b.connect(submit, review)
-    b.connect(review, gw_accept)
-    b.connect(gw_accept, declined_end, "No - Declined")
-    b.connect(gw_accept, evidence, "Yes - Accepted")
-    b.connect(evidence, workshop)
-    b.connect(workshop, proposed)
+    evidence = b.task("Evidence Phase", "Arbitrators", user=True)
+    workshop = b.task("Workshop (Draft Decision)", "Arbitrators", user=True)
+    proposed = b.task("Proposed Decision Voting", "Arbitrators", user=True)
 
     if parsed["has_injunction"]:
-        b.connect(proposed, injunction)
-        b.connect(injunction, final)
+        injunction = b.task("Temporary Injunction", "Arbitrators")
+
+    final = b.task("Final Decision Published", "Arbitrators")
+    enforce = b.task("Enforcement", "Enforcement", user=True)
+    gw_out = b.gateway("Outcome?", "Enforcement")
+
+    b.flow(start, submit)
+    b.flow(submit, review)
+    b.flow(review, gw_accept)
+    b.flow(gw_accept, declined_end, "No - Declined")
+    b.flow(gw_accept, evidence, "Yes - Accepted")
+    b.flow(evidence, workshop)
+    b.flow(workshop, proposed)
+
+    if parsed["has_injunction"]:
+        b.flow(proposed, injunction)
+        b.flow(injunction, final)
     else:
-        b.connect(proposed, final)
+        b.flow(proposed, final)
 
-    b.connect(final, enforce)
-    b.connect(enforce, gw_out)
+    b.flow(final, enforce)
+    b.flow(enforce, gw_out)
 
-    end_main = b.add_end(outcome)
-    b.connect(gw_out, end_main, outcome)
+    end_main = b.end(outcome, "Enforcement")
+    b.flow(gw_out, end_main, outcome)
 
-    y_off = 100
     for remedy in parsed["remedies"][:4]:
-        r_end = b.add_end(_safe_label(remedy, 35), y_off=y_off)
-        b.connect(gw_out, r_end, _safe_label(remedy, 25))
-        y_off += 80
+        r_end = b.end(_safe_label(remedy, 35), "Enforcement")
+        b.flow(gw_out, r_end, _safe_label(remedy, 25))
 
     bpmn_path.write_text(b.to_xml(), encoding="utf-8")
     return bpmn_path, png_out
@@ -800,39 +928,37 @@ def create_aggregate_arb_bpmn(
         o + " " + str(round(100 * n / total)) + "%" for o, n in remainder if n > 0
     )
 
-    b = BpmnXmlBuilder("ArbCom Standard Workflow (Aggregate)")
-    start = b.add_start("Request Filed")
-    submit = b.add_task("Submit Arbitration\nRequest", "userTask")
-    screen = b.add_task("Screen and\nCategorise", "serviceTask")
-    gw_valid = b.add_gateway("Accepted by\nArbCom?")
-    declined = b.add_end("Declined / Rejected", y_off=-160)
-    evidence = b.add_task("Evidence Phase", "userTask")
-    workshop = b.add_task("Workshop\n(Draft Decision)", "userTask")
-    proposed = b.add_task("Proposed Decision\nVoting", "userTask")
-    final = b.add_task("Final Decision\nPublished", "serviceTask")
-    enforce = b.add_task("Enforcement &\nMonitoring", "userTask")
-    gw_out = b.add_gateway("Case Outcome?")
+    b = SwimlaneBpmnBuilder("ArbCom Standard Workflow (Aggregate)", ARB_LANES)
+    start = b.start("Request Filed", "Requesting Party")
+    submit = b.task("Submit Arbitration Request", "Requesting Party", user=True)
+    screen = b.task("Screen and Categorise", "Clerk")
+    gw_valid = b.gateway("Accepted by ArbCom?", "Clerk")
+    declined = b.end("Declined / Rejected", "Clerk")
+    evidence = b.task("Evidence Phase", "Arbitrators", user=True)
+    workshop = b.task("Workshop (Draft Decision)", "Arbitrators", user=True)
+    proposed = b.task("Proposed Decision Voting", "Arbitrators", user=True)
+    final = b.task("Final Decision Published", "Arbitrators")
+    enforce = b.task("Enforcement & Monitoring", "Enforcement", user=True)
+    gw_out = b.gateway("Case Outcome?", "Enforcement")
 
-    b.connect(start, submit)
-    b.connect(submit, screen)
-    b.connect(screen, gw_valid)
-    b.connect(gw_valid, declined, "No - Declined")
-    b.connect(gw_valid, evidence, "Yes - Accepted")
-    b.connect(evidence, workshop)
-    b.connect(workshop, proposed)
-    b.connect(proposed, final)
-    b.connect(final, enforce)
-    b.connect(enforce, gw_out)
+    b.flow(start, submit)
+    b.flow(submit, screen)
+    b.flow(screen, gw_valid)
+    b.flow(gw_valid, declined, "No - Declined")
+    b.flow(gw_valid, evidence, "Yes - Accepted")
+    b.flow(evidence, workshop)
+    b.flow(workshop, proposed)
+    b.flow(proposed, final)
+    b.flow(final, enforce)
+    b.flow(enforce, gw_out)
 
-    y_off = 0
     for i, (o, _) in enumerate(top2):
-        end = b.add_end(o + " (" + str(top2_pcts[i]) + "%)", y_off=y_off)
-        b.connect(gw_out, end, o)
-        y_off += 100
-    end_other = b.add_end(
-        "Other (" + str(other_pct) + "%): " + (other_detail or "none"), y_off=y_off
+        end = b.end(o + " (" + str(top2_pcts[i]) + "%)", "Enforcement")
+        b.flow(gw_out, end, o)
+    end_other = b.end(
+        "Other (" + str(other_pct) + "%): " + (other_detail or "none"), "Enforcement"
     )
-    b.connect(gw_out, end_other, "Other")
+    b.flow(gw_out, end_other, "Other")
 
     bpmn_path.write_text(b.to_xml(), encoding="utf-8")
 
@@ -844,16 +970,16 @@ def create_aggregate_arb_bpmn(
     for p in all_parsed:
         remedy_counter.update(p["remedies"])
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"AGGREGATE SUMMARY - {total} ARB cases")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(f"  Avg parties per case:  {avg_parties:.1f}")
     print(f"  Avg remedies per case: {avg_remedies:.1f}")
     print(f"  Cases with injunction: {injunction_n}")
     print("\n  Outcome distribution:")
     for o, n in sorted(outcome_counts.items(), key=lambda x: -x[1]):
         bar = "X" * (n // max(1, total // 40))
-        print(f"    {o:<30} {n:>4}  " f"({round(100*n/total)}%)  {bar}")
+        print(f"    {o:<30} {n:>4}  ({round(100 * n / total)}%)  {bar}")
     print("\n  Top remedy types:")
     for r, n in remedy_counter.most_common(10):
         print(f"    {_safe_label(r, 40):<42} {n:>4}")
@@ -955,11 +1081,9 @@ def select_input_file(data_dir: Path) -> Path | list[Path] | None:
         size_kb = f.stat().st_size / 1024
         total_kb += size_kb
         print(f"  [{i}] {f.name}  ({size_kb:.0f} KB)")
-    print(f"  [A] *** ALL FILES COMBINED ***  " f"({total_kb:.0f} KB total)")
+    print(f"  [A] *** ALL FILES COMBINED ***  ({total_kb:.0f} KB total)")
 
-    choice = (
-        input("\nSelect file number, or A for all " "[default: A]: ").strip().lower()
-    )
+    choice = input("\nSelect file number, or A for all [default: A]: ").strip().lower()
     if choice in ("a", "all", ""):
         print(f"\n  -> Merging all {len(json_files)} files...")
         return json_files
@@ -1049,15 +1173,15 @@ def main():
             output_dir = cwd / "artifacts" / "bpmn" / "arb"
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("ARB -> BPMN + PNG Generator")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     if isinstance(input_source, list):
         print(f"Input : {len(input_source)} JSON file(s)")
     else:
         print(f"Input : {input_source}")
     print(f"Output: {output_dir}")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
 
     raw_cases = load_arb_data(input_source)
     print(f"\nLoaded {len(raw_cases)} raw ARB cases.")
@@ -1104,7 +1228,7 @@ def main():
     else:
         selected_indices = get_user_case_selection(len(all_parsed))
 
-    print(f"\nGenerating {len(selected_indices)} individual " f"diagram(s)...\n")
+    print(f"\nGenerating {len(selected_indices)} individual diagram(s)...\n")
     bpmn_files: list[Path] = []
     png_files: list[Path] = []
 
@@ -1133,20 +1257,17 @@ def main():
     total_bpmn = len(bpmn_files) + (1 if agg_bpmn else 0)
     total_png = len(png_files) + (1 if agg_png else 0)
 
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print("Done!")
-    print(
-        f"  Individual diagrams : {len(selected_indices)} of "
-        f"{len(all_parsed)} cases"
-    )
-    print(f"  Aggregate           : full dataset " f"({len(all_parsed)} cases)")
+    print(f"  Individual diagrams : {len(selected_indices)} of {len(all_parsed)} cases")
+    print(f"  Aggregate           : full dataset ({len(all_parsed)} cases)")
     print(f"  BPMN files : {total_bpmn}")
     print(f"  PNG files  : {total_png}")
     print(f"  Output dir : {output_dir}")
     print("\nTo view:")
     print("  PNG  -- open any .png directly")
     print("  BPMN -- drag & drop at https://demo.bpmn.io")
-    print(f"{'='*60}\n")
+    print(f"{'=' * 60}\n")
 
 
 if __name__ == "__main__":

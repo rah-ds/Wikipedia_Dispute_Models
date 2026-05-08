@@ -1,0 +1,136 @@
+{
+  "title": "Talk:Touhou_Project",
+  "venue": "drn",
+  "venue_label": "DRN",
+  "rule_invocations": {
+    "total_invocations": 4,
+    "unique_rules": 2,
+    "by_type": {
+      "policy": 0,
+      "guideline": 0,
+      "essay": 0,
+      "other": 4
+    },
+    "top_rules": [
+      {
+        "ref": "WP:COMMONNAME",
+        "count": 2,
+        "type": "other",
+        "first_section": "Preamble"
+      },
+      {
+        "ref": "WP:OFFICIALNAME",
+        "count": 2,
+        "type": "other",
+        "first_section": "Preamble"
+      }
+    ],
+    "namespace_links": [
+      {
+        "namespace": "User_talk",
+        "count": 2,
+        "meaning": "editor conduct \u2014 user-talk-page discussions"
+      },
+      {
+        "namespace": "Main",
+        "count": 2,
+        "meaning": "article content evidence"
+      },
+      {
+        "namespace": "User",
+        "count": 1,
+        "meaning": "editor conduct \u2014 personal user page evidence"
+      },
+      {
+        "namespace": "Wiktionary",
+        "count": 1,
+        "meaning": "(unclassified namespace)"
+      },
+      {
+        "namespace": "Special",
+        "count": 1,
+        "meaning": "special-page / log evidence"
+      }
+    ]
+  },
+  "filing_party": "Mr. Stradivarius",
+  "other_parties": [
+    "Deadkid_dk",
+    "Robinchm",
+    "158.37.73.31"
+  ],
+  "article_subject": "Touhou_Project",
+  "talk_page_url": "Talk:Touhou_Project",
+  "dispute_summary": "The editor is disputing the romanization of the article's name between \"Touhou\" and \"T\u014dh\u014d\", arguing that \"T\u014dh\u014d\" is more appropriate according to Wikipedia's romanization guidelines, despite the widespread use of \"Touhou\" within the fandom.",
+  "filing_date": "19 October 2011",
+  "_parties_pass": {
+    "filing_party": "Mr. Stradivarius",
+    "other_parties": [
+      "Deadkid_dk",
+      "Robinchm",
+      "158.37.73.31"
+    ],
+    "article_subject": "Touhou_Project",
+    "talk_page_url": "Talk:Touhou_Project",
+    "dispute_summary": "The editor is disputing the romanization of the article's name between \"Touhou\" and \"T\u014dh\u014d\", arguing that \"T\u014dh\u014d\" is more appropriate according to Wikipedia's romanization guidelines, despite the widespread use of \"Touhou\" within the fandom.",
+    "filing_date": "19 October 2011"
+  },
+  "volunteer_mediators": [
+    "Mr. Stradivarius"
+  ],
+  "opening_statements": [
+    {
+      "editor": "Mr. Stradivarius",
+      "summary": "Argues that \u2018T\u014dh\u014d\u2019 is more appropriate due to Wikipedia\u2019s romanization guidelines, disputing the use of \u2018Touhou\u2019 as common or official name."
+    }
+  ],
+  "discussion_phases": [
+    "Dispute overview",
+    "Users involved",
+    "Resolving the dispute"
+  ],
+  "compromise_proposed": true,
+  "compromise_accepted": true,
+  "off_topic_warnings": 0,
+  "policies_discussed": [
+    "WP:COMMONNAME",
+    "WP:OFFICIALNAME"
+  ],
+  "_discussion_pass": {
+    "volunteer_mediators": [
+      "Mr. Stradivarius"
+    ],
+    "opening_statements": [
+      {
+        "editor": "Mr. Stradivarius",
+        "summary": "Argues that \u2018T\u014dh\u014d\u2019 is more appropriate due to Wikipedia\u2019s romanization guidelines, disputing the use of \u2018Touhou\u2019 as common or official name."
+      }
+    ],
+    "discussion_phases": [
+      "Dispute overview",
+      "Users involved",
+      "Resolving the dispute"
+    ],
+    "compromise_proposed": true,
+    "compromise_accepted": true,
+    "off_topic_warnings": 0,
+    "policies_discussed": [
+      "WP:COMMONNAME",
+      "WP:OFFICIALNAME"
+    ]
+  },
+  "closure_type": "resolved",
+  "closer": "Mr. Stradivarius",
+  "closure_reason": "the participants have come to a consensus on how to romanize the name of the article.",
+  "closure_date": "2011-10-19",
+  "next_venue_recommended": "None",
+  "duration_days": 0,
+  "_closure_pass": {
+    "closure_type": "resolved",
+    "closer": "Mr. Stradivarius",
+    "closure_reason": "the participants have come to a consensus on how to romanize the name of the article.",
+    "closure_date": "2011-10-19",
+    "next_venue_recommended": "None",
+    "duration_days": 0
+  }
+}

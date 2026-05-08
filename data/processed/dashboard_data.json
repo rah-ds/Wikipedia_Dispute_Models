@@ -1,0 +1,560 @@
+{
+  "totalCases": 485,
+  "totalUserLinks": 3253,
+  "totalUserTalkLinks": 1724,
+  "totalInvolvedParties": 4977,
+  "totalWikipediaRefs": 20608,
+  "averageDurationDays": 56.6,
+  "casesWithDuration": 361,
+  "statementByDistribution": [
+    {
+      "statementCount": 0,
+      "cases": 41
+    },
+    {
+      "statementCount": 1,
+      "cases": 54
+    },
+    {
+      "statementCount": 2,
+      "cases": 77
+    },
+    {
+      "statementCount": 3,
+      "cases": 80
+    },
+    {
+      "statementCount": 4,
+      "cases": 43
+    },
+    {
+      "statementCount": 5,
+      "cases": 42
+    },
+    {
+      "statementCount": 6,
+      "cases": 26
+    },
+    {
+      "statementCount": 7,
+      "cases": 20
+    },
+    {
+      "statementCount": 8,
+      "cases": 19
+    },
+    {
+      "statementCount": 9,
+      "cases": 15
+    },
+    {
+      "statementCount": 10,
+      "cases": 12
+    },
+    {
+      "statementCount": 11,
+      "cases": 7
+    },
+    {
+      "statementCount": 12,
+      "cases": 9
+    },
+    {
+      "statementCount": 13,
+      "cases": 4
+    },
+    {
+      "statementCount": 14,
+      "cases": 6
+    },
+    {
+      "statementCount": 15,
+      "cases": 2
+    },
+    {
+      "statementCount": 16,
+      "cases": 2
+    },
+    {
+      "statementCount": 17,
+      "cases": 4
+    },
+    {
+      "statementCount": 18,
+      "cases": 2
+    },
+    {
+      "statementCount": 19,
+      "cases": 1
+    },
+    {
+      "statementCount": 21,
+      "cases": 1
+    },
+    {
+      "statementCount": 22,
+      "cases": 1
+    },
+    {
+      "statementCount": 23,
+      "cases": 4
+    },
+    {
+      "statementCount": 26,
+      "cases": 1
+    },
+    {
+      "statementCount": 28,
+      "cases": 1
+    },
+    {
+      "statementCount": 29,
+      "cases": 1
+    },
+    {
+      "statementCount": 30,
+      "cases": 1
+    },
+    {
+      "statementCount": 31,
+      "cases": 1
+    },
+    {
+      "statementCount": 34,
+      "cases": 2
+    },
+    {
+      "statementCount": 37,
+      "cases": 1
+    },
+    {
+      "statementCount": 39,
+      "cases": 1
+    },
+    {
+      "statementCount": 43,
+      "cases": 1
+    },
+    {
+      "statementCount": 53,
+      "cases": 1
+    },
+    {
+      "statementCount": 111,
+      "cases": 1
+    },
+    {
+      "statementCount": 124,
+      "cases": 1
+    }
+  ],
+  "topRemedyVerbs": [
+    {
+      "verb": "banned",
+      "count": 544
+    },
+    {
+      "verb": "placed",
+      "count": 274
+    },
+    {
+      "verb": "blocked",
+      "count": 182
+    },
+    {
+      "verb": "admonished",
+      "count": 106
+    },
+    {
+      "verb": "reminded",
+      "count": 98
+    },
+    {
+      "verb": "warned",
+      "count": 89
+    },
+    {
+      "verb": "restricted",
+      "count": 73
+    },
+    {
+      "verb": "prohibited",
+      "count": 70
+    },
+    {
+      "verb": "limited",
+      "count": 67
+    },
+    {
+      "verb": "desysopped",
+      "count": 59
+    },
+    {
+      "verb": "cautioned",
+      "count": 58
+    },
+    {
+      "verb": "required",
+      "count": 42
+    },
+    {
+      "verb": "removed",
+      "count": 32
+    },
+    {
+      "verb": "topic-banned",
+      "count": 23
+    },
+    {
+      "verb": "revoked",
+      "count": 21
+    }
+  ],
+  "casesPerYear": [
+    {
+      "year": 2004,
+      "cases": 4
+    },
+    {
+      "year": 2005,
+      "cases": 96
+    },
+    {
+      "year": 2006,
+      "cases": 80
+    },
+    {
+      "year": 2007,
+      "cases": 59
+    },
+    {
+      "year": 2008,
+      "cases": 25
+    },
+    {
+      "year": 2009,
+      "cases": 26
+    },
+    {
+      "year": 2010,
+      "cases": 12
+    },
+    {
+      "year": 2011,
+      "cases": 18
+    },
+    {
+      "year": 2012,
+      "cases": 5
+    },
+    {
+      "year": 2013,
+      "cases": 8
+    },
+    {
+      "year": 2014,
+      "cases": 7
+    },
+    {
+      "year": 2015,
+      "cases": 17
+    },
+    {
+      "year": 2016,
+      "cases": 3
+    },
+    {
+      "year": 2017,
+      "cases": 6
+    },
+    {
+      "year": 2018,
+      "cases": 7
+    },
+    {
+      "year": 2019,
+      "cases": 9
+    },
+    {
+      "year": 2020,
+      "cases": 4
+    },
+    {
+      "year": 2021,
+      "cases": 2
+    },
+    {
+      "year": 2022,
+      "cases": 2
+    },
+    {
+      "year": 2023,
+      "cases": 3
+    },
+    {
+      "year": 2024,
+      "cases": 1
+    },
+    {
+      "year": 2025,
+      "cases": 1
+    }
+  ],
+  "caseStats": {
+    "arb_0001_-Ril-": {
+      "type": "arb",
+      "userLinks": 30,
+      "userTalkLinks": 7,
+      "wikiRefs": 21,
+      "wikiTalkRefs": 2,
+      "url": "https://en.wikipedia.org/wiki/Wikipedia%3ARequests_for_arbitration%2F-Ril-"
+    },
+    "arb_0002_8bitJake": {
+      "type": "arb",
+      "userLinks": 9,
+      "userTalkLinks": 5,
+      "wikiRefs": 18,
+      "wikiTalkRefs": 2,
+      "url": "https://en.wikipedia.org/wiki/Wikipedia%3ARequests_for_arbitration%2F8bitJake"
+    },
+    "arb_0003_168_209_97_34": {
+      "type": "arb",
+      "userLinks": 12,
+      "userTalkLinks": 1,
+      "wikiRefs": 8,
+      "wikiTalkRefs": 2,
+      "url": "https://en.wikipedia.org/wiki/Wikipedia%3ARequests_for_arbitration%2F168.209.97.34"
+    },
+    "arb_0004_172": {
+      "type": "arb",
+      "userLinks": 15,
+      "userTalkLinks": 3,
+      "wikiRefs": 4,
+      "wikiTalkRefs": 2,
+      "url": "https://en.wikipedia.org/wiki/Wikipedia%3ARequests_for_arbitration%2F172"
+    },
+    "arb_0005_172_2": {
+      "type": "arb",
+      "userLinks": 15,
+      "userTalkLinks": 3,
+      "wikiRefs": 4,
+      "wikiTalkRefs": 2,
+      "url": "https://en.wikipedia.org/wiki/Wikipedia%3ARequests_for_arbitration%2F172"
+    },
+    "arb_0006_194x144x90x118": {
+      "type": "arb",
+      "userLinks": 18,
+      "userTalkLinks": 16,
+      "wikiRefs": 84,
+      "wikiTalkRefs": 2,
+      "url": "https://en.wikipedia.org/wiki/Wikipedia%3AArbitration%2FRequests%2FCase%2F194x144x90x118"
+    },
+    "arb_0007_A_Man_In_Black": {
+      "type": "arb",
+      "userLinks": 17,
+      "userTalkLinks": 15,
+      "wikiRefs": 55,
+      "wikiTalkRefs": 2,
+      "url": "https://en.wikipedia.org/wiki/Wikipedia%3AArbitration%2FRequests%2FCase%2FA_Man_In_Black"
+    },
+    "arb_0008_A_Nobody": {
+      "type": "arb",
+      "userLinks": 20,
+      "userTalkLinks": 16,
+      "wikiRefs": 10,
+      "wikiTalkRefs": 0,
+      "url": "https://en.wikipedia.org/wiki/Wikipedia%3AArbitration%2FRequests%2FCase%2FA_Nobody"
+    },
+    "arb_0009_Abd_and_JzG": {
+      "type": "arb",
+      "userLinks": 23,
+      "userTalkLinks": 17,
+      "wikiRefs": 52,
+      "wikiTalkRefs": 0,
+      "url": "https://en.wikipedia.org/wiki/Wikipedia%3ARequests_for_arbitration%2FAbd_and_JzG"
+    },
+    "arb_0010_Abortion": {
+      "type": "arb",
+      "userLinks": 54,
+      "userTalkLinks": 37,
+      "wikiRefs": 58,
+      "wikiTalkRefs": 0,
+      "url": "https://en.wikipedia.org/wiki/Wikipedia%3AArbitration%2FRequests%2FCase%2FAbortion"
+    },
+    "arb_Wikipedia_Arbitration_Requests_Case_A_Man_In_Black": {
+      "type": "arb",
+      "userLinks": 18,
+      "userTalkLinks": 16,
+      "wikiRefs": 84,
+      "wikiTalkRefs": 2,
+      "url": "https://en.wikipedia.org/wiki/Wikipedia%3AArbitration%2FRequests%2FCase%2F194x144x90x118"
+    },
+    "arb_Wikipedia_Arbitration_Requests_Case_Abortion": {
+      "type": "arb",
+      "userLinks": 18,
+      "userTalkLinks": 16,
+      "wikiRefs": 84,
+      "wikiTalkRefs": 2,
+      "url": "https://en.wikipedia.org/wiki/Wikipedia%3AArbitration%2FRequests%2FCase%2F194x144x90x118"
+    },
+    "arb_Wikipedia_Requests_for_arbitration_-Ril-": {
+      "type": "arb",
+      "userLinks": 30,
+      "userTalkLinks": 7,
+      "wikiRefs": 21,
+      "wikiTalkRefs": 2,
+      "url": "https://en.wikipedia.org/wiki/Wikipedia%3ARequests_for_arbitration%2F-Ril-"
+    },
+    "case_002_Occupy_Wall_Street": {
+      "type": "drn",
+      "userLinks": 10,
+      "userTalkLinks": 2,
+      "wikiRefs": 0,
+      "sourceUrl": "https://en.wikipedia.org/wiki/Wikipedia:Dispute_resolution_noticeboard/Archive_16"
+    },
+    "case_003_Power_Electronics": {
+      "type": "drn",
+      "userLinks": 4,
+      "userTalkLinks": 2,
+      "wikiRefs": 0,
+      "sourceUrl": "https://en.wikipedia.org/wiki/Wikipedia:Dispute_resolution_noticeboard/Archive_26"
+    },
+    "case_004_Culpeper": {
+      "type": "drn",
+      "userLinks": 11,
+      "userTalkLinks": 0,
+      "wikiRefs": 2,
+      "sourceUrl": null
+    },
+    "case_004_Speedy_deletion_of_page_Gerardo_Poggi": {
+      "type": "drn",
+      "userLinks": 3,
+      "userTalkLinks": 1,
+      "wikiRefs": 2,
+      "sourceUrl": "https://en.wikipedia.org/wiki/Wikipedia:Dispute_resolution_noticeboard/Archive_41"
+    },
+    "case_005_Lackawanna_Cut-Off": {
+      "type": "drn",
+      "userLinks": 2,
+      "userTalkLinks": 2,
+      "wikiRefs": 3,
+      "sourceUrl": "https://en.wikipedia.org/wiki/Wikipedia:Dispute_resolution_noticeboard/Archive_1"
+    },
+    "case_006_Speed_limit_enforcement": {
+      "type": "drn",
+      "userLinks": 2,
+      "userTalkLinks": 1,
+      "wikiRefs": 0,
+      "sourceUrl": "https://en.wikipedia.org/wiki/Wikipedia:Dispute_resolution_noticeboard/Archive_1"
+    },
+    "case_007_Hinduism": {
+      "type": "drn",
+      "userLinks": 1,
+      "userTalkLinks": 1,
+      "wikiRefs": 1,
+      "sourceUrl": "https://en.wikipedia.org/wiki/Wikipedia:Dispute_resolution_noticeboard/Archive_1"
+    },
+    "case_008_Mercedes-Benz_article_omits_the_car_comp": {
+      "type": "drn",
+      "userLinks": 4,
+      "userTalkLinks": 4,
+      "wikiRefs": 2,
+      "sourceUrl": "https://en.wikipedia.org/wiki/Wikipedia:Dispute_resolution_noticeboard/Archive_1"
+    },
+    "case_009_Homeopathy_-_to_mention_a_summary_or_the": {
+      "type": "drn",
+      "userLinks": 7,
+      "userTalkLinks": 0,
+      "wikiRefs": 0,
+      "sourceUrl": "https://en.wikipedia.org/wiki/Wikipedia:Dispute_resolution_noticeboard/Archive_1"
+    },
+    "rfc_0001_Global_AbuseFilter": {
+      "type": "rfc",
+      "userLinks": 22,
+      "userTalkLinks": 20,
+      "wikiRefs": 0,
+      "status": "resolved",
+      "url": "https://meta.wikimedia.org/wiki/Requests_for_comment%2FGlobal_AbuseFilter"
+    },
+    "rfc_0002_Ongoing_issues_at_Chinese_Wikipedia_-_Resorti": {
+      "type": "rfc",
+      "userLinks": 21,
+      "userTalkLinks": 14,
+      "wikiRefs": 0,
+      "status": "resolved",
+      "url": "https://meta.wikimedia.org/wiki/Requests_for_comment%2FOngoing_issues_at_Chinese_Wikipedia"
+    },
+    "rfc_0003_Turkish_wikipedia_copies_again_from_Ansiklope": {
+      "type": "rfc",
+      "userLinks": 2,
+      "userTalkLinks": 1,
+      "wikiRefs": 0,
+      "status": "closed",
+      "url": "https://meta.wikimedia.org/wiki/Requests_for_comment%2FTurkish_wikipedia_copies_again_from_Ansiklopedika.org"
+    },
+    "rfc_0004_Simpsons_Roasting_on_an_Open_Fire_on_Hebrew_W": {
+      "type": "rfc",
+      "userLinks": 4,
+      "userTalkLinks": 2,
+      "wikiRefs": 0,
+      "status": "closed",
+      "url": "https://meta.wikimedia.org/wiki/Requests_for_comment%2F%22Simpsons_Roasting_on_an_Open_Fire%22_on_Hebrew_Wikipedia"
+    },
+    "rfc_0004_Sysop_abuse_on_Wikiversit\u00e9": {
+      "type": "rfc",
+      "userLinks": 6,
+      "userTalkLinks": 6,
+      "wikiRefs": 0,
+      "status": "unsuccessful",
+      "url": "https://meta.wikimedia.org/wiki/Requests_for_comment%2FSysop_abuse_on_Wikiversit%C3%A9"
+    },
+    "rfc_0005_What_adminship_is_not_does_not_work_in_the_Po": {
+      "type": "rfc",
+      "userLinks": 4,
+      "userTalkLinks": 2,
+      "wikiRefs": 0,
+      "status": "resolved",
+      "url": "https://meta.wikimedia.org/wiki/Requests_for_comment%2F%22What_adminship_is_not%22_does_not_work_in_the_Portuguese_Wiktionary"
+    },
+    "rfc_0006_-jkb-": {
+      "type": "rfc",
+      "userLinks": 12,
+      "userTalkLinks": 3,
+      "wikiRefs": 0,
+      "status": "resolved",
+      "url": "https://meta.wikimedia.org/wiki/Requests_for_comment%2F-jkb-"
+    },
+    "rfc_0007_2013_issues_on_Croatian_Wikipedia": {
+      "type": "rfc",
+      "userLinks": 96,
+      "userTalkLinks": 85,
+      "wikiRefs": 2,
+      "status": "closed",
+      "url": "https://meta.wikimedia.org/wiki/Requests_for_comment%2F2013_issues_on_Croatian_Wikipedia"
+    },
+    "rfc_0008_A_bureaucrat_which_supports_a_troll_in_the_He": {
+      "type": "rfc",
+      "userLinks": 2,
+      "userTalkLinks": 1,
+      "wikiRefs": 0,
+      "status": "closed",
+      "url": "https://meta.wikimedia.org/wiki/Requests_for_comment%2FA_bureaucrat_which_supports_a_troll_in_the_Hebrew_Wikipedia"
+    },
+    "rfc_0009_A_new_global_lock_reason": {
+      "type": "rfc",
+      "userLinks": 6,
+      "userTalkLinks": 4,
+      "wikiRefs": 0,
+      "status": "closed",
+      "url": "https://meta.wikimedia.org/wiki/Requests_for_comment%2FA_new_global_lock_reason"
+    },
+    "rfc_0010_Abandoned_Labs_tools": {
+      "type": "rfc",
+      "userLinks": 43,
+      "userTalkLinks": 42,
+      "wikiRefs": 0,
+      "status": "resolved",
+      "url": "https://meta.wikimedia.org/wiki/Requests_for_comment%2FAbandoned_Labs_tools"
+    }
+  }
+}
