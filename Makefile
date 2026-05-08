@@ -1,7 +1,4 @@
-.PHONY: install install-dev clean data-dirs help lint fetch-all fetch-full fetch-arb fetch-drn fetch-small test test-unit test-cov fetch-venues fetch-ani fetch-talk fetch-arb-dfs fetch-arb-dfs-sample fetch-arb-dfs-sample-full fetch-arb-dfs-all fetch-arb-dfs-all-full update-arb-cases-list fetch-lifecycle fetch-lifecycle-dry fetch-lifecycle-sample fetch-lifecycle-all setup pull pull-status pull-reset validate archive clear-results pull-full-arb pull-full-arb-estimate pull-full-arb-force paper-overleaf-status paper-overleaf-diff paper-overleaf-pull paper-overleaf-push rivanna-sync rivanna-setup rivanna-submit rivanna-status rivanna-logs rivanna-pull rivanna-clean rivanna-ssh rivanna-train
-
-OVERLEAF_FINAL_PAPER_URL ?= https://git@git.overleaf.com/69d7f5837aeb48de51af6f12
-OVERLEAF_FINAL_PAPER_BRANCH ?= master
+.PHONY: install install-dev clean data-dirs help lint fetch-all fetch-full fetch-arb fetch-drn fetch-small test test-unit test-cov fetch-venues fetch-ani fetch-talk fetch-arb-dfs fetch-arb-dfs-sample fetch-arb-dfs-sample-full fetch-arb-dfs-all fetch-arb-dfs-all-full update-arb-cases-list fetch-lifecycle fetch-lifecycle-dry fetch-lifecycle-sample fetch-lifecycle-all setup pull pull-status pull-reset validate archive clear-results pull-full-arb pull-full-arb-estimate pull-full-arb-force rivanna-sync rivanna-setup rivanna-submit rivanna-status rivanna-logs rivanna-pull rivanna-clean rivanna-ssh rivanna-train
 
 # =============================================================================
 # QUICK START - Three simple commands to get started
@@ -48,12 +45,6 @@ help:
 	@printf "$(BOLD)$(GREEN)  Data Management$(RESET)\n"
 	@printf "    $(CYAN)make archive$(RESET)         Archive results to timestamped zip file\n"
 	@printf "    $(CYAN)make clear-results$(RESET)   Clear all results (data/raw, data/processed)\n"
-	@printf "\n"
-	@printf "$(BOLD)$(GREEN)  Paper / Overleaf$(RESET)\n"
-	@printf "    $(CYAN)make paper-overleaf-status$(RESET)  Show the paper sync configuration\n"
-	@printf "    $(CYAN)make paper-overleaf-diff$(RESET)    Diff final_paper/ against Overleaf\n"
-	@printf "    $(CYAN)make paper-overleaf-pull$(RESET)    Pull Overleaf changes into final_paper/\n"
-	@printf "    $(CYAN)make paper-overleaf-push$(RESET)    Push committed final_paper/ changes to Overleaf\n"
 	@printf "\n"
 	@printf "$(BOLD)$(YELLOW)  Development$(RESET)\n"
 	@printf "    $(CYAN)make install$(RESET)     Install base dependencies\n"
@@ -143,18 +134,6 @@ pull-reset:
 # Dry run - show what would be fetched
 pull-dry:
 	uv run python scripts/pull.py --config $(or $(CONFIG),sample) --dry-run
-
-paper-overleaf-status:
-	OVERLEAF_FINAL_PAPER_URL="$(OVERLEAF_FINAL_PAPER_URL)" OVERLEAF_FINAL_PAPER_BRANCH="$(OVERLEAF_FINAL_PAPER_BRANCH)" ./scripts/final_paper_overleaf_sync.sh status
-
-paper-overleaf-diff:
-	OVERLEAF_FINAL_PAPER_URL="$(OVERLEAF_FINAL_PAPER_URL)" OVERLEAF_FINAL_PAPER_BRANCH="$(OVERLEAF_FINAL_PAPER_BRANCH)" ./scripts/final_paper_overleaf_sync.sh diff-remote
-
-paper-overleaf-pull:
-	OVERLEAF_FINAL_PAPER_URL="$(OVERLEAF_FINAL_PAPER_URL)" OVERLEAF_FINAL_PAPER_BRANCH="$(OVERLEAF_FINAL_PAPER_BRANCH)" ./scripts/final_paper_overleaf_sync.sh pull
-
-paper-overleaf-push:
-	OVERLEAF_FINAL_PAPER_URL="$(OVERLEAF_FINAL_PAPER_URL)" OVERLEAF_FINAL_PAPER_BRANCH="$(OVERLEAF_FINAL_PAPER_BRANCH)" ./scripts/final_paper_overleaf_sync.sh push
 
 # =============================================================================
 # END QUICK START
