@@ -17,6 +17,19 @@ throttle.ctrl
 # Log files
 *.log
 
+# Final paper / Overleaf transient files
+final_paper/*.aux
+final_paper/*.bbl
+final_paper/*.bcf
+final_paper/*.blg
+final_paper/*.fdb_latexmk
+final_paper/*.fls
+final_paper/*.out
+final_paper/*.run.xml
+final_paper/*.synctex.gz
+final_paper/*.toc
+final_paper/*.xdv
+
 # Backup files
 *.bak
 
