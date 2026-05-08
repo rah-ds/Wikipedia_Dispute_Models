@@ -106,15 +106,15 @@ and the dashboard lint/build pipeline.
 # Rebuild the dashboard data payload if needed.
 uv run python scripts/process_arbitration_for_dashboard.py
 
-# Start the React dashboard.
-cd dashboard
-npm install
-npm run dev
+# Start the React dashboard at http://localhost:5173.
+make dashboard
 ```
 
 The dashboard reads from `dashboard/public/data/dashboard_data.json`. BPMN
 assets in `dashboard/public/bpmn/` and D3 exports in `data/processed/d3/` are
 used by the case and visualization views.
+
+![Dashboard overview screenshot](docs/assets/dashboard-overview.png)
 
 ---
 

@@ -12,19 +12,16 @@ From the repository root:
 # Rebuild the overview payload if needed.
 uv run python scripts/process_arbitration_for_dashboard.py
 
-# Start the web app.
-cd dashboard
-npm install
-npm run dev
+# Start the web app at http://localhost:5173.
+make dashboard
 ```
+
+![Dashboard overview screenshot](assets/dashboard-overview.png)
 
 For a production build:
 
 ```bash
-cd dashboard
-npm install
-npm run lint
-npm run build
+make dashboard-build
 ```
 
 ## Data inputs
