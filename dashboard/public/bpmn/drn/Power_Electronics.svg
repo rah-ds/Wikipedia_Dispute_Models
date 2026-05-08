@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="60.0 -30.0 2140.0 1033.0" width="2140" height="1033" font-family="Helvetica, Arial, sans-serif">
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#657b83"/></marker></defs>
+<rect x="70.0" y="-20.0" width="2120.0" height="50" fill="#f3f3f3" stroke="#999999" rx="4" ry="4"/>
+<text x="85.0" y="4.0" font-size="16" font-weight="bold" fill="#073642">Power Electronics</text>
+<text x="85.0" y="24.0" font-size="11" fill="#073642">4 lanes · 6 tasks · 1 gateways · 3 end events · 0 ongoing (↻)</text>
+<rect x="100.0" y="80.0" width="2060.0" height="640.0" fill="#ffffff" stroke="#999999" stroke-width="1"/>
+<rect x="130.0" y="80.0" width="2030.0" height="160.0" fill="#ffffff" stroke="#999999" stroke-width="1"/>
+<rect x="130.0" y="80.0" width="28" height="160.0" fill="#f3f3f3" stroke="#999999"/>
+<text x="144.0" y="160.0" font-size="13" fill="#073642" text-anchor="middle" transform="rotate(-90 144.0 160.0)">Filing Party</text>
+<rect x="130.0" y="240.0" width="2030.0" height="160.0" fill="#ffffff" stroke="#999999" stroke-width="1"/>
+<rect x="130.0" y="240.0" width="28" height="160.0" fill="#f3f3f3" stroke="#999999"/>
+<text x="144.0" y="320.0" font-size="13" fill="#073642" text-anchor="middle" transform="rotate(-90 144.0 320.0)">Other Parties</text>
+<rect x="130.0" y="400.0" width="2030.0" height="160.0" fill="#ffffff" stroke="#999999" stroke-width="1"/>
+<rect x="130.0" y="400.0" width="28" height="160.0" fill="#f3f3f3" stroke="#999999"/>
+<text x="144.0" y="480.0" font-size="13" fill="#073642" text-anchor="middle" transform="rotate(-90 144.0 480.0)">Volunteer Mediator</text>
+<rect x="130.0" y="560.0" width="2030.0" height="160.0" fill="#ffffff" stroke="#999999" stroke-width="1"/>
+<rect x="130.0" y="560.0" width="28" height="160.0" fill="#f3f3f3" stroke="#999999"/>
+<text x="144.0" y="640.0" font-size="13" fill="#073642" text-anchor="middle" transform="rotate(-90 144.0 640.0)">Closer</text>
+<polyline points="246.0,160.0 380.0,160.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<polyline points="510.0,160.0 550.0,320.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<polyline points="680.0,320.0 720.0,480.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<polyline points="770.0,480.0 890.0,640.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="806.0" y="541.0" font-size="9" fill="#073642" paint-order="stroke" stroke="#ffffff" stroke-width="3">No</text>
+<polyline points="770.0,480.0 1060.0,480.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="915.0" y="479.0" font-size="9" fill="#073642" paint-order="stroke" stroke="#ffffff" stroke-width="3">Yes</text>
+<polyline points="1190.0,480.0 1230.0,480.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<polyline points="1360.0,480.0 1400.0,480.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<polyline points="1530.0,480.0 1570.0,640.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<polyline points="1700.0,640.0 1740.0,640.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<polyline points="1700.0,640.0 1910.0,640.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<circle cx="228.0" cy="160.0" r="18.0" fill="#b4f2a1" stroke="#2aa198" stroke-width="2"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="228.0" y="194.75">Content Dispute</tspan><tspan x="228.0" y="207.75">Identified</tspan></text>
+<rect x="380.0" y="130.0" width="130.0" height="60.0" rx="6" ry="6" fill="#eee8d5" stroke="#586e75" stroke-width="1.5"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="445.0" y="150.25">File DRN: P-Tronics</tspan><tspan x="445.0" y="163.25">re: Power</tspan><tspan x="445.0" y="176.25">electronics</tspan></text>
+<rect x="550.0" y="290.0" width="130.0" height="60.0" rx="6" ry="6" fill="#eee8d5" stroke="#586e75" stroke-width="1.5"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="615.0" y="310.25">Opening statements</tspan><tspan x="615.0" y="323.25">from 2 other</tspan><tspan x="615.0" y="336.25">parties</tspan></text>
+<polygon points="745.0,455.0 770.0,480.0 745.0,505.0 720.0,480.0" fill="#fff8dc" stroke="#b58900" stroke-width="1.5"/>
+<text x="745.0" y="485.0" font-size="16" text-anchor="middle" fill="#b58900" font-weight="bold">×</text>
+<text x="745.0" y="519.0" font-size="11" text-anchor="middle" fill="#073642">Volunteer picks up case?</text>
+<circle cx="908.0" cy="640.0" r="18.0" fill="#f4a8a8" stroke="#dc322f" stroke-width="3"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="908.0" y="674.75">Closed: no volunteer</tspan></text>
+<rect x="1060.0" y="450.0" width="130.0" height="60.0" rx="6" ry="6" fill="#eee8d5" stroke="#586e75" stroke-width="1.5"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="1125.0" y="470.25">Volunteer</tspan><tspan x="1125.0" y="483.25">mediation:</tspan><tspan x="1125.0" y="496.25">TransporterMan</tspan></text>
+<rect x="1230.0" y="450.0" width="130.0" height="60.0" rx="6" ry="6" fill="#eee8d5" stroke="#586e75" stroke-width="1.5"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="1295.0" y="476.75">Phase 1: Initial</tspan><tspan x="1295.0" y="489.75">dispute report</tspan></text>
+<rect x="1400.0" y="450.0" width="130.0" height="60.0" rx="6" ry="6" fill="#eee8d5" stroke="#586e75" stroke-width="1.5"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="1465.0" y="470.25">Phase 2: User</tspan><tspan x="1465.0" y="483.25">feedback and edit</tspan><tspan x="1465.0" y="496.25">history</tspan></text>
+<rect x="1570.0" y="610.0" width="130.0" height="60.0" rx="6" ry="6" fill="#eee8d5" stroke="#586e75" stroke-width="1.5"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="1635.0" y="630.25">Closer determines</tspan><tspan x="1635.0" y="643.25">outcome:</tspan><tspan x="1635.0" y="656.25">TransporterMan</tspan></text>
+<circle cx="1758.0" cy="640.0" r="18.0" fill="#f4a8a8" stroke="#dc322f" stroke-width="3"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="1758.0" y="674.75">Closed unsuitable (out of</tspan><tspan x="1758.0" y="687.75">scope)</tspan></text>
+<circle cx="1928.0" cy="640.0" r="18.0" fill="#f4a8a8" stroke="#dc322f" stroke-width="3"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="1928.0" y="674.75">Escalated to RFC</tspan></text>
+<rect x="70.0" y="770.0" width="2120.0" height="223" fill="#f3f3f3" stroke="#999999" rx="4" ry="4"/>
+<text x="84.0" y="792.0" font-size="13" font-weight="bold" fill="#073642">Case element counts</text>
+<text x="84.0" y="812.0" font-size="11" font-family="monospace" fill="#073642">Parties:                 0</text>
+<text x="84.0" y="825.0" font-size="11" font-family="monospace" fill="#073642">Principles:              0</text>
+<text x="84.0" y="838.0" font-size="11" font-family="monospace" fill="#073642">Findings of fact:        0</text>
+<text x="84.0" y="851.0" font-size="11" font-family="monospace" fill="#073642">Remedies:                0</text>
+<text x="84.0" y="864.0" font-size="11" font-family="monospace" fill="#073642">Amendments:              0</text>
+<text x="84.0" y="877.0" font-size="11" font-family="monospace" fill="#073642">Appeals:                 0</text>
+<text x="84.0" y="890.0" font-size="11" font-family="monospace" fill="#073642">Enforcement actions:     0</text>
+<text x="84.0" y="903.0" font-size="11" font-family="monospace" fill="#073642">Clarifications:          0</text>
+<text x="84.0" y="916.0" font-size="11" font-family="monospace" fill="#073642">Post-case motions:       0</text>
+<text x="84.0" y="929.0" font-size="11" font-family="monospace" fill="#073642">Pre-case actions:        0</text>
+<text x="84.0" y="942.0" font-size="11" font-family="monospace" fill="#073642">Injunction issued:       no</text>
+<text x="84.0" y="955.0" font-size="11" font-family="monospace" fill="#073642">Drafting arbitrators:    0</text>
+<text x="84.0" y="968.0" font-size="11" font-family="monospace" fill="#073642">Recused arbitrators:     0</text>
+<text x="84.0" y="981.0" font-size="11" font-family="monospace" fill="#073642">Case outcome:            Unknown</text>
+<text x="84.0" y="994.0" font-size="11" font-family="monospace" fill="#073642">Accept votes:  0A / 0D / 0R / 0Ab (net=+0)</text>
+<text x="777.3333333333334" y="792.0" font-size="13" font-weight="bold" fill="#073642">Invoked rules (0 total, 0 unique)</text>
+<text x="777.3333333333334" y="808.0" font-size="10" fill="#073642" font-style="italic">policies: 0, guidelines: 0, essays: 0, other: 0</text>
+<text x="777.3333333333334" y="824.0" font-size="11" font-family="monospace" fill="#073642">(no rule invocations detected)</text>
+<text x="1470.6666666666667" y="792.0" font-size="13" font-weight="bold" fill="#073642">Evidence namespaces</text>
+<text x="1470.6666666666667" y="812.0" font-size="11" font-family="monospace" fill="#073642">User                 2 (50.0%)</text>
+<text x="1470.6666666666667" y="825.0" font-size="11" font-family="monospace" fill="#073642">User_talk            2 (50.0%)</text>
+<text x="1470.6666666666667" y="851.0" font-size="9" fill="#073642" font-style="italic">User/User_talk ⇒ conduct; Main/Talk ⇒ content dispute</text>
+</svg>

@@ -35,6 +35,42 @@ from processpiper.text2diagram import render as render_piperflow
 
 
 # ---------------------------------------------------------------------------
+# Helper function for writing to both artifacts and dashboard
+# ---------------------------------------------------------------------------
+
+
+def _write_bpmn_to_both_locations(
+    bpmn_path: Path, xml_content: str, dashboard_type: str = "rfc"
+) -> None:
+    """
+    Write BPMN XML to both artifacts and dashboard folders.
+
+    Args:
+        bpmn_path: Path to write in artifacts folder
+        xml_content: BPMN XML content
+        dashboard_type: Type for dashboard path ('rfc', 'drn', 'arbitration')
+    """
+    # Write to primary location (artifacts)
+    bpmn_path.write_text(xml_content, encoding="utf-8")
+
+    # Also write to dashboard if the project structure includes it
+    try:
+        dashboard_dir = (
+            bpmn_path.resolve().parent.parent.parent
+            / "dashboard"
+            / "public"
+            / "bpmn"
+            / dashboard_type
+        )
+        if dashboard_dir.parent.parent.exists():  # Check if dashboard/public exists
+            dashboard_dir.mkdir(parents=True, exist_ok=True)
+            dashboard_path = dashboard_dir / bpmn_path.name
+            dashboard_path.write_text(xml_content, encoding="utf-8")
+    except Exception:
+        pass  # Silently skip dashboard write if structure doesn't exist
+
+
+# ---------------------------------------------------------------------------
 # BPMN 2.0 XML namespaces and layout constants
 # ---------------------------------------------------------------------------
 
@@ -627,7 +663,7 @@ def create_rfc_case_bpmn(
     b.flow(submit, review)
     b.flow(review, gw_valid)
 
-    bpmn_path.write_text(b.to_xml(), encoding="utf-8")
+    _write_bpmn_to_both_locations(bpmn_path, b.to_xml(), "rfc")
     return bpmn_path, png_out
 
 
@@ -693,7 +729,7 @@ def create_aggregate_rfc_bpmn(
     )
     b.flow(gw_out, end_other, "Other")
 
-    bpmn_path.write_text(b.to_xml(), encoding="utf-8")
+    _write_bpmn_to_both_locations(bpmn_path, b.to_xml(), "rfc")
     return bpmn_path, png_out
 
 

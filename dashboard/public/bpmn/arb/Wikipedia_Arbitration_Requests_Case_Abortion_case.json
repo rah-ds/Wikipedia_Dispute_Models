@@ -1,0 +1,768 @@
+{
+  "title": "Abortion",
+  "case_url": "https://en.wikipedia.org/wiki/Wikipedia:Arbitration/Requests/Case/Abortion",
+  "case_type": "conduct",
+  "is_private": false,
+  "opened_date": "12 August 2011",
+  "closed_date": "28 November 2011",
+  "parties": [
+    "Penwhale",
+    "Steven Zhang",
+    "Eraserhead1",
+    "Roscelese",
+    "NYyankees51",
+    "Lionelt",
+    "Kenatipo",
+    "DeCausa",
+    "CWenger",
+    "LedRush",
+    "TheFreeloader",
+    "Haymaker",
+    "Anythingyouwant",
+    "Binksternet",
+    "Objectivist",
+    "HuskyHuskie",
+    "VsevolodKrolikov",
+    "Chaos5023",
+    "Anthony Appleyard",
+    "DMSBel",
+    "Orangemarlin",
+    "JJL",
+    "PhGustaf",
+    "ArtifexMayhem",
+    "Michael C Price",
+    "Str1977",
+    "Gandydancer",
+    "Friend of the Facts",
+    "Pastel kitten"
+  ],
+  "accept_votes": 5,
+  "decline_votes": 1,
+  "recuse_votes": 3,
+  "abstain_votes": 2,
+  "net_votes": 4,
+  "accepted_by_rule": true,
+  "has_injunction": false,
+  "drafting_arbitrators": [
+    "Jclemens",
+    "Coren"
+  ],
+  "recused_arbitrators": [],
+  "pre_case_actions": [
+    {
+      "date": "2011-08-12",
+      "action": "block",
+      "target_editor": "Steven Zhang",
+      "reason": "Unblock request denied"
+    }
+  ],
+  "rule_invocations": {
+    "total_invocations": 255,
+    "unique_rules": 64,
+    "by_type": {
+      "policy": 54,
+      "guideline": 45,
+      "essay": 4,
+      "other": 152
+    },
+    "top_rules": [
+      {
+        "ref": "WP:NPOV",
+        "count": 23,
+        "type": "policy",
+        "first_section": "Preamble"
+      },
+      {
+        "ref": "WP:COMMONNAME",
+        "count": 13,
+        "type": "other",
+        "first_section": "Preamble"
+      },
+      {
+        "ref": "WP:UNDUE",
+        "count": 12,
+        "type": "guideline",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:BRRR",
+        "count": 12,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:AE",
+        "count": 11,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:SOCK",
+        "count": 10,
+        "type": "policy",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:CONSENSUS",
+        "count": 10,
+        "type": "policy",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:IDHT",
+        "count": 8,
+        "type": "guideline",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:IDIDNTHEARTHAT",
+        "count": 7,
+        "type": "other",
+        "first_section": "Preamble"
+      },
+      {
+        "ref": "WP:LEAD",
+        "count": 6,
+        "type": "other",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:AGF",
+        "count": 6,
+        "type": "guideline",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:RFCCOM",
+        "count": 6,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:CCC",
+        "count": 6,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:AC",
+        "count": 6,
+        "type": "other",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:RS",
+        "count": 5,
+        "type": "guideline",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:BAN",
+        "count": 5,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:POVTITLE",
+        "count": 4,
+        "type": "other",
+        "first_section": "Preamble"
+      },
+      {
+        "ref": "WP:RM",
+        "count": 4,
+        "type": "other",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:RFC",
+        "count": 4,
+        "type": "guideline",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:CIVIL",
+        "count": 4,
+        "type": "policy",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:MEDCOM",
+        "count": 4,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:EW",
+        "count": 4,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:AP",
+        "count": 4,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:TPG",
+        "count": 4,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:AC/DS",
+        "count": 3,
+        "type": "other",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:AC/CT",
+        "count": 3,
+        "type": "other",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:GOOGLE",
+        "count": 2,
+        "type": "other",
+        "first_section": "Preamble"
+      },
+      {
+        "ref": "WP:TITLECHANGES",
+        "count": 2,
+        "type": "other",
+        "first_section": "Preamble"
+      },
+      {
+        "ref": "WP:CT2022",
+        "count": 2,
+        "type": "other",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:EDITWAR",
+        "count": 2,
+        "type": "policy",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:POINT",
+        "count": 2,
+        "type": "essay",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:WORLDWIDE",
+        "count": 2,
+        "type": "other",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:AT",
+        "count": 2,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:OR",
+        "count": 2,
+        "type": "guideline",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:FRINGE",
+        "count": 2,
+        "type": "guideline",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:BATTLEGROUND",
+        "count": 2,
+        "type": "guideline",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:ARBMAC",
+        "count": 2,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:BOLD",
+        "count": 2,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:NPA",
+        "count": 2,
+        "type": "policy",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:DR",
+        "count": 2,
+        "type": "guideline",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:RSN",
+        "count": 2,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:BLPN",
+        "count": 2,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:DRN",
+        "count": 2,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:WQA",
+        "count": 2,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:MEDCAB",
+        "count": 2,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:DUE",
+        "count": 2,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:ABF",
+        "count": 2,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:IAR",
+        "count": 2,
+        "type": "essay",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:BB",
+        "count": 2,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:SUB",
+        "count": 2,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:FA",
+        "count": 2,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:DEADHORSE",
+        "count": 2,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:NOR",
+        "count": 2,
+        "type": "policy",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:NOTBATTLEGROUND",
+        "count": 2,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:GAME",
+        "count": 2,
+        "type": "guideline",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:NOTCENSORED",
+        "count": 2,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:ANI",
+        "count": 2,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:GSCASTE",
+        "count": 2,
+        "type": "other",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:CTOPS",
+        "count": 2,
+        "type": "other",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:V",
+        "count": 1,
+        "type": "policy",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:ARBAB",
+        "count": 1,
+        "type": "other",
+        "first_section": "Preamble"
+      },
+      {
+        "ref": "WP:EWN",
+        "count": 1,
+        "type": "other",
+        "first_section": "Proposed_decision"
+      },
+      {
+        "ref": "WP:HEAR",
+        "count": 1,
+        "type": "other",
+        "first_section": "Workshop"
+      },
+      {
+        "ref": "WP:VAND",
+        "count": 1,
+        "type": "other",
+        "first_section": "Workshop"
+      }
+    ],
+    "namespace_links": [
+      {
+        "namespace": "User",
+        "count": 1361,
+        "meaning": "editor conduct \u2014 personal user page evidence"
+      },
+      {
+        "namespace": "User_talk",
+        "count": 1003,
+        "meaning": "editor conduct \u2014 user-talk-page discussions"
+      },
+      {
+        "namespace": "Main",
+        "count": 433,
+        "meaning": "article content evidence"
+      },
+      {
+        "namespace": "User_Talk",
+        "count": 136,
+        "meaning": "(unclassified namespace)"
+      },
+      {
+        "namespace": "Special",
+        "count": 130,
+        "meaning": "special-page / log evidence"
+      },
+      {
+        "namespace": "Talk",
+        "count": 40,
+        "meaning": "article talk \u2014 content discussion evidence"
+      },
+      {
+        "namespace": "Help",
+        "count": 2,
+        "meaning": "help / documentation reference"
+      },
+      {
+        "namespace": "Template",
+        "count": 2,
+        "meaning": "template-usage evidence"
+      },
+      {
+        "namespace": "Category",
+        "count": 1,
+        "meaning": "category / taxonomy evidence"
+      },
+      {
+        "namespace": "Image",
+        "count": 1,
+        "meaning": "(unclassified namespace)"
+      }
+    ]
+  },
+  "principles_raw": [
+    "Purpose of Wikipedia",
+    "Neutral point of view",
+    "Article sourcing",
+    "Misuse of sourcing",
+    "Consensus",
+    "Conduct and decorum",
+    "Dispute resolution",
+    "Fair criticism and personal attacks",
+    "Edit warring",
+    "Talk pages",
+    "Policy pages",
+    "Single purpose accounts",
+    "Lead sections",
+    "Topics covering multiple perspectives",
+    "Repeated discussion",
+    "Role of the Arbitration Committee",
+    "Guiding the community in protracted disputes"
+  ],
+  "findings_raw": [
+    "Locus of disagreement",
+    "Discretionary sanctions adopted by the community",
+    "Banned user participation",
+    "Michael C Price's conduct",
+    "Gandydancer's conduct",
+    "Anythingyouwant's conduct",
+    "NYyankees51's conduct",
+    "Geremia's conduct",
+    "DMSBel's conduct",
+    "Haymaker's conduct"
+  ],
+  "remedies_raw": [
+    "IP editing prohibited",
+    "Administrators instructed",
+    "Editors reminded",
+    "Contentious topic designation",
+    "Systematic discussion and voting on article names",
+    "Orangemarlin instructed",
+    "Michael C Price topic-banned",
+    "Gandydancer advised",
+    "Anythingyouwant topic-banned",
+    "Haymaker topic-banned",
+    "NYyankees51 reminded",
+    "Geremia topic-banned",
+    "DMSBel topic-banned"
+  ],
+  "outcome": "Remedies Imposed",
+  "principles": [
+    {
+      "name": "Neutral Point of View",
+      "summary": "The page must present all significant viewpoints fairly and without bias.",
+      "policy_refs": [
+        "WP:NPOV"
+      ],
+      "support": 23,
+      "oppose": 3,
+      "abstain": 3,
+      "passed": true
+    },
+    {
+      "name": "No edit warring",
+      "summary": "Editors should not repeatedly revert each other's edits on the same topic.",
+      "policy_refs": [
+        "WP:3RR"
+      ],
+      "support": 19,
+      "oppose": 4,
+      "abstain": 4,
+      "passed": true
+    },
+    {
+      "name": "Conflict of Interest",
+      "summary": "Editors with a conflict of interest must disclose it.",
+      "policy_refs": [
+        "WP:COI"
+      ],
+      "support": 13,
+      "oppose": 6,
+      "abstain": 4,
+      "passed": true
+    },
+    {
+      "name": "Civility",
+      "summary": "Editors should treat each other with respect.",
+      "policy_refs": [
+        "WP:Civility"
+      ],
+      "support": 20,
+      "oppose": 2,
+      "abstain": 3,
+      "passed": true
+    }
+  ],
+  "findings": [
+    {
+      "name": "Locus of disagreement",
+      "target_editor": "",
+      "conduct": "(regex fallback)",
+      "evidence_refs": [],
+      "policy_refs": [],
+      "support": 0,
+      "oppose": 0,
+      "abstain": 0,
+      "passed": true
+    },
+    {
+      "name": "Discretionary sanctions adopted by the community",
+      "target_editor": "",
+      "conduct": "(regex fallback)",
+      "evidence_refs": [],
+      "policy_refs": [],
+      "support": 0,
+      "oppose": 0,
+      "abstain": 0,
+      "passed": true
+    },
+    {
+      "name": "Banned user participation",
+      "target_editor": "",
+      "conduct": "(regex fallback)",
+      "evidence_refs": [],
+      "policy_refs": [],
+      "support": 0,
+      "oppose": 0,
+      "abstain": 0,
+      "passed": true
+    },
+    {
+      "name": "Michael C Price's conduct",
+      "target_editor": "",
+      "conduct": "(regex fallback)",
+      "evidence_refs": [],
+      "policy_refs": [],
+      "support": 0,
+      "oppose": 0,
+      "abstain": 0,
+      "passed": true
+    },
+    {
+      "name": "Gandydancer's conduct",
+      "target_editor": "",
+      "conduct": "(regex fallback)",
+      "evidence_refs": [],
+      "policy_refs": [],
+      "support": 0,
+      "oppose": 0,
+      "abstain": 0,
+      "passed": true
+    },
+    {
+      "name": "Anythingyouwant's conduct",
+      "target_editor": "",
+      "conduct": "(regex fallback)",
+      "evidence_refs": [],
+      "policy_refs": [],
+      "support": 0,
+      "oppose": 0,
+      "abstain": 0,
+      "passed": true
+    },
+    {
+      "name": "NYyankees51's conduct",
+      "target_editor": "",
+      "conduct": "(regex fallback)",
+      "evidence_refs": [],
+      "policy_refs": [],
+      "support": 0,
+      "oppose": 0,
+      "abstain": 0,
+      "passed": true
+    },
+    {
+      "name": "Geremia's conduct",
+      "target_editor": "",
+      "conduct": "(regex fallback)",
+      "evidence_refs": [],
+      "policy_refs": [],
+      "support": 0,
+      "oppose": 0,
+      "abstain": 0,
+      "passed": true
+    },
+    {
+      "name": "DMSBel's conduct",
+      "target_editor": "",
+      "conduct": "(regex fallback)",
+      "evidence_refs": [],
+      "policy_refs": [],
+      "support": 0,
+      "oppose": 0,
+      "abstain": 0,
+      "passed": true
+    },
+    {
+      "name": "Haymaker's conduct",
+      "target_editor": "",
+      "conduct": "(regex fallback)",
+      "evidence_refs": [],
+      "policy_refs": [],
+      "support": 0,
+      "oppose": 0,
+      "abstain": 0,
+      "passed": true
+    }
+  ],
+  "remedies": [
+    {
+      "name": "Standardizing by removing \"broadly construed\" where it is present",
+      "target_editor": "No specific editor",
+      "target_article": "All articles",
+      "target_topic": "None",
+      "sanction_type": "revert_restriction",
+      "duration": "permanent",
+      "scope": "All articles",
+      "suspended": false,
+      "ongoing": false,
+      "support": 1,
+      "oppose": 0,
+      "abstain": 0,
+      "passed": true
+    }
+  ],
+  "enforcement_actions": [],
+  "amendments": [
+    {
+      "date": "2020-09-22",
+      "requester": "Unknown",
+      "subject": "Motion",
+      "change": "Motion passed to standardize by removing \"broadly construed\" where it is present",
+      "outcome": "passed"
+    },
+    {
+      "date": "2022-12-14",
+      "requester": "Unknown",
+      "subject": "Administrative provisions",
+      "change": "Motion passed to add administrative provisions",
+      "outcome": "passed"
+    },
+    {
+      "date": "2026-03-06",
+      "requester": "Unknown",
+      "subject": "Proposed decision",
+      "change": "Motion passed to amend the proposed decision",
+      "outcome": "passed"
+    },
+    {
+      "date": "2026-03-27",
+      "requester": "Unknown",
+      "subject": "Standardizing by removing \"broadly construed\"",
+      "change": "Motion passed to standardize by removing \"broadly construed\" where it is present",
+      "outcome": "passed"
+    }
+  ],
+  "clarifications": [],
+  "appeals": [],
+  "post_case_motions": [],
+  "inactive_arbitrators": [],
+  "trainee_clerks": [],
+  "clerks": [
+    "Penwhale"
+  ]
+}

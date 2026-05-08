@@ -33,10 +33,7 @@ export default function OverviewScreen() {
       {/* Charts row */}
       <div className="chart-grid" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
         <StatementDistChart data={data.statementByDistribution} />
-        <PartiesDonut
-          userLinks={data.totalUserLinks}
-          adminLinks={data.totalAdminLinks}
-        />
+        <PartiesDonut data={data.casesPerYear} />
         <RemedyVerbsChart data={data.topRemedyVerbs} />
       </div>
     </div>

@@ -8,9 +8,9 @@ from pathlib import Path
 import time
 
 # Add src to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from wiki import WikiClient
+from src.wiki import WikiClient
 from src.io import save_json, get_output_path
 from dotenv import load_dotenv
 

@@ -1,0 +1,190 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="60.0 -30.0 6730.0 1353.0" width="6730" height="1353" font-family="Helvetica, Arial, sans-serif">
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#657b83"/></marker></defs>
+<rect x="70.0" y="-20.0" width="6710.0" height="50" fill="#f3f3f3" stroke="#999999" rx="4" ry="4"/>
+<text x="85.0" y="4.0" font-size="16" font-weight="bold" fill="#073642">ARB Case: A Nobody</text>
+<text x="85.0" y="24.0" font-size="11" fill="#073642">6 lanes · 20 tasks · 8 gateways · 9 end events · 0 ongoing (↻)</text>
+<rect x="100.0" y="80.0" width="6650.0" height="960.0" fill="#ffffff" stroke="#999999" stroke-width="1"/>
+<rect x="130.0" y="80.0" width="6620.0" height="160.0" fill="#ffffff" stroke="#999999" stroke-width="1"/>
+<rect x="130.0" y="80.0" width="28" height="160.0" fill="#f3f3f3" stroke="#999999"/>
+<text x="144.0" y="160.0" font-size="13" fill="#073642" text-anchor="middle" transform="rotate(-90 144.0 160.0)">Requesting Party</text>
+<rect x="130.0" y="240.0" width="6620.0" height="160.0" fill="#ffffff" stroke="#999999" stroke-width="1"/>
+<rect x="130.0" y="240.0" width="28" height="160.0" fill="#f3f3f3" stroke="#999999"/>
+<text x="144.0" y="320.0" font-size="13" fill="#073642" text-anchor="middle" transform="rotate(-90 144.0 320.0)">Other Editors</text>
+<rect x="130.0" y="400.0" width="6620.0" height="160.0" fill="#ffffff" stroke="#999999" stroke-width="1"/>
+<rect x="130.0" y="400.0" width="28" height="160.0" fill="#f3f3f3" stroke="#999999"/>
+<text x="144.0" y="480.0" font-size="13" fill="#073642" text-anchor="middle" transform="rotate(-90 144.0 480.0)">Clerk</text>
+<rect x="130.0" y="560.0" width="6620.0" height="160.0" fill="#ffffff" stroke="#999999" stroke-width="1"/>
+<rect x="130.0" y="560.0" width="28" height="160.0" fill="#f3f3f3" stroke="#999999"/>
+<text x="144.0" y="640.0" font-size="13" fill="#073642" text-anchor="middle" transform="rotate(-90 144.0 640.0)">Drafting Arbitrators</text>
+<rect x="130.0" y="720.0" width="6620.0" height="160.0" fill="#ffffff" stroke="#999999" stroke-width="1"/>
+<rect x="130.0" y="720.0" width="28" height="160.0" fill="#f3f3f3" stroke="#999999"/>
+<text x="144.0" y="800.0" font-size="13" fill="#073642" text-anchor="middle" transform="rotate(-90 144.0 800.0)">Full Committee</text>
+<rect x="130.0" y="880.0" width="6620.0" height="160.0" fill="#ffffff" stroke="#999999" stroke-width="1"/>
+<rect x="130.0" y="880.0" width="28" height="160.0" fill="#f3f3f3" stroke="#999999"/>
+<text x="144.0" y="960.0" font-size="13" fill="#073642" text-anchor="middle" transform="rotate(-90 144.0 960.0)">Enforcement</text>
+<polyline points="246.0,160.0 380.0,960.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<polyline points="510.0,960.0 550.0,160.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<polyline points="680.0,160.0 720.0,320.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<polyline points="850.0,320.0 890.0,480.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<polyline points="1020.0,480.0 1060.0,480.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<polyline points="1110.0,480.0 1230.0,480.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="1146.0" y="470.0" font-size="9" fill="#073642">No - Declined</text>
+<polyline points="1110.0,480.0 1400.0,480.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="1255.0" y="470.0" font-size="9" fill="#073642">Yes - Accepted</text>
+<polyline points="1530.0,480.0 1570.0,640.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<polyline points="1700.0,640.0 1740.0,800.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<polyline points="1790.0,800.0 1910.0,960.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="1850.0" y="870.0" font-size="9" fill="#073642">Yes</text>
+<polyline points="1790.0,800.0 2080.0,800.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="1911.0" y="790.0" font-size="9" fill="#073642">No</text>
+<polyline points="2040.0,960.0 2250.0,640.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<polyline points="2380.0,640.0 2420.0,640.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<polyline points="2550.0,640.0 2590.0,800.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<polyline points="2720.0,800.0 2760.0,800.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<polyline points="2890.0,800.0 2930.0,800.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<polyline points="2980.0,800.0 3100.0,800.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="3016.0" y="790.0" font-size="9" fill="#073642">No</text>
+<polyline points="2980.0,800.0 3270.0,800.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<polyline points="3400.0,800.0 3440.0,800.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<polyline points="3490.0,800.0 3610.0,800.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="3526.0" y="790.0" font-size="9" fill="#073642">No</text>
+<polyline points="3490.0,800.0 3780.0,800.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<polyline points="3910.0,800.0 3950.0,800.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<polyline points="4000.0,800.0 4120.0,800.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="4036.0" y="790.0" font-size="9" fill="#073642">No</text>
+<polyline points="4000.0,800.0 4290.0,800.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<polyline points="4420.0,800.0 4460.0,800.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<polyline points="4510.0,800.0 4630.0,800.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="4546.0" y="790.0" font-size="9" fill="#073642">No</text>
+<polyline points="4510.0,800.0 4800.0,800.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="4655.0" y="790.0" font-size="9" fill="#073642">Yes</text>
+<polyline points="4930.0,800.0 4970.0,800.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="4930.0" y="790.0" font-size="9" fill="#073642">Yes</text>
+<polyline points="5100.0,800.0 5140.0,800.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<polyline points="5190.0,800.0 5310.0,800.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="5226.0" y="790.0" font-size="9" fill="#073642">No</text>
+<polyline points="5190.0,800.0 5480.0,800.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="5335.0" y="790.0" font-size="9" fill="#073642">Yes</text>
+<polyline points="5610.0,800.0 5650.0,800.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="5610.0" y="790.0" font-size="9" fill="#073642">Yes</text>
+<polyline points="5780.0,800.0 5820.0,800.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<polyline points="5870.0,800.0 5990.0,800.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="5906.0" y="790.0" font-size="9" fill="#073642">No</text>
+<polyline points="5870.0,800.0 6160.0,800.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<text x="6015.0" y="790.0" font-size="9" fill="#073642">Yes</text>
+<polyline points="6290.0,800.0 6330.0,960.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<polyline points="6460.0,960.0 6500.0,960.0" fill="none" stroke="#657b83" stroke-width="1.5" marker-end="url(#arrow)"/>
+<circle cx="228.0" cy="160.0" r="18.0" fill="#b4f2a1" stroke="#2aa198" stroke-width="2"/>
+<text x="228.0" y="192.0" font-size="11" text-anchor="middle" fill="#073642">Dispute Unresolved</text>
+<rect x="380.0" y="930.0" width="130.0" height="60.0" rx="6" ry="6" fill="#eee8d5" stroke="#586e75" stroke-width="1.5"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="445.0" y="950.25">Pre-case: Case held</tspan><tspan x="445.0" y="963.25">in abeyance → A</tspan><tspan x="445.0" y="976.25">Nobody — 2010-03-19</tspan></text>
+<rect x="550.0" y="130.0" width="130.0" height="60.0" rx="6" ry="6" fill="#eee8d5" stroke="#586e75" stroke-width="1.5"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="615.0" y="150.25">File Arbitration</tspan><tspan x="615.0" y="163.25">Request (19 March</tspan><tspan x="615.0" y="176.25">2010)</tspan></text>
+<rect x="720.0" y="290.0" width="130.0" height="60.0" rx="6" ry="6" fill="#eee8d5" stroke="#586e75" stroke-width="1.5"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="785.0" y="316.75">Statements by Other</tspan><tspan x="785.0" y="329.75">Parties</tspan></text>
+<rect x="890.0" y="450.0" width="130.0" height="60.0" rx="6" ry="6" fill="#eee8d5" stroke="#586e75" stroke-width="1.5"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="955.0" y="476.75">Clerk Screens</tspan><tspan x="955.0" y="489.75">Request</tspan></text>
+<polygon points="1085.0,455.0 1110.0,480.0 1085.0,505.0 1060.0,480.0" fill="#fff8dc" stroke="#b58900" stroke-width="1.5"/>
+<text x="1085.0" y="485.0" font-size="16" text-anchor="middle" fill="#b58900" font-weight="bold">×</text>
+<text x="1085.0" y="519.0" font-size="11" text-anchor="middle" fill="#073642">Case Accepted? (3A/2D/1R/1Ab net=+1)</text>
+<circle cx="1248.0" cy="480.0" r="18.0" fill="#f4a8a8" stroke="#dc322f" stroke-width="3"/>
+<text x="1248.0" y="512.0" font-size="11" text-anchor="middle" fill="#073642">Case Declined</text>
+<rect x="1400.0" y="450.0" width="130.0" height="60.0" rx="6" ry="6" fill="#eee8d5" stroke="#586e75" stroke-width="1.5"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="1465.0" y="476.75">Open Case &amp; Begin</tspan><tspan x="1465.0" y="489.75">Evidence Phase</tspan></text>
+<rect x="1570.0" y="610.0" width="130.0" height="60.0" rx="6" ry="6" fill="#eee8d5" stroke="#586e75" stroke-width="1.5"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="1635.0" y="636.75">Propose Temporary</tspan><tspan x="1635.0" y="649.75">Injunction</tspan></text>
+<polygon points="1765.0,775.0 1790.0,800.0 1765.0,825.0 1740.0,800.0" fill="#fff8dc" stroke="#b58900" stroke-width="1.5"/>
+<text x="1765.0" y="805.0" font-size="16" text-anchor="middle" fill="#b58900" font-weight="bold">×</text>
+<text x="1765.0" y="839.0" font-size="11" text-anchor="middle" fill="#073642">Injunction Passed?</text>
+<rect x="1910.0" y="930.0" width="130.0" height="60.0" rx="6" ry="6" fill="#eee8d5" stroke="#586e75" stroke-width="1.5"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="1975.0" y="956.75">Enforce Temporary</tspan><tspan x="1975.0" y="969.75">Injunction</tspan></text>
+<circle cx="2098.0" cy="800.0" r="18.0" fill="#f4a8a8" stroke="#dc322f" stroke-width="3"/>
+<text x="2098.0" y="832.0" font-size="11" text-anchor="middle" fill="#073642">Injunction Rejected</text>
+<rect x="2250.0" y="610.0" width="130.0" height="60.0" rx="6" ry="6" fill="#eee8d5" stroke="#586e75" stroke-width="1.5"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="2315.0" y="643.25">Evidence Phase</tspan></text>
+<rect x="2420.0" y="610.0" width="130.0" height="60.0" rx="6" ry="6" fill="#eee8d5" stroke="#586e75" stroke-width="1.5"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="2485.0" y="630.25">Workshop — Draft</tspan><tspan x="2485.0" y="643.25">Principles,</tspan><tspan x="2485.0" y="656.25">Findings, Remedies</tspan></text>
+<rect x="2590.0" y="770.0" width="130.0" height="60.0" rx="6" ry="6" fill="#fdf6e3" stroke="#586e75" stroke-width="1.5"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="2655.0" y="796.75">Proposed Decision:</tspan><tspan x="2655.0" y="809.75">Principles</tspan></text>
+<rect x="2760.0" y="770.0" width="130.0" height="60.0" rx="6" ry="6" fill="#eee8d5" stroke="#586e75" stroke-width="1.5"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="2825.0" y="790.25">Vote on Principle:</tspan><tspan x="2825.0" y="803.25">Copying within</tspan><tspan x="2825.0" y="816.25">Wikipedia (1S-0O)</tspan></text>
+<polygon points="2955.0,775.0 2980.0,800.0 2955.0,825.0 2930.0,800.0" fill="#fff8dc" stroke="#b58900" stroke-width="1.5"/>
+<text x="2955.0" y="805.0" font-size="16" text-anchor="middle" fill="#b58900" font-weight="bold">×</text>
+<text x="2955.0" y="839.0" font-size="11" text-anchor="middle" fill="#073642">Copying within Wikipedia passed?</text>
+<circle cx="3118.0" cy="800.0" r="18.0" fill="#f4a8a8" stroke="#dc322f" stroke-width="3"/>
+<text x="3118.0" y="832.0" font-size="11" text-anchor="middle" fill="#073642">Copying within Wikipedia: rejected</text>
+<rect x="3270.0" y="770.0" width="130.0" height="60.0" rx="6" ry="6" fill="#eee8d5" stroke="#586e75" stroke-width="1.5"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="3335.0" y="796.75">Vote on Principle:</tspan><tspan x="3335.0" y="809.75">Edit warring</tspan></text>
+<polygon points="3465.0,775.0 3490.0,800.0 3465.0,825.0 3440.0,800.0" fill="#fff8dc" stroke="#b58900" stroke-width="1.5"/>
+<text x="3465.0" y="805.0" font-size="16" text-anchor="middle" fill="#b58900" font-weight="bold">×</text>
+<text x="3465.0" y="839.0" font-size="11" text-anchor="middle" fill="#073642">Edit warring passed?</text>
+<circle cx="3628.0" cy="800.0" r="18.0" fill="#f4a8a8" stroke="#dc322f" stroke-width="3"/>
+<text x="3628.0" y="832.0" font-size="11" text-anchor="middle" fill="#073642">Edit warring: rejected</text>
+<rect x="3780.0" y="770.0" width="130.0" height="60.0" rx="6" ry="6" fill="#eee8d5" stroke="#586e75" stroke-width="1.5"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="3845.0" y="790.25">Vote on Principle:</tspan><tspan x="3845.0" y="803.25">Neutral point of</tspan><tspan x="3845.0" y="816.25">view</tspan></text>
+<polygon points="3975.0,775.0 4000.0,800.0 3975.0,825.0 3950.0,800.0" fill="#fff8dc" stroke="#b58900" stroke-width="1.5"/>
+<text x="3975.0" y="805.0" font-size="16" text-anchor="middle" fill="#b58900" font-weight="bold">×</text>
+<text x="3975.0" y="839.0" font-size="11" text-anchor="middle" fill="#073642">Neutral point of view passed?</text>
+<circle cx="4138.0" cy="800.0" r="18.0" fill="#f4a8a8" stroke="#dc322f" stroke-width="3"/>
+<text x="4138.0" y="832.0" font-size="11" text-anchor="middle" fill="#073642">Neutral point of view: rejected</text>
+<rect x="4290.0" y="770.0" width="130.0" height="60.0" rx="6" ry="6" fill="#eee8d5" stroke="#586e75" stroke-width="1.5"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="4355.0" y="796.75">Vote on Principle:</tspan><tspan x="4355.0" y="809.75">Three reverts rule</tspan></text>
+<polygon points="4485.0,775.0 4510.0,800.0 4485.0,825.0 4460.0,800.0" fill="#fff8dc" stroke="#b58900" stroke-width="1.5"/>
+<text x="4485.0" y="805.0" font-size="16" text-anchor="middle" fill="#b58900" font-weight="bold">×</text>
+<text x="4485.0" y="839.0" font-size="11" text-anchor="middle" fill="#073642">Three reverts rule passed?</text>
+<circle cx="4648.0" cy="800.0" r="18.0" fill="#f4a8a8" stroke="#dc322f" stroke-width="3"/>
+<text x="4648.0" y="832.0" font-size="11" text-anchor="middle" fill="#073642">Three reverts rule: rejected</text>
+<rect x="4800.0" y="770.0" width="130.0" height="60.0" rx="6" ry="6" fill="#fdf6e3" stroke="#586e75" stroke-width="1.5"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="4865.0" y="796.75">Proposed Decision:</tspan><tspan x="4865.0" y="809.75">Findings of Fact</tspan></text>
+<rect x="4970.0" y="770.0" width="130.0" height="60.0" rx="6" ry="6" fill="#eee8d5" stroke="#586e75" stroke-width="1.5"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="5035.0" y="783.75">Vote on Finding:</tspan><tspan x="5035.0" y="796.75">User A Nobody</tspan><tspan x="5035.0" y="809.75">engaged in copying</tspan><tspan x="5035.0" y="822.75">edits. [A Nobody]…</tspan></text>
+<polygon points="5165.0,775.0 5190.0,800.0 5165.0,825.0 5140.0,800.0" fill="#fff8dc" stroke="#b58900" stroke-width="1.5"/>
+<text x="5165.0" y="805.0" font-size="16" text-anchor="middle" fill="#b58900" font-weight="bold">×</text>
+<text x="5165.0" y="839.0" font-size="11" text-anchor="middle" fill="#073642">User A Nobody engaged in co… passed?</text>
+<circle cx="5328.0" cy="800.0" r="18.0" fill="#f4a8a8" stroke="#dc322f" stroke-width="3"/>
+<text x="5328.0" y="832.0" font-size="11" text-anchor="middle" fill="#073642">User A Nobody engaged in co…: rejected</text>
+<rect x="5480.0" y="770.0" width="130.0" height="60.0" rx="6" ry="6" fill="#fdf6e3" stroke="#586e75" stroke-width="1.5"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="5545.0" y="796.75">Proposed Decision:</tspan><tspan x="5545.0" y="809.75">Remedies</tspan></text>
+<rect x="5650.0" y="770.0" width="130.0" height="60.0" rx="6" ry="6" fill="#eee8d5" stroke="#586e75" stroke-width="1.5"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="5715.0" y="790.25">Vote on Remedy: No</tspan><tspan x="5715.0" y="803.25">remedies proposed</tspan><tspan x="5715.0" y="816.25">[A Nobody]</tspan></text>
+<polygon points="5845.0,775.0 5870.0,800.0 5845.0,825.0 5820.0,800.0" fill="#fff8dc" stroke="#b58900" stroke-width="1.5"/>
+<text x="5845.0" y="805.0" font-size="16" text-anchor="middle" fill="#b58900" font-weight="bold">×</text>
+<text x="5845.0" y="839.0" font-size="11" text-anchor="middle" fill="#073642">No remedies proposed passed?</text>
+<circle cx="6008.0" cy="800.0" r="18.0" fill="#f4a8a8" stroke="#dc322f" stroke-width="3"/>
+<text x="6008.0" y="832.0" font-size="11" text-anchor="middle" fill="#073642">No remedies proposed: rejected</text>
+<rect x="6160.0" y="770.0" width="130.0" height="60.0" rx="6" ry="6" fill="#fdf6e3" stroke="#586e75" stroke-width="1.5"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="6225.0" y="796.75">Final Decision</tspan><tspan x="6225.0" y="809.75">Published</tspan></text>
+<rect x="6330.0" y="930.0" width="130.0" height="60.0" rx="6" ry="6" fill="#eee8d5" stroke="#586e75" stroke-width="1.5"/>
+<text font-size="11" text-anchor="middle" fill="#073642"><tspan x="6395.0" y="956.75">Enforcement &amp;</tspan><tspan x="6395.0" y="969.75">Monitoring</tspan></text>
+<circle cx="6518.0" cy="960.0" r="18.0" fill="#f4a8a8" stroke="#dc322f" stroke-width="3"/>
+<text x="6518.0" y="992.0" font-size="11" text-anchor="middle" fill="#073642">Closed - No Decision</text>
+<rect x="70.0" y="1090.0" width="6710.0" height="223" fill="#f3f3f3" stroke="#999999" rx="4" ry="4"/>
+<text x="84.0" y="1112.0" font-size="13" font-weight="bold" fill="#073642">Case element counts</text>
+<text x="84.0" y="1132.0" font-size="11" font-family="monospace" fill="#073642">Parties:                 2</text>
+<text x="84.0" y="1145.0" font-size="11" font-family="monospace" fill="#073642">Principles:              4</text>
+<text x="84.0" y="1158.0" font-size="11" font-family="monospace" fill="#073642">Findings of fact:        1</text>
+<text x="84.0" y="1171.0" font-size="11" font-family="monospace" fill="#073642">Remedies:                1</text>
+<text x="84.0" y="1184.0" font-size="11" font-family="monospace" fill="#073642">Amendments:              0</text>
+<text x="84.0" y="1197.0" font-size="11" font-family="monospace" fill="#073642">Appeals:                 0</text>
+<text x="84.0" y="1210.0" font-size="11" font-family="monospace" fill="#073642">Enforcement actions:     0</text>
+<text x="84.0" y="1223.0" font-size="11" font-family="monospace" fill="#073642">Clarifications:          0</text>
+<text x="84.0" y="1236.0" font-size="11" font-family="monospace" fill="#073642">Post-case motions:       0</text>
+<text x="84.0" y="1249.0" font-size="11" font-family="monospace" fill="#073642">Pre-case actions:        1</text>
+<text x="84.0" y="1262.0" font-size="11" font-family="monospace" fill="#073642">Injunction issued:       yes</text>
+<text x="84.0" y="1275.0" font-size="11" font-family="monospace" fill="#073642">Drafting arbitrators:    0</text>
+<text x="84.0" y="1288.0" font-size="11" font-family="monospace" fill="#073642">Recused arbitrators:     0</text>
+<text x="84.0" y="1301.0" font-size="11" font-family="monospace" fill="#073642">Case outcome:            Closed - No Decision</text>
+<text x="84.0" y="1314.0" font-size="11" font-family="monospace" fill="#073642">Accept votes:  3A / 2D / 1R / 1Ab (net=+1)</text>
+<text x="2307.3333333333335" y="1112.0" font-size="13" font-weight="bold" fill="#073642">Invoked rules (2 total, 1 unique)</text>
+<text x="2307.3333333333335" y="1128.0" font-size="10" fill="#073642" font-style="italic">policies: 0, guidelines: 0, essays: 0, other: 2</text>
+<text x="2307.3333333333335" y="1144.0" font-size="11" font-family="monospace" fill="#073642">· WP:SMERGE              × 2</text>
+<text x="4530.666666666667" y="1112.0" font-size="13" font-weight="bold" fill="#073642">Evidence namespaces</text>
+<text x="4530.666666666667" y="1132.0" font-size="11" font-family="monospace" fill="#073642">User                36 (41.4%)</text>
+<text x="4530.666666666667" y="1145.0" font-size="11" font-family="monospace" fill="#073642">Main                23 (26.4%)</text>
+<text x="4530.666666666667" y="1158.0" font-size="11" font-family="monospace" fill="#073642">User_talk           20 (23.0%)</text>
+<text x="4530.666666666667" y="1171.0" font-size="11" font-family="monospace" fill="#073642">Special              4 ( 4.6%)</text>
+<text x="4530.666666666667" y="1184.0" font-size="11" font-family="monospace" fill="#073642">Help                 2 ( 2.3%)</text>
+<text x="4530.666666666667" y="1197.0" font-size="11" font-family="monospace" fill="#073642">User_Talk            1 ( 1.1%)</text>
+<text x="4530.666666666667" y="1210.0" font-size="11" font-family="monospace" fill="#073642">Category             1 ( 1.1%)</text>
+<text x="4530.666666666667" y="1236.0" font-size="9" fill="#073642" font-style="italic">User/User_talk ⇒ conduct; Main/Talk ⇒ content dispute</text>
+</svg>

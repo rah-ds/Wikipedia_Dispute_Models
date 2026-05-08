@@ -41,6 +41,7 @@ package-lock.json
 .coverage
 .pytest_cache/
 .claude
+*:Zone.Identifier
 
 # Passwords
 user-conf.py

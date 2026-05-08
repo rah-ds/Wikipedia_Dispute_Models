@@ -23,6 +23,42 @@ from processpiper.text2diagram import render as render_piperflow
 
 
 # =============================================================================
+# Helper function for writing to both artifacts and dashboard
+# =============================================================================
+
+
+def _write_bpmn_to_both_locations(
+    bpmn_path: Path, xml_content: str, dashboard_type: str = "drn"
+) -> None:
+    """
+    Write BPMN XML to both artifacts and dashboard folders.
+
+    Args:
+        bpmn_path: Path to write in artifacts folder
+        xml_content: BPMN XML content
+        dashboard_type: Type for dashboard path ('rfc', 'drn', 'arbitration')
+    """
+    # Write to primary location (artifacts)
+    bpmn_path.write_text(xml_content, encoding="utf-8")
+
+    # Also write to dashboard if the project structure includes it
+    try:
+        dashboard_dir = (
+            bpmn_path.resolve().parent.parent.parent
+            / "dashboard"
+            / "public"
+            / "bpmn"
+            / dashboard_type
+        )
+        if dashboard_dir.parent.parent.exists():  # Check if dashboard/public exists
+            dashboard_dir.mkdir(parents=True, exist_ok=True)
+            dashboard_path = dashboard_dir / bpmn_path.name
+            dashboard_path.write_text(xml_content, encoding="utf-8")
+    except Exception:
+        pass  # Silently skip dashboard write if structure doesn't exist
+
+
+# =============================================================================
 # BPMN 2.0 XML Generator
 # =============================================================================
 
@@ -461,7 +497,7 @@ def create_case_bpmn(case: dict, case_index: int, output_dir: Path) -> bool:
     bpmn.flow(valid_gw, declined, "Invalid")
 
     try:
-        bpmn_path.write_text(bpmn.to_xml(), encoding="utf-8")
+        _write_bpmn_to_both_locations(bpmn_path, bpmn.to_xml(), "drn")
     except Exception as e:
         print(f"  ERROR writing BPMN for '{title}': {e}")
         return False
@@ -487,7 +523,7 @@ def create_case_bpmn(case: dict, case_index: int, output_dir: Path) -> bool:
             "        <Valid Case?> as valid_check\n"
             "        [Facilitate Discussion] as facilitate\n"
             "        <Resolution Possible?> as resolution_check\n"
-            "        (end " + status_name + ") as end_event\n"
+            "        (end) as end_event\n"
             "        (end Declined) as end_declined\n"
             "\n"
             "start->file_case->review->valid_check\n"
@@ -495,6 +531,8 @@ def create_case_bpmn(case: dict, case_index: int, output_dir: Path) -> bool:
             "valid_check->end_declined: No\n"
             "facilitate->discuss->resolution_check\n"
             "resolution_check->end_event: " + status_name + "\n"
+            "end_event@label: " + status_name + "\n"
+            "end_declined@label: Declined\n"
             "\n"
             "footer: Status - "
             + status_name
@@ -517,7 +555,7 @@ def create_case_bpmn(case: dict, case_index: int, output_dir: Path) -> bool:
             "    lane: Volunteer\n"
             "        [Review Filing] as review\n"
             "        <Valid Case?> as valid_check\n"
-            "        (end " + status_name + ") as end_event\n"
+            "        (end) as end_event\n"
             "        (end Declined) as end_declined\n"
             "\n"
             "start->file_case->review->valid_check\n"
@@ -617,8 +655,8 @@ def create_aggregate_bpmn(cases: list[dict], output_dir: Path) -> None:
         bpmn.flow(path_gw, escalate_t, "Complex")
         bpmn.flow(escalate_t, escalated)
 
-    (output_dir / "drn_aggregate_workflow.bpmn").write_text(
-        bpmn.to_xml(), encoding="utf-8"
+    _write_bpmn_to_both_locations(
+        output_dir / "drn_aggregate_workflow.bpmn", bpmn.to_xml(), "drn"
     )
 
     # --- PNG via PiperFlow ---
