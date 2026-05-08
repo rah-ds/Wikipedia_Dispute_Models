@@ -269,6 +269,8 @@ These details are easy to miss but useful for future maintainers:
 
 ## Rivanna HPC workflow
 
+You do need to be logged into the UVA network.
+
 Large-scale collection can run on UVA Rivanna. Configure `RIVANNA_ID` in
 `.env`, set up SSH access, then use:
 
@@ -338,9 +340,9 @@ good-faith participation.
 | Role | Name |
 | --- | --- |
 | Authors | Louis Cocks, Katherine Kelleher, Ryan Healy |
-| Program | UVA School of Data Science, MSDS DS 6015 Capstone |
+| Program | UVA School of Data Science, MSDS DS 6015 Capstone, including Professor Rafael Alvarado |
 | Sponsor | Lexipedia |
-| Subject-matter feedback | Lane Raspberry and Lexipedia collaborators |
+| Subject-matter feedback | Lane Raspberry and Anson Parker|
 
 ---
 
