@@ -268,6 +268,16 @@ good-faith participation.
 
 ---
 
+## AI disclosure
+
+Generative AI tools were used as assistants during portions of this project,
+including code review, documentation drafting, LaTeX editing, and repository
+handoff cleanup. The team remains responsible for the final analysis, claims,
+code, and documentation. AI-generated suggestions were reviewed against the
+repository state and public Wikimedia data before inclusion.
+
+---
+
 ## Project links
 
 - Repository: <https://github.com/rah-ds/Wikipedia_Dispute_Models>
